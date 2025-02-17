@@ -1,9 +1,9 @@
 {
-    "name": "GridForge_Editor",
+    "name": "GridForge.Editor",
     "rootNamespace": "",
     "references": [
-        "GridForge_Core",
-        "FixedMathSharp_Core"
+        "GridForge.Runtime",
+        "FixedMathSharp.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,9 +1,9 @@
 {
-    "name": "GridForge_Core",
+    "name": "GridForge.Runtime",
     "rootNamespace": "GridForge",
     "references": [
         "GUID:d166b72a8a4733941852f169793bc2c4",
-        "GUID:6da31b480335f334e95ece43e050ae9b"
+        "GUID:6c6fe7c10f390dc45899bf18980021d6"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

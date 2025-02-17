@@ -5,7 +5,7 @@ GridForge-Unity
 
 **A high-performance, deterministic spatial grid management system for Unity, optimized for lockstep simulations, AI navigation, and world partitioning.**   
 
-This package is a Unity-specific implementation of the [GridForge](https://github.com/mrdav30/GridForge/releases) library
+This package is a Unity-specific implementation of the [GridForge](https://github.com/mrdav30/GridForge) library
 
 ---
 
