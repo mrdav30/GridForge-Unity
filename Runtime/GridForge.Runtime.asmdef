@@ -1,0 +1,17 @@
+{
+    "name": "GridForge_Core",
+    "rootNamespace": "GridForge",
+    "references": [
+        "GUID:d166b72a8a4733941852f169793bc2c4",
+        "GUID:6da31b480335f334e95ece43e050ae9b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

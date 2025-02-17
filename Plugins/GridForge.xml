@@ -1,0 +1,1279 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GridForge</name>
+    </assembly>
+    <members>
+        <member name="T:GridForge.Blockers.Blocker">
+            <summary>
+            Base class for all grid blockers that handles applying and removing obstacles.
+            </summary>
+        </member>
+        <member name="P:GridForge.Blockers.Blocker.BlockageToken">
+            <summary>
+            Unique token representing this blockage instance.
+            </summary>
+        </member>
+        <member name="P:GridForge.Blockers.Blocker.IsActive">
+            <summary>
+            Indicates whether the blocker is currently active.
+            </summary>
+        </member>
+        <member name="P:GridForge.Blockers.Blocker.CacheMin">
+            <summary>
+            The cached minimum bounds of the blockage area.
+            </summary>
+        </member>
+        <member name="P:GridForge.Blockers.Blocker.CacheMax">
+            <summary>
+            The cached maximum bounds of the blockage area.
+            </summary>
+        </member>
+        <member name="P:GridForge.Blockers.Blocker.IsBlocking">
+            <summary>
+            Tracks whether the blocker is currently blocking nodes.
+            </summary>
+        </member>
+        <member name="E:GridForge.Blockers.Blocker.OnBlockageChanged">
+            <summary>
+            Event triggered when a blockage is added or removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.ApplyBlockage">
+            <summary>
+            Applies the blockage by marking nodes as obstacles.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.RemoveBlockage">
+            <summary>
+            Removes the blockage by clearing obstacle markers from nodes.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.GetBoundsMin">
+            <summary>
+            Gets the min bounds of the area to block. Must be implemented by subclasses.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.GetBoundsMax">
+            <summary>
+            Gets the max bounds of the area to block. Must be implemented by subclasses.
+            </summary>
+        </member>
+        <member name="T:GridForge.Blockers.BoundsBlocker">
+            <summary>
+            A manually placed blocker that obstructs a defined bounding area.
+            </summary>
+        </member>
+        <member name="T:GridForge.Blockers.IBlocker">
+            <summary>
+            Defines the interface for a grid blocker, allowing custom implementations.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.IBlocker.ApplyBlockage">
+            <summary>
+            Called to initialize the blocker and apply obstacles to the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.IBlocker.RemoveBlockage">
+            <summary>
+            Called to remove the blockage from the grid when necessary.
+            </summary>
+        </member>
+        <member name="T:GridForge.Configuration.GridConfiguration">
+            <summary>
+            Defines the configuration parameters for a grid, including boundaries and scan cell size.
+            Used to initialize and validate grid properties before creation.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.GridConfiguration.BoundsMin">
+            <summary>
+            The minimum boundary of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.GridConfiguration.BoundsMax">
+            <summary>
+            The maximum boundary of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.GridConfiguration.GridCenter">
+            <summary>
+            The center point of the grid's bounding volume.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.GridConfiguration.ScanCellSize">
+            <summary>
+            The size of each scan cell, determining the granularity of spatial partitioning.
+            Customizable based on grid density and expected entity distribution.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.GridConfiguration.IsAllocated">
+            <summary>
+            Indicates whether this grid configuration has been set.
+            </summary>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfiguration.#ctor(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Configuration.GridConfiguration"/> with specified bounds and scan cell size.
+            Ensures that <see cref="P:GridForge.Configuration.GridConfiguration.BoundsMin"/> is always less than or equal to <see cref="P:GridForge.Configuration.GridConfiguration.BoundsMax"/>.
+            </summary>
+            <param name="min">The minimum boundary of the grid.</param>
+            <param name="max">The maximum boundary of the grid.</param>
+            <param name="scanCellSize">The size of scan cells within the grid. Default is 8.</param>
+        </member>
+        <member name="T:GridForge.Grids.LinearDirection">
+            <summary>
+            Represents the 26 possible neighbor directions in a 3x3x3 grid.
+            These directions are used for spatial relationships between grids and nodes.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridChange">
+            <summary>
+            Represents different types of grid-related changes that can occur.
+            Used to track modifications such as adding/removing neighbors, obstacles, or occupants.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GlobalGridManager">
+            <summary>
+            Manages a collection of interconnected grids to support large or dynamic worlds.
+            Handles grid storage, retrieval, and spatial hashing for fast lookups.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.MaxGrids">
+            <summary>
+            Maximum number of grids that can be managed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.SpatialGridSize">
+            <summary>
+            The size of a spatial hash cell used for grid lookup.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.NodeSize">
+            <summary>
+            The size of each grid node in world units.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.NodeResolution">
+            <summary>
+            Resolution for snapping or searching within the grid (half of NodeSize).
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.ActiveGrids">
+            <summary>
+            Collection of all active grids managed by the system.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.SpatialGridHash">
+            <summary>
+            Dictionary mapping spatial hash keys to grid indices for fast lookups.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.Version">
+            <summary>
+            The current version of the grid system, incremented on major changes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.IsActive">
+            <summary>
+            Indicates whether the GlobalGridManager is active and initialized.
+            Prevents duplicate setup calls.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.DirectionOffsets">
+            <summary>
+            Predefined offsets for a 3x3x3 neighbor structure, excluding the center position.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager._gridLock">
+            <summary>
+            Lock for managing concurrent access to grid operations.
+            Ensures thread safety for read/write operations.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.OnActiveGridChange">
+            <summary>
+            Event triggers when grid is added or removed.
+            Allows external systems to react to the active grid mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager.OnReset">
+            <summary>
+            Event triggered when the GlobalGridManager is reset.
+            Allows external systems to react to a full grid wipe.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.Setup">
+            <summary>
+            Initializes necessary collections for managing grids.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.Reset">
+            <summary>
+            Resets the global grid manager, clearing all grids and spatial data.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryAddGrid(GridForge.Configuration.GridConfiguration,System.UInt16@)">
+            <summary>
+            Adds a new grid to the world and registers it in the spatial hash.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryRemoveGrid(System.UInt16)">
+            <summary>
+            Removes a grid and updates all references to ensure integrity.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.IncrementGridVersion(System.Int32,System.Boolean)">
+            <summary>
+            Notifies grids of a change in their structure.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(System.Int32,GridForge.Grids.Grid@)">
+            <summary>
+            Retrieves a grid by its global index.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(FixedMathSharp.Vector3d,GridForge.Grids.Grid@)">
+            <summary>
+            Retrieves the grid containing a given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(GridForge.Spatial.CoordinatesGlobal,GridForge.Grids.Grid@)">
+            <summary>
+            Retrieves a grid by its unique global coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndNode(FixedMathSharp.Vector3d,GridForge.Grids.Grid@,GridForge.Grids.Node@)">
+            <summary>
+            Retrieves the grid containing a given world position and the node at that position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndNode(GridForge.Spatial.CoordinatesGlobal,GridForge.Grids.Grid@,GridForge.Grids.Node@)">
+            <summary>
+            Retrieves the grid containing a given global coordinate and the node at that position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all spatial hash cell indices that intersect the given bounding volume.
+            </summary>
+            <param name="min">The minimum corner of the bounding box.</param>
+            <param name="max">The maximum corner of the bounding box.</param>
+            <returns>An enumerable of spatial hash cell indices covering the given bounds.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.FindOverlappingGrids(GridForge.Grids.Grid)">
+            <summary>
+            Finds grids that overlap with the specified target grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.IsDiagonalNeighbor(System.Int32)">
+            <summary>
+            Determines if a given neighbor index corresponds to a diagonal neighbor in the 3x3x3 structure.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.GetNeighborDirectionFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32})">
+            <summary>
+            Converts a 3D offset into a corresponding <see cref="T:GridForge.Grids.LinearDirection"/> in a 3x3x3 grid.
+            </summary>
+            <param name="gridOffset">The (x, y, z) offset from the center node.</param>
+            <returns>The corresponding <see cref="T:GridForge.Grids.LinearDirection"/>, or <see cref="F:GridForge.Grids.LinearDirection.None"/> if invalid.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialGridKey(FixedMathSharp.Vector3d)">
+            <summary>
+            Computes a spatial hash key for a given position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.GetSpawnHash(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Generates a hash value for a given set of 3D coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.CeilToNodeSize(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.FloorToNodeSize(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Grid">
+            <summary>
+            Represents a 3D grid structure for spatial organization, managing nodes and scan cells.
+            Handles initialization, neighbor relationships, and occupancy tracking.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.SpawnToken">
+            <summary>
+            Unique token identifying the grid instance.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.GlobalIndex">
+            <summary>
+            Global index of the grid within the world.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Configuration">
+            <inheritdoc cref="T:GridForge.Configuration.GridConfiguration"/>
+        </member>
+        <member name="P:GridForge.Grids.Grid.BoundsMin">
+            <summary>
+            Minimum bounds of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.BoundsMax">
+            <summary>
+            Maximum bounds of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.BoundsCenter">
+            <summary>
+            Center position of the grid in world space.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Width">
+            <summary>
+            Grid width in number of nodes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Height">
+            <summary>
+            Grid height in number of nodes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Length">
+            <summary>
+            Grid length in number of nodes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Size">
+            <summary>
+            Total number of nodes within the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Nodes">
+            <summary>
+            The primary 3D collection of nodes managed by this grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Neighbors">
+            <summary>
+            Stores the indices of neighboring grids.
+            </summary>
+            <remarks>
+            Unlike Node adjacency (which is always 1:1), grids can share multiple neighbors in the same direction.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Grid.NeighborCount">
+            <summary>
+            Count of currently linked neighboring grids.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.IsConjoined">
+            <summary>
+            Determines whether this grid has any linked neighbors.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.ScanCellSize">
+            <summary>
+            Size of a scan cell used for spatial partitioning.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.ScanCells">
+            <summary>
+            Collection of scan cells indexed by their spatial hash key.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.ActiveScanCells">
+            <summary>
+            Stores currently active (occupied) scan cells within the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.IsActive">
+            <summary>
+            Indicates whether the grid is currently active.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.IsOccupied">
+            <summary>
+            Determines whether the grid is occupied (active and containing occupants).
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.ObstacleCount">
+            <summary>
+            Tracks the number of obstacles currently registered in the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Grid.Version">
+            <summary>
+            Tracks the version of the grid, incremented when a <see cref="T:GridForge.Grids.Node"/> is modified.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.Initialize(System.UInt16,GridForge.Configuration.GridConfiguration)">
+            <summary>
+            Initializes the grid with the given settings.
+            </summary>
+            <param name="globalIndex">The unique index of this grid in the world.</param>
+            <param name="configuration">The configuration settings for the grid.</param>
+        </member>
+        <member name="M:GridForge.Grids.Grid.Reset">
+            <summary>
+            Resets the grid, clearing all nodes and scan cells.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GenerateScanCells">
+            <summary>
+            Generates the scan cell overlay for the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GenerateNodes">
+            <summary>
+            Generates the 3D grid structure based on the configured settings.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetNeighborDirection(GridForge.Grids.Grid,GridForge.Grids.Grid)">
+            <summary>
+            Determines the relative direction of a neighboring grid based on its center offset.
+            </summary>
+            <param name="a">The first grid.</param>
+            <param name="b">The second grid.</param>
+            <returns>The direction from grid 'a' to grid 'b'.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryAddGridNeighbor(GridForge.Grids.Grid)">
+            <summary>
+            Adds a neighboring grid and updates relationships.
+            </summary>
+            <param name="neighborGrid">The neighboring grid to add.</param>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryRemoveGridNeighbor(GridForge.Grids.Grid)">
+            <summary>
+            Removes a neighboring grid relationship.
+            </summary>
+            <param name="neighborGrid">The neighboring grid to remove.</param>
+        </member>
+        <member name="M:GridForge.Grids.Grid.NotifyBoundaryChange(GridForge.Grids.LinearDirection)">
+            <summary>
+            Notifies only the relevant boundary nodes when a neighboring grid is added or removed.
+            Instead of looping through all nodes, it targets specific boundary rows or columns.
+            </summary>
+            <param name="direction">The direction of the affected boundary.</param>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsOnBoundary(GridForge.Spatial.CoordinatesLocal)">
+            <summary>
+            Determines if a node coordinate is at the boundary of the grid.
+            Used to determine if a node should update when a neighboring grid is added/removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsInBounds(FixedMathSharp.Vector3d)">
+            <summary>
+            Checks whether a given position falls within the grid bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsGridOverlapValid(GridForge.Grids.Grid,GridForge.Grids.Grid,FixedMathSharp.Fixed64)">
+            <summary>
+            Checks if two grids are overlapping within a given tolerance threshold.
+            This is used to determine if grids should be linked as neighbors.
+            </summary>
+            <param name="a">The first grid.</param>
+            <param name="b">The second grid.</param>
+            <param name="tolerance">Optional tolerance to account for minor floating-point errors.</param>
+            <returns>True if the grids overlap within the tolerance, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetAllGridNeighbors">
+            <summary>
+            Retrieves all neighboring grids connected to this grid.
+            </summary>
+            <returns>An enumeration of all neighboring grids.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsValidNodeCoordinate(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Determines whether the given node coordinates are within the valid range of the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsFacingBoundaryDirection(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.LinearDirection)">
+            <summary>
+            Determines if a node is facing the boundary of the grid in a specific direction.
+            Used to notify nodes when adjacent grids are added/removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetNodeCoordinates(FixedMathSharp.Vector3d,GridForge.Spatial.CoordinatesLocal@)">
+            <summary>
+            Converts a world position to node coordinates within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.IsNodeAllocated(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Checks if a node at the given coordinates is allocated within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetNode(System.Int32,System.Int32,System.Int32,GridForge.Grids.Node@)">
+            <summary>
+            Retrieves the <see cref="T:GridForge.Grids.Node"/> at the specified coordinates, if allocated.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetNode(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.Node@)">
+            <summary>
+            Retrieves a grid node from a given coordinate.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetNode(FixedMathSharp.Vector3d,GridForge.Grids.Node@)">
+            <summary>
+            Retrieve <see cref="T:GridForge.Grids.Node"/> from world <see cref="T:FixedMathSharp.Vector3d"/> points
+            </summary>
+            <returns>GridNode at the given position or null if the position is not valid.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetScanCellKey(FixedMathSharp.Vector3d)">
+            <summary>
+            Computes the scan cell key for a given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetScanCellKey(GridForge.Spatial.CoordinatesLocal)">
+            <summary>
+            Calculates the spatial cell index for a given position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetScanCell(System.Int32,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves a scan cell from the grid using its hashed key.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetScanCell(FixedMathSharp.Vector3d,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves the scan cell corresponding to a given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.TryGetScanCell(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves the scan cell associated with the given node coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetActiveScanCells">
+            <summary>
+            Enumerates all currently active scan cells within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.CeilToGrid(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's node size, ensuring it stays within grid bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.FloorToGrid(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's node size, ensuring it stays within grid bounds.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridObstacleManager">
+            <summary>
+            Handles the addition, removal, and tracking of obstacles within a grid.
+            Ensures thread safety and proper event notifications when obstacles change.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridObstacleManager.MaxObstacleCount">
+            <summary>
+            Maximum number of obstacles that can exist on a single node.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridObstacleManager.OnObstacleChange">
+            <summary>
+            Event triggered when an obstacle is added or removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridObstacleManager._gridLocks">
+            <summary>
+            Per-grid locks for ensuring thread-safe obstacle operations.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32)">
+            <summary>
+            Attempts to add an obstacle at the given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+            <summary>
+            Adds an obstacle to a given node within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32)">
+            <summary>
+            Adds an obstacle to this node.
+            </summary>
+            <param name="grid"></param>
+            <param name="targetNode"></param>
+            <param name="obstacleSpawnToken"></param>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32)">
+            <summary>
+            Attempts to remove an obstacle from the specified world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+            <summary>
+            Attempts to remove an obstacle at the specified node coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32)">
+            <summary>
+            Removes an obstacle from a given node.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleChange(GridForge.Grids.GridChange,GridForge.Grids.Node,System.UInt32)">
+            <summary>
+            Notifies listeners of an obstacle state change.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridOccupantManager">
+            <summary>
+            Provides utility methods for managing node occupants within a grid.
+            Supports adding, removing, and retrieving occupants with thread-safe operations.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridOccupantManager.MaxOccupantCount">
+            <summary>
+            Maximum number of occupants allowed per node.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridOccupantManager.OnOccupantChange">
+            <summary>
+            Event triggered when an occupant is added or removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridOccupantManager._gridLocks">
+            <summary>
+            Per-grid locks to ensure thread safety when modifying occupant data.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to add an occupant at the given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to add an occupant at the given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to add an occupant at the specified node coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Adds an occupant to the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to remove an occupant from the given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to remove an occupant from the given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Attempts to remove an occupant at the specified node coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Removes an occupant from this grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantChange(GridForge.Grids.GridChange,GridForge.Grids.Node)">
+            <summary>
+            Notifies listeners of an occupant state change.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Node">
+            <summary>
+            Represents a node within a 3D grid, handling spatial positioning, obstacles, occupants, and neighbor relationships.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.SpawnToken">
+            <summary>
+            Unique token identifying this node instance.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.GlobalCoordinates">
+            <summary>
+            The global and local coordinates of this node within the grid system.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.GridIndex">
+            <summary>
+            The global index of the grid this node belongs to.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.LocalCoordinates">
+            <summary>
+            The local coordinates of this node within its grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.ScanCellKey">
+            <summary>
+            The spatial hash key of the scan cell that this node belongs to.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.WorldPosition">
+            <summary>
+            The world-space position of this node.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Node._isNeighborCacheValid">
+            <summary>
+            Indicates whether the neighbor cache is valid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Node._cachedNeighbors">
+            <summary>
+            Cached array of neighboring nodes for fast lookup representing a 3x3x3 linear direction grid
+            </summary>
+            <remarks>
+            Unlike Grid adjacency (which is 1:many), nodes can only have 1 neighbor in any one direction (1:1).
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Node.ObstacleCount">
+            <summary>
+            The current number of obstacles on this node.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.OccupantCount">
+            <summary>
+            The current number of occupants on this node.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Node._partitions">
+            <summary>
+            Dictionary mapping partition names to their respective partitions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsPartioned">
+            <summary>
+            Indicates whether this node has any active partitions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsBoundaryNode">
+            <summary>
+            Determines if this node is a boundary node.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.CachedGridVersion">
+            <summary>
+            The current version of the grid at the time this node was created.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsAllocated">
+            <summary>
+            Indicates whether this node is allocated within a grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsBlocked">
+            <summary>
+            Determines whether this node is blocked due to obstacles.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsBlockable">
+            <summary>
+            Determines if this node can accept additional obstacles.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.IsOccupied">
+            <summary>
+            Determines whether this node is occupied by entities.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Node.HasVacancy">
+            <summary>
+            Checks if this node has open slots for new occupants.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.Initialize(GridForge.Spatial.CoordinatesGlobal,FixedMathSharp.Vector3d,System.Int32,System.Boolean,System.UInt32)">
+            <summary>
+            Configures the node with its position, grid version, and boundary status.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.Reset">
+            <summary>
+            Resets the node, clearing all allocated data and returning it to pools.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.GetPartitionKey(System.String)">
+            <summary>
+            Generates a unique key for a partition based on the node's spawn token and partition name.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.TryAddPartition(GridForge.Spatial.INodePartition)">
+            <summary>
+            Adds a partition to this node, allowing specialized behaviors.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.TryRemovePartition``1">
+            <summary>
+            Removes a partition from this node.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.TryGetPartition``1(``0@)">
+            <summary>
+            Retrieves a partition from the node by name.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.InvalidateNeighborCache">
+            <summary>
+            Invalidates the neighbor cache when a boundary relationship changes.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.GetNeighbors(System.Boolean)">
+            <summary>
+            Retrieves the neighbors of this node, caching results if specified.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.TryGetNeighborFromDirection(GridForge.Grids.LinearDirection,GridForge.Grids.Node@,System.Boolean)">
+            <summary>
+            Retrieves a neighbor node in a specific direction.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.TryGetNeighborFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32},GridForge.Grids.Node@)">
+            <summary>
+            Retrieves a neighbor node based on a coordinate offset.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.SetNeighborCache">
+            <summary>
+            Updates and caches the neighboring nodes of this node.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Pools.GridPool">
+            <summary>
+            Object pool for reusing <see cref="T:GridForge.Grids.Grid"/> instances.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Pools.NodePool">
+            <summary>
+            Object pool for reusing <see cref="T:GridForge.Grids.Node"/> instances.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Pools.ScanCellPool">
+            <summary>
+            Object pool for reusing <see cref="T:GridForge.Grids.ScanCell"/> instances.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Pools._nodeNeighborPool">
+            <summary>
+            Object pool for caching neighbor node arrays.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Pools.NodeNeighborPool">
+            <inheritdoc cref="F:GridForge.Grids.Pools._nodeNeighborPool"/>
+        </member>
+        <member name="T:GridForge.Grids.ScanCell">
+            <summary>
+            Represents a spatial partition within a grid, managing occupants at a finer granularity than grid nodes.
+            Handles efficient tracking, retrieval, and removal of occupants within a designated scan cell area.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.GridIndex">
+            <summary>
+            The global index of the grid this scan cell belongs to.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.CellKey">
+            <summary>
+            A unique identifier for this scan cell, derived from spatial hashing.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ScanCell._nodeOccupants">
+            <summary>
+            Maps a <see cref="P:GridForge.Grids.Node.SpawnToken"/> to a bucket of associated <see cref="T:GridForge.Spatial.INodeOccupant"/> instances.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.CellOccupantCount">
+            <summary>
+            The total number of occupants in this scan cell.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.IsAllocated">
+            <summary>
+            Indicates whether this scan cell is currently allocated in the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.IsOccupied">
+            <summary>
+            Determines whether this scan cell is occupied by any occupants.
+            A scan cell is only considered occupied if it is allocated and contains at least one occupant.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.Initialize(System.UInt16,System.Int32)">
+            <summary>
+            Initializes the scan cell with the specified grid index and unique cell key.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.Reset">
+            <summary>
+            Resets the scan cell, clearing all occupants and returning memory to object pools.
+            This effectively marks the scan cell as deallocated and removes all references.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.AddOccupant(System.Int32,GridForge.Spatial.INodeOccupant,System.Int32@)">
+            <summary>
+            Adds an occupant to this scan cell and tracks its presence.
+            </summary>
+            <param name="nodeSpawnToken">The unique spawn token of the node where the occupant resides.</param>
+            <param name="occupant">The occupant instance to add.</param>
+            <param name="occupantTicket"></param>
+            <returns>An integer ticket representing the occupant's position in the data structure.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.TryRemoveOccupant(System.Int32,GridForge.Spatial.INodeOccupant)">
+            <summary>
+            Removes an occupant from this scan cell.
+            </summary>
+            <param name="nodeSpawnToken">The spawn token of the node the occupant was assigned to.</param>
+            <param name="occupant"></param>
+            <returns>True if the occupant was successfully removed; otherwise, false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.GetOccupants">
+            <summary>
+            Retrieves all occupants associated with this ScanCell.
+            </summary>
+            <returns>An enumerable of occupants within this scan cell.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.GetConditionalOccupants(System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Retrieves occupants whose group Ids match a given condition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.GetOccupantsFor(System.Int32)">
+            <summary>
+            Retrieves all occupants associated with a specific node spawn token within this scan cell.
+            </summary>
+            <param name="nodeSpawnKey">The unique spawn key of the node.</param>
+            <returns>An enumerable collection of occupants assigned to the node.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(System.Int32,System.Int32,GridForge.Spatial.INodeOccupant@)">
+            <summary>
+            Attempts to retrieve a specific occupant in this scan cell using a node's spawn key and occupant ticket.
+            </summary>
+            <param name="nodeSpawnKey">The spawn key of the node the occupant belongs to.</param>
+            <param name="occupantTicket">The unique ticket identifying the occupant.</param>
+            <param name="nodeOccupant">The retrieved occupant if found.</param>
+            <returns>True if the occupant was found, otherwise false.</returns>
+        </member>
+        <member name="T:GridForge.Grids.ScanManager">
+            <summary>
+            Provides efficient querying methods for retrieving occupants within a grid.
+            Handles spatial lookups for nodes, filtering by occupant type, and fetching occupants using unique tickets.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all occupants at a given world position within the grid.
+            </summary>
+            <param name="grid">The grid to query.</param>
+            <param name="position">The world position to check for occupants.</param>
+            <returns>An enumerable collection of node occupants.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+            <summary>
+            Retrieves all occupants at a given node coordinate within the grid.
+            </summary>
+            <param name="grid">The grid to query.</param>
+            <param name="coordinates">The local coordinates of the node.</param>
+            <returns>An enumerable collection of node occupants.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,GridForge.Grids.Node)">
+            <summary>
+            Retrieves all occupants at a given node.
+            </summary>
+            <param name="grid">The grid containing the node.</param>
+            <param name="targetNode">The target node to retrieve occupants from.</param>
+            <returns>An enumerable collection of node occupants.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all occupants of a specific type at a given world position.
+            </summary>
+            <typeparam name="T">The type of occupant to retrieve.</typeparam>
+            <param name="grid">The grid to query.</param>
+            <param name="position">The world position of the node.</param>
+            <returns>An enumerable collection of occupants of the specified type.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+            <summary>
+            Retrieves all occupants of a specific type at a given node coordinate.
+            </summary>
+            <typeparam name="T">The type of occupant to retrieve.</typeparam>
+            <param name="grid">The grid to query.</param>
+            <param name="coordinates">The local node coordinates.</param>
+            <returns>An enumerable collection of occupants of the specified type.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,GridForge.Grids.Node)">
+            <summary>
+            Retrieves all occupants of a specific type at a given node.
+            </summary>
+            <typeparam name="T">The type of occupant to retrieve.</typeparam>
+            <param name="grid">The grid containing the node.</param>
+            <param name="targetNode">The target node.</param>
+            <returns>An enumerable collection of occupants of the specified type.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32,GridForge.Spatial.INodeOccupant@)">
+            <summary>
+            Retrieves a specific occupant at a given world position using an occupant ticket.
+            </summary>
+            <param name="grid">The grid to query.</param>
+            <param name="position">The world position of the node.</param>
+            <param name="occupantTicket">The unique identifier of the occupant.</param>
+            <param name="occupant">The retrieved occupant if found.</param>
+            <returns>True if the occupant was found, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32,GridForge.Spatial.INodeOccupant@)">
+            <summary>
+            Retrieves a specific occupant at a given node coordinate using an occupant ticket.
+            </summary>
+            <param name="grid">The grid to query.</param>
+            <param name="coordinatesLocal">The local node coordinates.</param>
+            <param name="occupantTicket">The unique identifier of the occupant.</param>
+            <param name="occupant">The retrieved occupant if found.</param>
+            <returns>True if the occupant was found, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32,GridForge.Spatial.INodeOccupant@)">
+            <summary>
+            Retrieves a specific occupant from a given node using an occupant ticket.
+            </summary>
+            <param name="grid">The grid containing the node.</param>
+            <param name="targetNode">The target node.</param>
+            <param name="occupantTicket">The unique identifier of the occupant.</param>
+            <param name="occupant">The retrieved occupant if found.</param>
+            <returns>True if the occupant was found, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all occupants at a given world position within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+            <summary>
+            Retrieves all occupants at a given coordinate within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,GridForge.Grids.Node)">
+            <summary>
+            Retrieves all occupants at a given node.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Retrieves occupants whose group Ids match a given condition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Retrieves occupants whose group Ids match a given condition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,GridForge.Grids.Node,System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Retrieves occupants at a given node that match a specified group condition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.ScanRadius(FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Scans for occupants within a given radius from a specified position.
+            </summary>
+            <param name="position">The center position to scan from.</param>
+            <param name="radius">The search radius.</param>
+            <param name="groupConditional">Optional filter for occupant groups.</param>
+            <returns>An enumerable of all occupants found within the radius.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanManager.ScanRadius``1(FixedMathSharp.Vector3d,FixedMathSharp.Fixed64)">
+            <summary>
+            Scans for occupants of a specific type within a given radius.
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.CoordinatesGlobal">
+            <summary>
+            Represents the global coordinates of a node, linking it to a specific grid.
+            Used for uniquely identifying nodes across multiple grids.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesGlobal.GridIndex">
+            <summary>
+            The index of the grid in <see cref="P:GridForge.Grids.GlobalGridManager.ActiveGrids"/>.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesGlobal.NodeCoordinates">
+            <summary>
+            The local coordinate of a grid node within the grid at <see cref="F:GridForge.Spatial.CoordinatesGlobal.GridIndex"/>.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesGlobal.GridSpawnToken">
+            <summary>
+            The unique identifier generated by the grid during initialization.
+            Used to ensure the correct instance is at the assigned <see cref="F:GridForge.Spatial.CoordinatesGlobal.GridIndex"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesGlobal.#ctor(System.UInt16,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesGlobal"/>, linking a node to a grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesGlobal.ToString">
+            <summary>
+            Returns a string representation of the global coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesGlobal.GetHashCode">
+            <summary>
+            Computes a hash code for uniquely identifying this set of global coordinates.
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.CoordinatesLocal">
+            <summary>
+            Represents the local coordinates of a node within a single grid.
+            Used to index nodes within a grid's spatial structure.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesLocal.x">
+            <summary>
+            The X position of the node in the local grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesLocal.y">
+            <summary>
+            The Y position of the node in the local grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.CoordinatesLocal.z">
+            <summary>
+            The Z position of the node in the local grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesLocal.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesLocal"/> with an X and Y coordinate.
+            Defaults Z to zero.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesLocal.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesLocal"/> with X, Y, and Z coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesLocal.ToString">
+            <summary>
+            Returns a string representation of the coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.CoordinatesLocal.GetHashCode">
+            <summary>
+            Computes a hash code for the coordinates, ensuring uniqueness in hashing collections.
+            Uses <see cref="M:GridForge.Grids.GlobalGridManager.GetSpawnHash(System.Int32,System.Int32,System.Int32)"/> to generate a stable and consistent hash.
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.INodeOccupant">
+            <summary>
+            Represents an entity that can occupy a <see cref="T:GridForge.Grids.Node"/>.
+            Occupants can be dynamic entities such as units or items (obstacles).
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodeOccupant.OccupantGroupId">
+            <summary>
+            The group Id used for grouping occupants within a scan cell.
+            Occupants with the same group Id belong to the same logical group.
+            This allows efficient retrieval of related occupants in spatial queries.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodeOccupant.OccupantTicket">
+            <summary>
+            A unique ticket identifier assigned when this occupant is added to a scan cell.
+            Used for efficient tracking and removal.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodeOccupant.WorldPosition">
+            <summary>
+            The absolute world-space position of the occupant, representing its precise location in the environment.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodeOccupant.GridCoordinates">
+            <summary>
+            The global grid coordinates of the <see cref="T:GridForge.Grids.Node"/> this occupant is being added to.
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.INodePartition">
+            <summary>
+            Represents a partition within a <see cref="T:GridForge.Grids.Node"/> that modifies its behavior.
+            Partitions can define special attributes or metadata for a node, such as terrain type or navigation properties.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodePartition.ParentCoordinate">
+            <summary>
+            The global coordinates of the parent node where this partition is attached.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodePartition.IsPartitioned">
+            <summary>
+            Flag to determine if this partition is currently attached to a <see cref="T:GridForge.Grids.Node"/>
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.INodePartition.OnAddToNode">
+            <summary>
+            Called when adding this partition to a <see cref="T:GridForge.Grids.Node"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.INodePartition.OnRemoveFromNode">
+            <summary>
+            Called when this partition is removed from a <see cref="T:GridForge.Grids.Node"/>.
+            Cleans up any associated data.
+            </summary>
+        </member>
+        <member name="T:GridForge.Utility.GridTracer">
+            <summary>
+            Provides utilities for tracing lines or bounding areas in a grid, aligning them to grid nodes.
+            Uses fixed-point calculations to ensure deterministic and accurate grid traversal.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Boolean)">
+            <summary>
+            Traces a 3D line between two points in the grid.
+            The traced points are returned as grid nodes.
+            </summary>
+            <remarks>
+            Uses a fractional step algorithm inspired by Bresenham’s line algorithm.
+            This implementation leverages fixed-point math to maintain precision across a deterministic grid.
+            </remarks>
+            <param name="start">Starting position in world space.</param>
+            <param name="end">Ending position in world space.</param>
+            <param name="includeEnd">Whether to include the end node in the traced line.</param>
+            <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Boolean)">
+            <summary>
+            Traces a 2D line between two points, snapping them to grid coordinates.
+            </summary>
+            <remarks>
+            This method projects the 2D line onto the X-Y plane and follows the closest grid-aligned path.
+            </remarks>
+            <param name="start">Starting 2D position.</param>
+            <param name="end">Ending 2D position.</param>
+            <param name="includeEnd">Whether to include the end node.</param>
+            <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredNodes(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all grid nodes covered by the given bounding area.
+            </summary>
+            <param name="boundsMin">The minimum corner of the bounding area.</param>
+            <param name="boundsMax">The maximum corner of the bounding area.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Retrieves all scan cells within the given bounding area across relevant grids.
+            </summary>
+            <param name="boundsMin">The minimum corner of the bounding area.</param>
+            <param name="boundsMax">The maximum corner of the bounding area.</param>
+            <returns>An enumerable of covered scan cells grouped by grid.</returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,21 @@
+{
+  "name": "com.mrdav30.gridforge",
+  "version": "1.0.0",
+  "displayName": "GridForge",
+  "description": "A high-performance, deterministic spatial grid management system for simulations and game development.",
+  "unity": "2020.3",
+  "author": {
+    "name": "David Oravsky",
+    "email": "david.oravsky@gmail.com",
+    "url": "https://github.com/mrdav30"
+  },
+  "keywords": ["grid", "spatial", "lockstep", "deterministic", "pathfinding", "game-development", "AI"]
+  "dependencies": {
+    "com.mrdav30.fixedmathsharp": "https://github.com/mrdav30/FixedMathSharp-Unity.git",
+	"com.mrdav30.swiftcollections": "https://github.com/mrdav30/SwiftCollections-Unity.git"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrdav30/GridForge-Unity.git"
+  }
+}

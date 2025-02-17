@@ -1,0 +1,19 @@
+{
+    "name": "GridForge_Editor",
+    "rootNamespace": "",
+    "references": [
+        "GridForge_Core",
+        "FixedMathSharp_Core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
