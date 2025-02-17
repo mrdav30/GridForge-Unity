@@ -9,13 +9,6 @@ This package is a Unity-specific implementation of the [GridForge](https://githu
 
 ---
 
-## Dependencies
-
-- Requires [FixedMathSharp](https://github.com/mrdav30/FixedMathSharp).
-- Requires [SwiftCollections](https://github.com/mrdav30/SwiftCollections).
-
----
-
 ## 🚀 Key Features
 
 - **Deterministic Execution** – Supports **lockstep simulation** and **fixed-point** arithmetic.
@@ -50,8 +43,8 @@ https://github.com/mrdav30/GridForge-Unity.git
 
 GridForge-Unity depends on the following Unity packages:
 
-- (FixedMathSharp-Unity)[https://github.com/mrdav30/FixedMathSharp-Unity]
-- (SwiftCollections-Unity)[https://github.com/mrdav30/SwiftCollections-Unity]
+- [FixedMathSharp-Unity](https://github.com/mrdav30/FixedMathSharp-Unity)
+- [SwiftCollections-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
 
 These dependencies are automatically included when installing via UPM.
 
