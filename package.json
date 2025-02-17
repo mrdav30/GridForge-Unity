@@ -9,7 +9,7 @@
     "email": "david.oravsky@gmail.com",
     "url": "https://github.com/mrdav30"
   },
-  "keywords": ["grid", "spatial", "lockstep", "deterministic", "pathfinding", "game-development", "AI"]
+  "keywords": ["grid", "spatial", "lockstep", "deterministic", "pathfinding", "game-development", "AI"],
   "dependencies": {
     "com.mrdav30.fixedmathsharp": "https://github.com/mrdav30/FixedMathSharp-Unity.git",
 	"com.mrdav30.swiftcollections": "https://github.com/mrdav30/SwiftCollections-Unity.git"
