@@ -791,6 +791,16 @@
             Checks if this node has open slots for new occupants.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.Node.OnObstacleChange">
+            <summary>
+            Event triggered when an obstacle is added or removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Node.OnOccupantChange">
+            <summary>
+            Event triggered when an occupant is added or removed.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.Node.Initialize(GridForge.Spatial.CoordinatesGlobal,FixedMathSharp.Vector3d,System.Int32,System.Boolean,System.UInt32)">
             <summary>
             Configures the node with its position, grid version, and boundary status.
@@ -1217,12 +1227,12 @@
             Flag to determine if this partition is currently attached to a <see cref="T:GridForge.Grids.Node"/>
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.INodePartition.OnAddToNode">
+        <member name="M:GridForge.Spatial.INodePartition.OnAddToNode(GridForge.Grids.Node)">
             <summary>
             Called when adding this partition to a <see cref="T:GridForge.Grids.Node"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.INodePartition.OnRemoveFromNode">
+        <member name="M:GridForge.Spatial.INodePartition.OnRemoveFromNode(GridForge.Grids.Node)">
             <summary>
             Called when this partition is removed from a <see cref="T:GridForge.Grids.Node"/>.
             Cleans up any associated data.
@@ -1274,6 +1284,83 @@
             <param name="boundsMin">The minimum corner of the bounding area.</param>
             <param name="boundsMax">The maximum corner of the bounding area.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
+        </member>
+        <member name="T:GridForgeLogger">
+            <summary>
+            Provides a configurable logging system for GridForge with support for log levels, formatting, and file output.
+            </summary>
+        </member>
+        <member name="T:GridForgeLogger.LogLevel">
+            <summary>
+            Represents the severity level of a log message.
+            </summary>
+        </member>
+        <member name="F:GridForgeLogger.LogHandler">
+            <summary>
+            Delegate for handling log messages. Defaults to <see cref="M:GridForgeLogger.DefaultLogHandler(GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            </summary>
+        </member>
+        <member name="F:GridForgeLogger.CustomFormatter">
+            <summary>
+            Delegate for custom log formatting. Defaults to <see cref="M:GridForgeLogger.DefaultLogFormatter(GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            </summary>
+        </member>
+        <member name="P:GridForgeLogger.LogFilePath">
+            <summary>
+            Gets or sets the file path for logging. If null, file logging is disabled.
+            </summary>
+        </member>
+        <member name="P:GridForgeLogger.Verbosity">
+            <summary>
+            Gets or sets the minimum log level required for messages to be logged.
+            </summary>
+        </member>
+        <member name="F:GridForgeLogger._lock">
+            <summary>
+            Synchronization lock for thread-safe logging.
+            </summary>
+        </member>
+        <member name="M:GridForgeLogger.DefaultLogHandler(GridForgeLogger.LogLevel,System.String,System.String)">
+            <summary>
+            The default handler for logging messages, writing them to the console and optionally to a file.
+            </summary>
+            <param name="level">The severity level of the log message.</param>
+            <param name="message">The log message.</param>
+            <param name="source">The source of the log message (e.g., calling method).</param>
+        </member>
+        <member name="M:GridForgeLogger.DefaultLogFormatter(GridForgeLogger.LogLevel,System.String,System.String)">
+            <summary>
+            The default log formatter that formats log messages with timestamp, log level, and source information.
+            </summary>
+            <param name="level">The severity level of the log message.</param>
+            <param name="message">The log message.</param>
+            <param name="source">The source of the log message (e.g., calling method).</param>
+            <returns>A formatted log entry as a string.</returns>
+        </member>
+        <member name="M:GridForgeLogger.Info(System.String,System.String,System.String)">
+            <summary>
+            Logs an informational message.
+            </summary>
+            <param name="message">The message to log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
+        </member>
+        <member name="M:GridForgeLogger.Warn(System.String,System.String,System.String)">
+            <summary>
+            Logs a warning message.
+            </summary>
+            <param name="message">The warning message to log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
+        </member>
+        <member name="M:GridForgeLogger.Error(System.String,System.Exception,System.String,System.String)">
+            <summary>
+            Logs an error message, optionally including an exception stack trace.
+            </summary>
+            <param name="message">The error message to log.</param>
+            <param name="ex">An optional exception whose details will be included in the log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
         </member>
     </members>
 </doc>
