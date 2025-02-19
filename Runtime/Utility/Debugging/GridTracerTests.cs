@@ -19,7 +19,7 @@ namespace GridForge.Utility.Debugging.Unity_Editor
         /// </summary>
         [Tooltip("Enable to display the grid nodes along the traced path.")]
         [SerializeField]
-        private bool _showGrid = true;
+        private bool _showNodeTrail = true;
 
         /// <summary>
         /// Enables visualization of the traced line.
@@ -54,16 +54,22 @@ namespace GridForge.Utility.Debugging.Unity_Editor
         /// <summary>
         /// Size of filled cubes drawn at each grid node.
         /// </summary>
-        private static readonly Vector3 FillSize = new Vector3(0.4f, 0.1f, 0.4f);
+        private Vector3 FillSize;
 
         /// <summary>
         /// Size of wireframe cubes drawn around each grid node.
         /// </summary>
-        private static readonly Vector3 WireSize = new Vector3(0.5f, 0.1f, 0.5f);
+        private Vector3 WireSize;
 
         #endregion
 
         #region Gizmo Rendering
+
+        public void Start()
+        {
+            FillSize = Vector3.one * (float)GlobalGridManager.NodeSize;
+            WireSize = FillSize * 1.02f;
+        }
 
         /// <summary>
         /// Unity's Gizmo drawing callback. 
@@ -72,21 +78,26 @@ namespace GridForge.Utility.Debugging.Unity_Editor
         public void OnDrawGizmos()
         {
             // Ensure that start and end Transforms are valid and not identical
-            if (!startTransform || !endTransform || startTransform == endTransform)
+            if (!Application.isPlaying
+                || !startTransform
+                || !endTransform
+                || startTransform == endTransform)
+            {
                 return;
+            }
 
             // Get world positions as Vector3d (fixed-point precision)
             Vector3d startPos = startTransform.position.ToVector3d();
             Vector3d endPos = endTransform.position.ToVector3d();
 
             // If grid visualization is enabled, trace the line and draw the grid nodes
-            if (_showGrid)
+            if (_showNodeTrail)
             {
                 Gizmos.color = Color.red;
 
                 foreach (GridNodeSet covered in GridTracer.TraceLine(startPos, endPos))
                 {
-                    foreach(Node node in covered.Nodes)
+                    foreach (Node node in covered.Nodes)
                     {
                         Vector3 drawPos = node.WorldPosition.ToVector3();
                         drawPos.y += (float)_gridHeight; // Adjust for visualization height
@@ -108,10 +119,7 @@ namespace GridForge.Utility.Debugging.Unity_Editor
                 Gizmos.color = Color.white;
                 float adjustedY = (float)(_gridHeight + Fixed64.Half); // Slight height offset for visibility
 
-                Gizmos.DrawLine(
-                    new Vector3((float)startPos.x, adjustedY, (float)startPos.z),
-                    new Vector3((float)endPos.x, adjustedY, (float)endPos.z)
-                );
+                Gizmos.DrawLine(startPos.ToVector3(adjustedY), endPos.ToVector3(adjustedY));
             }
         }
 

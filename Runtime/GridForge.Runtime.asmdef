@@ -1,9 +1,9 @@
 {
     "name": "GridForge.Runtime",
-    "rootNamespace": "GridForge",
+    "rootNamespace": "",
     "references": [
-        "GUID:d166b72a8a4733941852f169793bc2c4",
-        "GUID:6c6fe7c10f390dc45899bf18980021d6"
+        "FixedMathSharp.Runtime",
+        "SwiftCollections.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "GridForge.Runtime",
-        "FixedMathSharp.Runtime"
+        "FixedMathSharp.Runtime",
+        "FixedMathSharp.Editor"
     ],
     "includePlatforms": [
         "Editor"

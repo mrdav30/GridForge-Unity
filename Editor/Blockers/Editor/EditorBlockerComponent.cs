@@ -5,11 +5,11 @@ using UnityEngine;
 namespace GridForge.Blockers.Unity_Editor
 {
     /// <summary>
-    /// Custom Unity Editor inspector for <see cref="UnityBlockerComponent"/>.
+    /// Custom Unity Editor inspector for <see cref="BlockerComponent"/>.
     /// Dynamically displays relevant fields based on the selected blocker type.
     /// </summary>
-    [CustomEditor(typeof(UnityBlockerComponent))]
-    public class EditorUnityBlockerComponent : Editor
+    [CustomEditor(typeof(BlockerComponent))]
+    public class EditorBlockerComponent : Editor
     {
         SerializedProperty _blockerType;
         SerializedProperty _isActive;
