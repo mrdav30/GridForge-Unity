@@ -85,6 +85,11 @@
             Used to initialize and validate grid properties before creation.
             </summary>
         </member>
+        <member name="F:GridForge.Configuration.GridConfiguration.DefaultScanCellSize">
+            <summary>
+            The default size of each scan cell.
+            </summary>
+        </member>
         <member name="P:GridForge.Configuration.GridConfiguration.BoundsMin">
             <summary>
             The minimum boundary of the grid in world coordinates.
@@ -143,14 +148,24 @@
             Maximum number of grids that can be managed.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GlobalGridManager.SpatialGridSize">
+        <member name="F:GridForge.Grids.GlobalGridManager.DefaultNodeSize">
             <summary>
-            The size of a spatial hash cell used for grid lookup.
+            The default size of each grid node in world units.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GlobalGridManager.NodeSize">
+        <member name="F:GridForge.Grids.GlobalGridManager.DefaultSpatialGridCellSize">
+            <summary>
+            The default size of a spatial hash cell used for grid lookup.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.NodeSize">
             <summary>
             The size of each grid node in world units.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.SpatialGridCellSize">
+            <summary>
+            The size of a spatial hash cell used for grid lookup.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GlobalGridManager.NodeResolution">
@@ -206,6 +221,11 @@
             <summary>
             Initializes necessary collections for managing grids.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.Setup(FixedMathSharp.Fixed64,System.Int32)">
+            <inheritdoc cref="M:GridForge.Grids.GlobalGridManager.Setup"/>
+            <param name="nodeSize"></param>
+            <param name="spatialGridCellSize"></param>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.Reset">
             <summary>
@@ -892,7 +912,12 @@
         </member>
         <member name="P:GridForge.Grids.ScanCell.CellKey">
             <summary>
-            A unique identifier for this scan cell, derived from spatial hashing.
+            A unique identifier for this scan cell in the grid, derived from spatial hashing.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ScanCell.SpawnToken">
+            <summary>
+            Unique token identifying this scan cell instance.
             </summary>
         </member>
         <member name="F:GridForge.Grids.ScanCell._nodeOccupants">
