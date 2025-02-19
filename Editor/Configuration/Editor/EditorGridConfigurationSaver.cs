@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
+using FixedMathSharp;
+using FixedMathSharp.Editor;
 using UnityEditor;
-using UnityEngine;
 
 namespace GridForge.Configuration.Unity_Editor
 {
@@ -11,87 +12,34 @@ namespace GridForge.Configuration.Unity_Editor
     [CustomEditor(typeof(GridConfigurationSaver))]
     public class EditorGridConfigurationSaver : Editor
     {
+        SerializedProperty _nodeSize;
+        SerializedProperty _spatialGridCellSize;
         SerializedProperty _savedGridConfigurations;
 
-        private const int minLimit = -100;
-        private const int maxLimit = 100;
+        private void OnEnable()
+        {
+            _nodeSize = serializedObject.FindProperty("_nodeSize");
+            _spatialGridCellSize = serializedObject.FindProperty("_spatialGridCellSize");
+            _savedGridConfigurations = serializedObject.FindProperty("_savedGridConfigurations");
+        }
 
         public override void OnInspectorGUI()
         {
-            GridConfigurationSaver gs = (GridConfigurationSaver)target;
+            serializedObject.Update();
 
-            SerializedObject so = new SerializedObject(gs);
-            GenerateProperties(so);
+            FMSEditorUtility.FixedNumberField("Node Size", ref _nodeSize, 0, 1);
 
-            EditorGUILayout.Space();
+            EditorGUILayout.PropertyField(_spatialGridCellSize);
 
-            // Display grid configurations
-            EditorGUILayout.LabelField("Saved Grid Configurations", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_savedGridConfigurations, true);
 
-            for (int i = 0; i < _savedGridConfigurations.arraySize; i++)
-            {
-                SerializedProperty gridConfig = _savedGridConfigurations.GetArrayElementAtIndex(i);
-
-                SerializedProperty xMin = gridConfig.FindPropertyRelative("GridMin.x");
-                SerializedProperty xMax = gridConfig.FindPropertyRelative("GridMax.x");
-                SerializedProperty heightMin = gridConfig.FindPropertyRelative("GridMin.y");
-                SerializedProperty heightMax = gridConfig.FindPropertyRelative("GridMax.y");
-                SerializedProperty zMin = gridConfig.FindPropertyRelative("GridMin.z");
-                SerializedProperty zMax = gridConfig.FindPropertyRelative("GridMax.z");
-
-                EditorGUILayout.LabelField($"Grid {i + 1}", EditorStyles.boldLabel);
-
-                float xMinVal = xMin.floatValue;
-                float xMaxVal = xMax.floatValue;
-                EditorGUILayout.LabelField("X Min:", xMinVal.ToString());
-                EditorGUILayout.LabelField("X Max:", xMaxVal.ToString());
-                EditorGUILayout.MinMaxSlider(ref xMinVal, ref xMaxVal, minLimit, maxLimit);
-                xMin.floatValue = xMinVal;
-                xMax.floatValue = xMaxVal;
-
-                float heightMinVal = heightMin.floatValue;
-                float heightMaxVal = heightMax.floatValue;
-                EditorGUILayout.LabelField("Height Min:", heightMinVal.ToString());
-                EditorGUILayout.LabelField("Height Max:", heightMaxVal.ToString());
-                EditorGUILayout.MinMaxSlider(ref heightMinVal, ref heightMaxVal, minLimit, maxLimit);
-                heightMin.floatValue = heightMinVal;
-                heightMax.floatValue = heightMaxVal;
-
-                float zMinVal = zMin.floatValue;
-                float zMaxVal = zMax.floatValue;
-                EditorGUILayout.LabelField("Z Min:", zMinVal.ToString());
-                EditorGUILayout.LabelField("Z Max:", zMaxVal.ToString());
-                EditorGUILayout.MinMaxSlider(ref zMinVal, ref zMaxVal, minLimit, maxLimit);
-                zMin.floatValue = zMinVal;
-                zMax.floatValue = zMaxVal;
-
-                if (GUILayout.Button("Remove Grid Configuration"))
-                {
-                    _savedGridConfigurations.DeleteArrayElementAtIndex(i);
-                }
-
-                EditorGUILayout.Space();
-            }
-
-            if (GUILayout.Button("Add New Grid Configuration"))
-            {
-                _savedGridConfigurations.InsertArrayElementAtIndex(_savedGridConfigurations.arraySize);
-            }
-
-            so.ApplyModifiedProperties();
+            serializedObject.ApplyModifiedProperties();
 
             if (!EditorApplication.isPlaying)
             {
-                EditorGUILayout.PropertyField(so.FindProperty("Show"));
-                so.ApplyModifiedProperties();
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("Show"));
+                serializedObject.ApplyModifiedProperties();
             }
-
-            EditorUtility.SetDirty(gs);
-        }
-
-        private void GenerateProperties(SerializedObject so)
-        {
-            _savedGridConfigurations = so.FindProperty("SavedGridConfigurations");
         }
     }
 }

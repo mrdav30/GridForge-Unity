@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using FixedMathSharp;
 using GridForge.Grids;
-using GridForge.Utility;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,14 +11,32 @@ namespace GridForge.Configuration.Unity_Editor
     /// Allows multiple grid configurations to be saved and applied in the scene editor.
     /// </summary>
     [ExecuteAlways] // Ensures it runs in edit mode
-    public sealed class GridConfigurationSaver : MonoBehaviour
+    public class GridConfigurationSaver : MonoBehaviour
     {
         #region Properties
 
         /// <summary>
+        /// The size of a spatial hash cell used for grid lookup.
+        /// </summary>
+        [SerializeField] private int _spatialGridCellSize = 50;
+
+        /// <inheritdoc cref="_spatialGridCellSize"/>
+        public int SpatialGridCellSize => _spatialGridCellSize;
+
+        /// <summary>
+        /// The size of each grid node in world units.
+        /// </summary>
+        [SerializeField] private Fixed64 _nodeSize = Fixed64.One;
+
+        /// <inheritdoc cref="_nodeSize"/>
+        public Fixed64 NodeSize => _nodeSize;
+
+        /// <summary>
         /// List of saved grid configurations.
         /// </summary>
-        public List<GridConfiguration> SavedGridConfigurations { get; private set; } = new List<GridConfiguration>();
+        [SerializeField] private List<SerializableGridConfiguration> _savedGridConfigurations = new();
+
+        public IReadOnlyList<SerializableGridConfiguration> SavedGridConfigurations => _savedGridConfigurations;
 
         /// <summary>
         /// Enables visualization of grid bounds in the editor.
@@ -33,9 +50,9 @@ namespace GridForge.Configuration.Unity_Editor
         /// <summary>
         /// Saves the current grid configuration into the list.
         /// </summary>
-        public void Save(Vector3d gridMin, Vector3d gridMax)
+        public void Save(Vector3d boundsMin, Vector3d boundsMax, int scanCellSize)
         {
-            SavedGridConfigurations.Add(new GridConfiguration(gridMin, gridMax));
+            _savedGridConfigurations.Add(new SerializableGridConfiguration(boundsMin, boundsMax, scanCellSize));
         }
 
         /// <summary>
@@ -43,18 +60,21 @@ namespace GridForge.Configuration.Unity_Editor
         /// </summary>
         public void EarlyApply()
         {
-            foreach (var config in SavedGridConfigurations)
+            foreach (var serializedConfig in SavedGridConfigurations)
             {
                 // Ensure grid bounds are valid before adding
-                if (config.BoundsMax.x < config.BoundsMin.x
-                    || config.BoundsMax.y < config.BoundsMin.y
-                    || config.BoundsMax.z < config.BoundsMin.z)
+                if (serializedConfig.BoundsMax < serializedConfig.BoundsMin)
                 {
                     Debug.LogWarning("Invalid Grid Bounds: GridMax must be greater than or equal to GridMin.");
                     continue;
                 }
 
-                GlobalGridManager.TryAddGrid(config, out _);
+                GridConfiguration config = serializedConfig.ToGridConfiguration();
+                if(GlobalGridManager.TryAddGrid(config, out _) != GridAddResult.Success)
+                {
+                    Debug.LogWarning($"Failed to add grid to global state: " +
+                        $"{config.BoundsMin} - {config.BoundsMax}");
+                }
             }
         }
 
@@ -68,18 +88,21 @@ namespace GridForge.Configuration.Unity_Editor
                 return;
 
             Gizmos.color = Color.green;
-            Vector3 scale = Vector3.one * 0.5f;
+            Vector3 scale = Vector3.one * (float)_nodeSize;
 
-            foreach (var config in SavedGridConfigurations)
+            foreach (var serializedConfig in SavedGridConfigurations)
             {
-                for (Fixed64 x = config.BoundsMin.x; x <= config.BoundsMax.x; x++)
+                for (Fixed64 x = serializedConfig.BoundsMin.x; x <= serializedConfig.BoundsMax.x; x++)
                 {
-                    for (Fixed64 y = config.BoundsMin.y; y <= config.BoundsMax.y; y++)
+                    for (Fixed64 y = serializedConfig.BoundsMin.y; y <= serializedConfig.BoundsMax.y; y++)
                     {
-                        for (Fixed64 z = config.BoundsMin.z; z <= config.BoundsMax.z; z++)
+                        for (Fixed64 z = serializedConfig.BoundsMin.z; z <= serializedConfig.BoundsMax.z; z++)
                         {
                             Vector3d drawPos = new Vector3d(x, y, z);
-                            Gizmos.DrawCube(drawPos.ToVector3(), scale);
+                            Gizmos.DrawCube(drawPos.ToVector3(), scale); // Draws the solid cube
+                            Gizmos.color = Color.black; // Change color for wireframe
+                            Gizmos.DrawWireCube(drawPos.ToVector3(), scale * 1.02f); // Slightly larger for visibility
+                            Gizmos.color = Color.green; // Reset to original color
                         }
                     }
                 }

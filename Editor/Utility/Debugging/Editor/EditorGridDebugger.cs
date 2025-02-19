@@ -19,6 +19,9 @@ namespace GridForge.Utility.Debugging.Unity_Editor
 
         public void OnEnable()
         {
+            if (!EditorApplication.isPlaying)
+                return;
+
             _debugger = (GridDebugger)target;
             UpdateGridIndexes();
         }
@@ -38,6 +41,12 @@ namespace GridForge.Utility.Debugging.Unity_Editor
 
         public override void OnInspectorGUI()
         {
+            if (!EditorApplication.isPlaying)
+            {
+                EditorGUILayout.LabelField("Play the application before debugging.", EditorStyles.boldLabel);
+                return;
+            }
+
             serializedObject.Update();
 
             EditorGUILayout.LabelField("Grid Debugger Settings", EditorStyles.boldLabel);
