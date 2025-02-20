@@ -272,13 +272,19 @@
             Retrieves the grid containing a given global coordinate and the node at that position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialGridCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
             <summary>
             Retrieves all spatial hash cell indices that intersect the given bounding volume.
             </summary>
             <param name="min">The minimum corner of the bounding box.</param>
             <param name="max">The maximum corner of the bounding box.</param>
             <returns>An enumerable of spatial hash cell indices covering the given bounds.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.SnapToSpatialGrid(FixedMathSharp.Vector3d)">
+            <summary>
+            Ensures consistent and accurate placement within the correct spatial grid..
+            </summary>
+            <param name="position"></param>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.FindOverlappingGrids(GridForge.Grids.Grid)">
             <summary>
@@ -1269,7 +1275,7 @@
             Uses fixed-point calculations to ensure deterministic and accurate grid traversal.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Boolean)">
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double,System.Boolean)">
             <summary>
             Traces a 3D line between two points in the grid.
             The traced points are returned as grid nodes.
@@ -1280,10 +1286,11 @@
             </remarks>
             <param name="start">Starting position in world space.</param>
             <param name="end">Ending position in world space.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end node in the traced line.</param>
             <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Boolean)">
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Double,System.Boolean)">
             <summary>
             Traces a 2D line between two points, snapping them to grid coordinates.
             </summary>
@@ -1292,22 +1299,25 @@
             </remarks>
             <param name="start">Starting 2D position.</param>
             <param name="end">Ending 2D position.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end node.</param>
             <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredNodes(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredNodes(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
             <summary>
             Retrieves all grid nodes covered by the given bounding area.
             </summary>
             <param name="boundsMin">The minimum corner of the bounding area.</param>
             <param name="boundsMax">The maximum corner of the bounding area.</param>
+            <param name="padding">Value applied to the min/max bounds before snapping.</param>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
             <summary>
             Retrieves all scan cells within the given bounding area across relevant grids.
             </summary>
             <param name="boundsMin">The minimum corner of the bounding area.</param>
             <param name="boundsMax">The maximum corner of the bounding area.</param>
+            <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
         </member>
         <member name="T:GridForgeLogger">
