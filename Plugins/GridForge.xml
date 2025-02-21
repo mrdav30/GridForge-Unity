@@ -34,10 +34,35 @@
             Tracks whether the blocker is currently blocking nodes.
             </summary>
         </member>
+        <member name="P:GridForge.Blockers.Blocker.CacheCoveredNodes">
+            <summary>
+            Flags whether or not to hold onto a reference of the nodes this blocker covers.
+            </summary>
+        </member>
+        <member name="F:GridForge.Blockers.Blocker._cachedCoveredNodes">
+            <summary>
+            The cached nodes this blocker is currently blocking if <see cref="P:GridForge.Blockers.Blocker.CacheCoveredNodes"/> is true.
+            </summary>
+        </member>
         <member name="E:GridForge.Blockers.Blocker.OnBlockageChanged">
             <summary>
             Event triggered when a blockage is added or removed.
             </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.#ctor(System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new blocker instance.
+            </summary>
+            <param name="active">Flag whether or not this blocker will block on update.</param>
+            <param name="cacheCoveredNodes">Flag whether or not to cache covered nodes that are blocked.</param>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.ToggleStatus(System.Boolean)">
+            <summary>
+            Toggles the blocker from inactive to active or active to inactive state
+            If object is currently blocking, the blocker will be removed.
+            If object is not active and not blocking, the blocker will be applied.
+            </summary>
+            <param name="status"></param>
         </member>
         <member name="M:GridForge.Blockers.Blocker.ApplyBlockage">
             <summary>
@@ -63,6 +88,20 @@
             <summary>
             A manually placed blocker that obstructs a defined bounding area.
             </summary>
+        </member>
+        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(FixedMathSharp.BoundingArea,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new bounds blocker
+            </summary>
+            <param name="blockArea">The bounding area to block.</param>
+            <param name="isActive">Flag whether or not blocker is active.</param>
+            <param name="cacheCoveredNodes">Flag whether or not to cache covered nodes.</param>
+        </member>
+        <member name="M:GridForge.Blockers.BoundsBlocker.GetBoundsMin">
+            <inheritdoc cref="M:GridForge.Blockers.Blocker.GetBoundsMin"/>
+        </member>
+        <member name="M:GridForge.Blockers.BoundsBlocker.GetBoundsMax">
+            <inheritdoc cref="M:GridForge.Blockers.Blocker.GetBoundsMax"/>
         </member>
         <member name="T:GridForge.Blockers.IBlocker">
             <summary>
@@ -125,16 +164,200 @@
             <param name="max">The maximum boundary of the grid.</param>
             <param name="scanCellSize">The size of scan cells within the grid. Default is 8.</param>
         </member>
+        <member name="M:GridForge.Configuration.GridConfiguration.GetHashCode">
+            <inheritdoc/>
+        </member>
         <member name="T:GridForge.Grids.LinearDirection">
             <summary>
             Represents the 26 possible neighbor directions in a 3x3x3 grid.
             These directions are used for spatial relationships between grids and nodes.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.LinearDirection.None">
+            <summary>
+            No linear direction from source
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.West">
+            <summary>
+            (-1, 0, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.South">
+            <summary>
+             (0, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.East">
+            <summary>
+            (0, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.North">
+            <summary>
+            (1, 0, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.SouthWest">
+            <summary>
+            (-1, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.NorthWest">
+            <summary>
+            (-1, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.SouthEast">
+            <summary>
+            (1, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.NorthEast">
+            <summary>
+            (1, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowWest">
+            <summary>
+            (-1, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowSouth">
+            <summary>
+            (0, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowEast">
+            <summary>
+            (0, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowNorth">
+            <summary>
+            (1, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowSouthWest">
+            <summary>
+            (-1, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowNorthWest">
+            <summary>
+            (-1, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowSouthEast">
+            <summary>
+            (1, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.BelowNorthEast">
+            <summary>
+            (1, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.Below">
+            <summary>
+            (0, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveWest">
+            <summary>
+            (-1, 1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveSouth">
+            <summary>
+            (0, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveEast">
+            <summary>
+            (0, 1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveNorth">
+            <summary>
+            (1, 1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveSouthWest">
+            <summary>
+            (-1, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveNorthWest">
+            <summary>
+            (-1, 1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveSouthEast">
+            <summary>
+            (1, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.AboveNorthEast">
+            <summary>
+            (1, 1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.LinearDirection.Above">
+            <summary>
+            (0, 1, 0)
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.GridChange">
             <summary>
             Represents different types of grid-related changes that can occur.
             Used to track modifications such as adding/removing neighbors, obstacles, or occupants.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChange.None">
+            <summary>
+            Default, nothing happened
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChange.Add">
+            <summary>
+            Signifies an add operation occured
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChange.Remove">
+            <summary>
+            Signifies a remove operation occured
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChange.Update">
+            <summary>
+            Signifies an update operation occured
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridAddResult">
+            <summary>
+            Represents the result of adding a grid to 
+            <see cref="M:GridForge.Grids.GlobalGridManager.TryAddGrid(GridForge.Configuration.GridConfiguration,System.UInt16@)"/>
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridAddResult.Success">
+            <summary>
+            Grid was successfully added
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridAddResult.AlreadyExists">
+            <summary>
+            A grid with the same bounds already exists
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridAddResult.InvalidBounds">
+            <summary>
+            The provided bounds are invalid
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridAddResult.MaxGridsReached">
+            <summary>
+            The maximum number of grids has been reached
             </summary>
         </member>
         <member name="T:GridForge.Grids.GlobalGridManager">
@@ -176,6 +399,11 @@
         <member name="P:GridForge.Grids.GlobalGridManager.ActiveGrids">
             <summary>
             Collection of all active grids managed by the system.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GlobalGridManager.BoundsTracker">
+            <summary>
+            Dictionary mapping hashed bounds to grid indices to prevent duplicate grids.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GlobalGridManager.SpatialGridHash">
@@ -321,6 +549,11 @@
         <member name="M:GridForge.Grids.GlobalGridManager.FloorToNodeSize(FixedMathSharp.Vector3d)">
             <summary>
             Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GlobalGridManager.SnapBoundsToNodeSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+            <summary>
+            Snaps the given bounds to the the global node size
             </summary>
         </member>
         <member name="T:GridForge.Grids.Grid">
@@ -588,6 +821,14 @@
             Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's node size, ensuring it stays within grid bounds.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.Grid.SnapToScanCell(FixedMathSharp.Vector3d)">
+            <summary>
+            Snaps a given position to the closest scan cell in the grid
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Grid.GetHashCode">
+            <inheritdoc/>
+        </member>
         <member name="T:GridForge.Grids.GridObstacleManager">
             <summary>
             Handles the addition, removal, and tracking of obstacles within a grid.
@@ -762,6 +1003,11 @@
             Unlike Grid adjacency (which is 1:many), nodes can only have 1 neighbor in any one direction (1:1).
             </remarks>
         </member>
+        <member name="P:GridForge.Grids.Node.ObstacleTracker">
+            <summary>
+            Stores a unique hash value for each obstacle added to this node to prevent adding duplicates
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.Node.ObstacleCount">
             <summary>
             The current number of obstacles on this node.
@@ -882,6 +1128,12 @@
             Updates and caches the neighboring nodes of this node.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.Node.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Node.ToString">
+            <inheritdoc/>
+        </member>
         <member name="F:GridForge.Grids.Pools.GridPool">
             <summary>
             Object pool for reusing <see cref="T:GridForge.Grids.Grid"/> instances.
@@ -1001,6 +1253,9 @@
             <param name="occupantTicket">The unique ticket identifying the occupant.</param>
             <param name="nodeOccupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.GetHashCode">
+            <inheritdoc/>
         </member>
         <member name="T:GridForge.Grids.ScanManager">
             <summary>
@@ -1191,6 +1446,11 @@
             The Z position of the node in the local grid.
             </summary>
         </member>
+        <member name="P:GridForge.Spatial.CoordinatesLocal.IsAllocated">
+            <summary>
+            Flag to determine is the struct instance was constructed or is default
+            </summary>
+        </member>
         <member name="M:GridForge.Spatial.CoordinatesLocal.#ctor(System.Int32,System.Int32)">
             <summary>
             Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesLocal"/> with an X and Y coordinate.
@@ -1224,6 +1484,11 @@
             The group Id used for grouping occupants within a scan cell.
             Occupants with the same group Id belong to the same logical group.
             This allows efficient retrieval of related occupants in spatial queries.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.INodeOccupant.IsNodeOccupant">
+            <summary>
+            Flag used to determine if occupant is current occupying a node
             </summary>
         </member>
         <member name="P:GridForge.Spatial.INodeOccupant.OccupantTicket">
@@ -1267,6 +1532,21 @@
             <summary>
             Called when this partition is removed from a <see cref="T:GridForge.Grids.Node"/>.
             Cleans up any associated data.
+            </summary>
+        </member>
+        <member name="T:GridForge.Utility.GridNodeSet">
+            <summary>
+            Used to group query results on a grid to node level
+            </summary>
+        </member>
+        <member name="F:GridForge.Utility.GridNodeSet.Grid">
+            <summary>
+            The grid containing the nodes from the resulting query
+            </summary>
+        </member>
+        <member name="F:GridForge.Utility.GridNodeSet.Nodes">
+            <summary>
+            A list of nodes that match the provided query
             </summary>
         </member>
         <member name="T:GridForge.Utility.GridTracer">
@@ -1319,6 +1599,26 @@
             <param name="boundsMax">The maximum corner of the bounding area.</param>
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
+        </member>
+        <member name="T:PartitionExtensions">
+            <summary>
+            Provides extension methods for managing <see cref="T:GridForge.Spatial.INodePartition"/> instances on <see cref="T:GridForge.Grids.Node"/> objects.
+            This allows adding and removing partitions while maintaining their state.
+            </summary>
+        </member>
+        <member name="M:PartitionExtensions.AddToNode(GridForge.Spatial.INodePartition,GridForge.Grids.Node)">
+            <summary>
+            Attaches a partition to a specified <see cref="T:GridForge.Grids.Node"/>, updating its state and invoking initialization logic.
+            </summary>
+            <param name="partition">The partition to attach.</param>
+            <param name="node">The target node where the partition will be added.</param>
+        </member>
+        <member name="M:PartitionExtensions.RemoveFromNode(GridForge.Spatial.INodePartition,GridForge.Grids.Node)">
+            <summary>
+            Detaches a partition from a specified <see cref="T:GridForge.Grids.Node"/>, resetting its state and invoking cleanup logic.
+            </summary>
+            <param name="partition">The partition to detach.</param>
+            <param name="node">The target node from which the partition will be removed.</param>
         </member>
         <member name="T:GridForgeLogger">
             <summary>
