@@ -10,7 +10,7 @@ public class SceneGridManager : MonoBehaviour
     void Awake()
     {
         configurationSaver = gameObject.GetComponent<GridConfigurationSaver>();
-        GlobalGridManager.Setup(configurationSaver.NodeSize, configurationSaver.SpatialGridCellSize);
+        GlobalGridManager.Setup(configurationSaver.VoxelSize, configurationSaver.SpatialGridCellSize);
         gameObject.GetComponent<GridConfigurationSaver>().EarlyApply();
     }
 

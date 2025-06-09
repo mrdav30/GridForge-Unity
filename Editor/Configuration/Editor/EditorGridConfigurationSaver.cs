@@ -12,13 +12,13 @@ namespace GridForge.Configuration.Unity_Editor
     [CustomEditor(typeof(GridConfigurationSaver))]
     public class EditorGridConfigurationSaver : Editor
     {
-        SerializedProperty _nodeSize;
+        SerializedProperty _voxelSize;
         SerializedProperty _spatialGridCellSize;
         SerializedProperty _savedGridConfigurations;
 
         private void OnEnable()
         {
-            _nodeSize = serializedObject.FindProperty("_nodeSize");
+            _voxelSize = serializedObject.FindProperty("_voxelSize");
             _spatialGridCellSize = serializedObject.FindProperty("_spatialGridCellSize");
             _savedGridConfigurations = serializedObject.FindProperty("_savedGridConfigurations");
         }
@@ -27,7 +27,7 @@ namespace GridForge.Configuration.Unity_Editor
         {
             serializedObject.Update();
 
-            FMSEditorUtility.FixedNumberField("Node Size", ref _nodeSize, 0, 1);
+            FMSEditorUtility.FixedNumberField("Voxel Size", ref _voxelSize, 0, 1);
 
             EditorGUILayout.PropertyField(_spatialGridCellSize);
 

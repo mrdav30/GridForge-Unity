@@ -31,17 +31,17 @@
         </member>
         <member name="P:GridForge.Blockers.Blocker.IsBlocking">
             <summary>
-            Tracks whether the blocker is currently blocking nodes.
+            Tracks whether the blocker is currently blocking voxels.
             </summary>
         </member>
-        <member name="P:GridForge.Blockers.Blocker.CacheCoveredNodes">
+        <member name="P:GridForge.Blockers.Blocker.CacheCoveredVoxels">
             <summary>
-            Flags whether or not to hold onto a reference of the nodes this blocker covers.
+            Flags whether or not to hold onto a reference of the voxels this blocker covers.
             </summary>
         </member>
-        <member name="F:GridForge.Blockers.Blocker._cachedCoveredNodes">
+        <member name="F:GridForge.Blockers.Blocker._cachedCoveredVoxels">
             <summary>
-            The cached nodes this blocker is currently blocking if <see cref="P:GridForge.Blockers.Blocker.CacheCoveredNodes"/> is true.
+            The cached voxels this blocker is currently blocking if <see cref="P:GridForge.Blockers.Blocker.CacheCoveredVoxels"/> is true.
             </summary>
         </member>
         <member name="E:GridForge.Blockers.Blocker.OnBlockageChanged">
@@ -54,7 +54,7 @@
             Initializes a new blocker instance.
             </summary>
             <param name="active">Flag whether or not this blocker will block on update.</param>
-            <param name="cacheCoveredNodes">Flag whether or not to cache covered nodes that are blocked.</param>
+            <param name="cacheCoveredVoxels">Flag whether or not to cache covered voxels that are blocked.</param>
         </member>
         <member name="M:GridForge.Blockers.Blocker.ToggleStatus(System.Boolean)">
             <summary>
@@ -66,12 +66,12 @@
         </member>
         <member name="M:GridForge.Blockers.Blocker.ApplyBlockage">
             <summary>
-            Applies the blockage by marking nodes as obstacles.
+            Applies the blockage by marking voxels as obstacles.
             </summary>
         </member>
         <member name="M:GridForge.Blockers.Blocker.RemoveBlockage">
             <summary>
-            Removes the blockage by clearing obstacle markers from nodes.
+            Removes the blockage by clearing obstacle markers from voxels.
             </summary>
         </member>
         <member name="M:GridForge.Blockers.Blocker.GetBoundsMin">
@@ -95,7 +95,7 @@
             </summary>
             <param name="blockArea">The bounding area to block.</param>
             <param name="isActive">Flag whether or not blocker is active.</param>
-            <param name="cacheCoveredNodes">Flag whether or not to cache covered nodes.</param>
+            <param name="cacheCoveredVoxels">Flag whether or not to cache covered voxels.</param>
         </member>
         <member name="M:GridForge.Blockers.BoundsBlocker.GetBoundsMin">
             <inheritdoc cref="M:GridForge.Blockers.Blocker.GetBoundsMin"/>
@@ -170,7 +170,7 @@
         <member name="T:GridForge.Grids.LinearDirection">
             <summary>
             Represents the 26 possible neighbor directions in a 3x3x3 grid.
-            These directions are used for spatial relationships between grids and nodes.
+            These directions are used for spatial relationships between grids and voxels.
             </summary>
         </member>
         <member name="F:GridForge.Grids.LinearDirection.None">
@@ -371,9 +371,9 @@
             Maximum number of grids that can be managed.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GlobalGridManager.DefaultNodeSize">
+        <member name="F:GridForge.Grids.GlobalGridManager.DefaultVoxelSize">
             <summary>
-            The default size of each grid node in world units.
+            The default size of each grid voxel in world units.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GlobalGridManager.DefaultSpatialGridCellSize">
@@ -381,9 +381,9 @@
             The default size of a spatial hash cell used for grid lookup.
             </summary>
         </member>
-        <member name="P:GridForge.Grids.GlobalGridManager.NodeSize">
+        <member name="P:GridForge.Grids.GlobalGridManager.VoxelSize">
             <summary>
-            The size of each grid node in world units.
+            The size of each grid voxel in world units.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GlobalGridManager.SpatialGridCellSize">
@@ -391,9 +391,9 @@
             The size of a spatial hash cell used for grid lookup.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GlobalGridManager.NodeResolution">
+        <member name="F:GridForge.Grids.GlobalGridManager.VoxelResolution">
             <summary>
-            Resolution for snapping or searching within the grid (half of NodeSize).
+            Resolution for snapping or searching within the grid (half of VoxelSize).
             </summary>
         </member>
         <member name="P:GridForge.Grids.GlobalGridManager.ActiveGrids">
@@ -452,7 +452,7 @@
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.Setup(FixedMathSharp.Fixed64,System.Int32)">
             <inheritdoc cref="M:GridForge.Grids.GlobalGridManager.Setup"/>
-            <param name="nodeSize"></param>
+            <param name="voxelSize"></param>
             <param name="spatialGridCellSize"></param>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.Reset">
@@ -475,29 +475,29 @@
             Notifies grids of a change in their structure.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(System.Int32,GridForge.Grids.Grid@)">
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(System.Int32,GridForge.Grids.VoxelGrid@)">
             <summary>
             Retrieves a grid by its global index.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(FixedMathSharp.Vector3d,GridForge.Grids.Grid@)">
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(FixedMathSharp.Vector3d,GridForge.Grids.VoxelGrid@)">
             <summary>
             Retrieves the grid containing a given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(GridForge.Spatial.CoordinatesGlobal,GridForge.Grids.Grid@)">
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGrid(GridForge.Spatial.GlobalVoxelIndex,GridForge.Grids.VoxelGrid@)">
             <summary>
-            Retrieves a grid by its unique global coordinates.
+            Retrieves a grid by its unique global index.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndNode(FixedMathSharp.Vector3d,GridForge.Grids.Grid@,GridForge.Grids.Node@)">
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndVoxel(FixedMathSharp.Vector3d,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves the grid containing a given world position and the node at that position.
+            Retrieves the grid containing a given world position and the voxel at that position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndNode(GridForge.Spatial.CoordinatesGlobal,GridForge.Grids.Grid@,GridForge.Grids.Node@)">
+        <member name="M:GridForge.Grids.GlobalGridManager.TryGetGridAndVoxel(GridForge.Spatial.GlobalVoxelIndex,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves the grid containing a given global coordinate and the node at that position.
+            Retrieves the grid containing a given global coordinate and the voxel at that position.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialGridCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
@@ -514,7 +514,7 @@
             </summary>
             <param name="position"></param>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.FindOverlappingGrids(GridForge.Grids.Grid)">
+        <member name="M:GridForge.Grids.GlobalGridManager.FindOverlappingGrids(GridForge.Grids.VoxelGrid)">
             <summary>
             Finds grids that overlap with the specified target grid.
             </summary>
@@ -528,7 +528,7 @@
             <summary>
             Converts a 3D offset into a corresponding <see cref="T:GridForge.Grids.LinearDirection"/> in a 3x3x3 grid.
             </summary>
-            <param name="gridOffset">The (x, y, z) offset from the center node.</param>
+            <param name="gridOffset">The (x, y, z) offset from the center voxel.</param>
             <returns>The corresponding <see cref="T:GridForge.Grids.LinearDirection"/>, or <see cref="F:GridForge.Grids.LinearDirection.None"/> if invalid.</returns>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.GetSpatialGridKey(FixedMathSharp.Vector3d)">
@@ -541,293 +541,20 @@
             Generates a hash value for a given set of 3D coordinates.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.CeilToNodeSize(FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GlobalGridManager.CeilToVoxelSize(FixedMathSharp.Vector3d)">
             <summary>
             Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.FloorToNodeSize(FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GlobalGridManager.FloorToVoxelSize(FixedMathSharp.Vector3d)">
             <summary>
             Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.SnapBoundsToNodeSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+        <member name="M:GridForge.Grids.GlobalGridManager.SnapBoundsToVoxelSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
             <summary>
-            Snaps the given bounds to the the global node size
+            Snaps the given bounds to the the global voxel size
             </summary>
-        </member>
-        <member name="T:GridForge.Grids.Grid">
-            <summary>
-            Represents a 3D grid structure for spatial organization, managing nodes and scan cells.
-            Handles initialization, neighbor relationships, and occupancy tracking.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.SpawnToken">
-            <summary>
-            Unique token identifying the grid instance.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.GlobalIndex">
-            <summary>
-            Global index of the grid within the world.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Configuration">
-            <inheritdoc cref="T:GridForge.Configuration.GridConfiguration"/>
-        </member>
-        <member name="P:GridForge.Grids.Grid.BoundsMin">
-            <summary>
-            Minimum bounds of the grid in world coordinates.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.BoundsMax">
-            <summary>
-            Maximum bounds of the grid in world coordinates.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.BoundsCenter">
-            <summary>
-            Center position of the grid in world space.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Width">
-            <summary>
-            Grid width in number of nodes.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Height">
-            <summary>
-            Grid height in number of nodes.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Length">
-            <summary>
-            Grid length in number of nodes.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Size">
-            <summary>
-            Total number of nodes within the grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Nodes">
-            <summary>
-            The primary 3D collection of nodes managed by this grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Neighbors">
-            <summary>
-            Stores the indices of neighboring grids.
-            </summary>
-            <remarks>
-            Unlike Node adjacency (which is always 1:1), grids can share multiple neighbors in the same direction.
-            </remarks>
-        </member>
-        <member name="P:GridForge.Grids.Grid.NeighborCount">
-            <summary>
-            Count of currently linked neighboring grids.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.IsConjoined">
-            <summary>
-            Determines whether this grid has any linked neighbors.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.ScanCellSize">
-            <summary>
-            Size of a scan cell used for spatial partitioning.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.ScanCells">
-            <summary>
-            Collection of scan cells indexed by their spatial hash key.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.ActiveScanCells">
-            <summary>
-            Stores currently active (occupied) scan cells within the grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.IsActive">
-            <summary>
-            Indicates whether the grid is currently active.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.IsOccupied">
-            <summary>
-            Determines whether the grid is occupied (active and containing occupants).
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.ObstacleCount">
-            <summary>
-            Tracks the number of obstacles currently registered in the grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Grid.Version">
-            <summary>
-            Tracks the version of the grid, incremented when a <see cref="T:GridForge.Grids.Node"/> is modified.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.Initialize(System.UInt16,GridForge.Configuration.GridConfiguration)">
-            <summary>
-            Initializes the grid with the given settings.
-            </summary>
-            <param name="globalIndex">The unique index of this grid in the world.</param>
-            <param name="configuration">The configuration settings for the grid.</param>
-        </member>
-        <member name="M:GridForge.Grids.Grid.Reset">
-            <summary>
-            Resets the grid, clearing all nodes and scan cells.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GenerateScanCells">
-            <summary>
-            Generates the scan cell overlay for the grid.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GenerateNodes">
-            <summary>
-            Generates the 3D grid structure based on the configured settings.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetNeighborDirection(GridForge.Grids.Grid,GridForge.Grids.Grid)">
-            <summary>
-            Determines the relative direction of a neighboring grid based on its center offset.
-            </summary>
-            <param name="a">The first grid.</param>
-            <param name="b">The second grid.</param>
-            <returns>The direction from grid 'a' to grid 'b'.</returns>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryAddGridNeighbor(GridForge.Grids.Grid)">
-            <summary>
-            Adds a neighboring grid and updates relationships.
-            </summary>
-            <param name="neighborGrid">The neighboring grid to add.</param>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryRemoveGridNeighbor(GridForge.Grids.Grid)">
-            <summary>
-            Removes a neighboring grid relationship.
-            </summary>
-            <param name="neighborGrid">The neighboring grid to remove.</param>
-        </member>
-        <member name="M:GridForge.Grids.Grid.NotifyBoundaryChange(GridForge.Grids.LinearDirection)">
-            <summary>
-            Notifies only the relevant boundary nodes when a neighboring grid is added or removed.
-            Instead of looping through all nodes, it targets specific boundary rows or columns.
-            </summary>
-            <param name="direction">The direction of the affected boundary.</param>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsOnBoundary(GridForge.Spatial.CoordinatesLocal)">
-            <summary>
-            Determines if a node coordinate is at the boundary of the grid.
-            Used to determine if a node should update when a neighboring grid is added/removed.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsInBounds(FixedMathSharp.Vector3d)">
-            <summary>
-            Checks whether a given position falls within the grid bounds.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsGridOverlapValid(GridForge.Grids.Grid,GridForge.Grids.Grid,FixedMathSharp.Fixed64)">
-            <summary>
-            Checks if two grids are overlapping within a given tolerance threshold.
-            This is used to determine if grids should be linked as neighbors.
-            </summary>
-            <param name="a">The first grid.</param>
-            <param name="b">The second grid.</param>
-            <param name="tolerance">Optional tolerance to account for minor floating-point errors.</param>
-            <returns>True if the grids overlap within the tolerance, otherwise false.</returns>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetAllGridNeighbors">
-            <summary>
-            Retrieves all neighboring grids connected to this grid.
-            </summary>
-            <returns>An enumeration of all neighboring grids.</returns>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsValidNodeCoordinate(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Determines whether the given node coordinates are within the valid range of the grid.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsFacingBoundaryDirection(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.LinearDirection)">
-            <summary>
-            Determines if a node is facing the boundary of the grid in a specific direction.
-            Used to notify nodes when adjacent grids are added/removed.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetNodeCoordinates(FixedMathSharp.Vector3d,GridForge.Spatial.CoordinatesLocal@)">
-            <summary>
-            Converts a world position to node coordinates within the grid.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.IsNodeAllocated(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Checks if a node at the given coordinates is allocated within the grid.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetNode(System.Int32,System.Int32,System.Int32,GridForge.Grids.Node@)">
-            <summary>
-            Retrieves the <see cref="T:GridForge.Grids.Node"/> at the specified coordinates, if allocated.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetNode(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.Node@)">
-            <summary>
-            Retrieves a grid node from a given coordinate.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetNode(FixedMathSharp.Vector3d,GridForge.Grids.Node@)">
-            <summary>
-            Retrieve <see cref="T:GridForge.Grids.Node"/> from world <see cref="T:FixedMathSharp.Vector3d"/> points
-            </summary>
-            <returns>GridNode at the given position or null if the position is not valid.</returns>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetScanCellKey(FixedMathSharp.Vector3d)">
-            <summary>
-            Computes the scan cell key for a given world position.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetScanCellKey(GridForge.Spatial.CoordinatesLocal)">
-            <summary>
-            Calculates the spatial cell index for a given position.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetScanCell(System.Int32,GridForge.Grids.ScanCell@)">
-            <summary>
-            Retrieves a scan cell from the grid using its hashed key.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetScanCell(FixedMathSharp.Vector3d,GridForge.Grids.ScanCell@)">
-            <summary>
-            Retrieves the scan cell corresponding to a given world position.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.TryGetScanCell(GridForge.Spatial.CoordinatesLocal,GridForge.Grids.ScanCell@)">
-            <summary>
-            Retrieves the scan cell associated with the given node coordinates.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetActiveScanCells">
-            <summary>
-            Enumerates all currently active scan cells within the grid.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.CeilToGrid(FixedMathSharp.Vector3d)">
-            <summary>
-            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's node size, ensuring it stays within grid bounds.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.FloorToGrid(FixedMathSharp.Vector3d)">
-            <summary>
-            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's node size, ensuring it stays within grid bounds.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.SnapToScanCell(FixedMathSharp.Vector3d)">
-            <summary>
-            Snaps a given position to the closest scan cell in the grid
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Grid.GetHashCode">
-            <inheritdoc/>
         </member>
         <member name="T:GridForge.Grids.GridObstacleManager">
             <summary>
@@ -837,7 +564,7 @@
         </member>
         <member name="F:GridForge.Grids.GridObstacleManager.MaxObstacleCount">
             <summary>
-            Maximum number of obstacles that can exist on a single node.
+            Maximum number of obstacles that can exist on a single voxel.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridObstacleManager.OnObstacleChange">
@@ -850,54 +577,54 @@
             Per-grid locks for ensuring thread-safe obstacle operations.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,System.Int32)">
             <summary>
             Attempts to add an obstacle at the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,System.Int32)">
             <summary>
-            Adds an obstacle to a given node within the grid.
+            Adds an obstacle to a given voxel within the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Int32)">
             <summary>
-            Adds an obstacle to this node.
+            Adds an obstacle to this voxel.
             </summary>
             <param name="grid"></param>
-            <param name="targetNode"></param>
+            <param name="targetVoxel"></param>
             <param name="obstacleSpawnToken"></param>
             <exception cref="T:System.Exception"></exception>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,System.Int32)">
             <summary>
             Attempts to remove an obstacle from the specified world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,System.Int32)">
             <summary>
-            Attempts to remove an obstacle at the specified node coordinates.
+            Attempts to remove an obstacle at the specified voxel index.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Int32)">
             <summary>
-            Removes an obstacle from a given node.
+            Removes an obstacle from a given voxel.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleChange(GridForge.Grids.GridChange,GridForge.Grids.Node,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleChange(GridForge.Grids.GridChange,GridForge.Grids.Voxel,System.UInt32)">
             <summary>
             Notifies listeners of an obstacle state change.
             </summary>
         </member>
         <member name="T:GridForge.Grids.GridOccupantManager">
             <summary>
-            Provides utility methods for managing node occupants within a grid.
+            Provides utility methods for managing voxel occupants within a grid.
             Supports adding, removing, and retrieving occupants with thread-safe operations.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridOccupantManager.MaxOccupantCount">
             <summary>
-            Maximum number of occupants allowed per node.
+            Maximum number of occupants allowed per voxel.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridOccupantManager.OnOccupantChange">
@@ -910,251 +637,59 @@
             Per-grid locks to ensure thread safety when modifying occupant data.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Attempts to add an occupant at the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddVoxelOccupant(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Attempts to add an occupant at the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,GridForge.Spatial.IVoxelOccupant)">
             <summary>
-            Attempts to add an occupant at the specified node coordinates.
+            Attempts to add an occupant at the specified voxel index.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryAddNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryAddVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Adds an occupant to the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Attempts to remove an occupant from the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveVoxelOccupant(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Attempts to remove an occupant from the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,GridForge.Spatial.IVoxelOccupant)">
             <summary>
-            Attempts to remove an occupant at the specified node coordinates.
+            Attempts to remove an occupant at the specified voxel coordinates.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Removes an occupant from this grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantChange(GridForge.Grids.GridChange,GridForge.Grids.Node)">
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantChange(GridForge.Grids.GridChange,GridForge.Grids.Voxel)">
             <summary>
             Notifies listeners of an occupant state change.
             </summary>
         </member>
-        <member name="T:GridForge.Grids.Node">
-            <summary>
-            Represents a node within a 3D grid, handling spatial positioning, obstacles, occupants, and neighbor relationships.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.SpawnToken">
-            <summary>
-            Unique token identifying this node instance.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.GlobalCoordinates">
-            <summary>
-            The global and local coordinates of this node within the grid system.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.GridIndex">
-            <summary>
-            The global index of the grid this node belongs to.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.LocalCoordinates">
-            <summary>
-            The local coordinates of this node within its grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.ScanCellKey">
-            <summary>
-            The spatial hash key of the scan cell that this node belongs to.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.WorldPosition">
-            <summary>
-            The world-space position of this node.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Node._isNeighborCacheValid">
-            <summary>
-            Indicates whether the neighbor cache is valid.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Node._cachedNeighbors">
-            <summary>
-            Cached array of neighboring nodes for fast lookup representing a 3x3x3 linear direction grid
-            </summary>
-            <remarks>
-            Unlike Grid adjacency (which is 1:many), nodes can only have 1 neighbor in any one direction (1:1).
-            </remarks>
-        </member>
-        <member name="P:GridForge.Grids.Node.ObstacleTracker">
-            <summary>
-            Stores a unique hash value for each obstacle added to this node to prevent adding duplicates
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.ObstacleCount">
-            <summary>
-            The current number of obstacles on this node.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.OccupantCount">
-            <summary>
-            The current number of occupants on this node.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Node._partitionProvider">
-            <summary>
-            Handles management of partitioned data.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsPartioned">
-            <summary>
-            Indicates whether this node has any active partitions.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsBoundaryNode">
-            <summary>
-            Determines if this node is a boundary node.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.CachedGridVersion">
-            <summary>
-            The current version of the grid at the time this node was created.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsAllocated">
-            <summary>
-            Indicates whether this node is allocated within a grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsBlocked">
-            <summary>
-            Determines whether this node is blocked due to obstacles.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsBlockable">
-            <summary>
-            Determines if this node can accept additional obstacles.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.IsOccupied">
-            <summary>
-            Determines whether this node is occupied by entities.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Node.HasVacancy">
-            <summary>
-            Checks if this node has open slots for new occupants.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Node.OnObstacleChange">
-            <summary>
-            Event triggered when an obstacle is added or removed.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Node.OnOccupantChange">
-            <summary>
-            Event triggered when an occupant is added or removed.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.Initialize(GridForge.Spatial.CoordinatesGlobal,FixedMathSharp.Vector3d,System.Int32,System.Boolean,System.UInt32)">
-            <summary>
-            Configures the node with its position, grid version, and boundary status.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.Reset">
-            <summary>
-            Resets the node, clearing all allocated data and returning it to pools.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.GeneratePartitionKey(System.String)">
-            <summary>
-            Generates a unique key for a partition based on the node's spawn token and partition name.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.TryAddPartition(GridForge.Spatial.INodePartition)">
-            <summary>
-            Adds a partition to this node, allowing specialized behaviors.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.TryRemovePartition``1">
-            <summary>
-            Removes a partition from this node.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.HasPartition``1">
-            <summary>
-            Checks whether or not this node contains a specific partition.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.TryGetPartition``1(``0@)">
-            <summary>
-            Retrieves a partition from the node by type.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.GetPartitionOrDefault``1">
-            <summary>
-            Retrieves a partition from the node by type and returns null if it doesn't exist.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.InvalidateNeighborCache">
-            <summary>
-            Invalidates the neighbor cache when a boundary relationship changes.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.GetNeighbors(System.Boolean)">
-            <summary>
-            Retrieves the neighbors of this node, caching results if specified.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.TryGetNeighborFromDirection(GridForge.Grids.LinearDirection,GridForge.Grids.Node@,System.Boolean)">
-            <summary>
-            Retrieves a neighbor node in a specific direction.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.TryGetNeighborFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32},GridForge.Grids.Node@)">
-            <summary>
-            Retrieves a neighbor node based on a coordinate offset.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.RefreshNeighborCache">
-            <summary>
-            Updates and caches the neighboring nodes of this node.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.Node.GetHashCode">
-            <inheritdoc/>
-        </member>
-        <member name="M:GridForge.Grids.Node.ToString">
-            <inheritdoc/>
-        </member>
-        <member name="M:GridForge.Grids.Node.Equals(GridForge.Grids.Node)">
-            <inheritdoc/>
-        </member>
         <member name="F:GridForge.Grids.Pools.GridPool">
             <summary>
-            Object pool for reusing <see cref="T:GridForge.Grids.Grid"/> instances.
+            Object pool for reusing <see cref="T:GridForge.Grids.VoxelGrid"/> instances.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.Pools.NodePool">
+        <member name="F:GridForge.Grids.Pools.VoxelPool">
             <summary>
-            Object pool for reusing <see cref="T:GridForge.Grids.Node"/> instances.
+            Object pool for reusing <see cref="T:GridForge.Grids.Voxel"/> instances.
             </summary>
         </member>
         <member name="F:GridForge.Grids.Pools.ScanCellPool">
@@ -1162,17 +697,17 @@
             Object pool for reusing <see cref="T:GridForge.Grids.ScanCell"/> instances.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.Pools._nodeNeighborPool">
+        <member name="F:GridForge.Grids.Pools._voxelNeighborPool">
             <summary>
-            Object pool for caching neighbor node arrays.
+            Object pool for caching neighbor voxel arrays.
             </summary>
         </member>
-        <member name="P:GridForge.Grids.Pools.NodeNeighborPool">
-            <inheritdoc cref="F:GridForge.Grids.Pools._nodeNeighborPool"/>
+        <member name="P:GridForge.Grids.Pools.VoxelNeighborPool">
+            <inheritdoc cref="F:GridForge.Grids.Pools._voxelNeighborPool"/>
         </member>
         <member name="T:GridForge.Grids.ScanCell">
             <summary>
-            Represents a spatial partition within a grid, managing occupants at a finer granularity than grid nodes.
+            Represents a spatial partition within a grid, managing occupants at a finer granularity than grid voxels.
             Handles efficient tracking, retrieval, and removal of occupants within a designated scan cell area.
             </summary>
         </member>
@@ -1191,9 +726,9 @@
             Unique token identifying this scan cell instance.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.ScanCell._nodeOccupants">
+        <member name="F:GridForge.Grids.ScanCell._voxelOccupants">
             <summary>
-            Maps a <see cref="P:GridForge.Grids.Node.SpawnToken"/> to a bucket of associated <see cref="T:GridForge.Spatial.INodeOccupant"/> instances.
+            Maps a <see cref="P:GridForge.Grids.Voxel.SpawnToken"/> to a bucket of associated <see cref="T:GridForge.Spatial.IVoxelOccupant"/> instances.
             </summary>
         </member>
         <member name="P:GridForge.Grids.ScanCell.CellOccupantCount">
@@ -1223,20 +758,20 @@
             This effectively marks the scan cell as deallocated and removes all references.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.AddOccupant(System.Int32,GridForge.Spatial.INodeOccupant,System.Int32@)">
+        <member name="M:GridForge.Grids.ScanCell.AddOccupant(System.Int32,GridForge.Spatial.IVoxelOccupant,System.Int32@)">
             <summary>
             Adds an occupant to this scan cell and tracks its presence.
             </summary>
-            <param name="nodeSpawnToken">The unique spawn token of the node where the occupant resides.</param>
+            <param name="voxelSpawnToken">The unique spawn token of the voxel where the occupant resides.</param>
             <param name="occupant">The occupant instance to add.</param>
             <param name="occupantTicket"></param>
             <returns>An integer ticket representing the occupant's position in the data structure.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.TryRemoveOccupant(System.Int32,GridForge.Spatial.INodeOccupant)">
+        <member name="M:GridForge.Grids.ScanCell.TryRemoveOccupant(System.Int32,GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Removes an occupant from this scan cell.
             </summary>
-            <param name="nodeSpawnToken">The spawn token of the node the occupant was assigned to.</param>
+            <param name="voxelSpawnToken">The spawn token of the voxel the occupant was assigned to.</param>
             <param name="occupant"></param>
             <returns>True if the occupant was successfully removed; otherwise, false.</returns>
         </member>
@@ -1253,18 +788,18 @@
         </member>
         <member name="M:GridForge.Grids.ScanCell.GetOccupantsFor(System.Int32)">
             <summary>
-            Retrieves all occupants associated with a specific node spawn token within this scan cell.
+            Retrieves all occupants associated with a specific voxel spawn token within this scan cell.
             </summary>
-            <param name="nodeSpawnKey">The unique spawn key of the node.</param>
-            <returns>An enumerable collection of occupants assigned to the node.</returns>
+            <param name="voxelSpawnKey">The unique spawn key of the voxel.</param>
+            <returns>An enumerable collection of occupants assigned to the voxel.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(System.Int32,System.Int32,GridForge.Spatial.INodeOccupant@)">
+        <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(System.Int32,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
-            Attempts to retrieve a specific occupant in this scan cell using a node's spawn key and occupant ticket.
+            Attempts to retrieve a specific occupant in this scan cell using a voxel's spawn key and occupant ticket.
             </summary>
-            <param name="nodeSpawnKey">The spawn key of the node the occupant belongs to.</param>
+            <param name="voxelSpawnKey">The spawn key of the voxel the occupant belongs to.</param>
             <param name="occupantTicket">The unique ticket identifying the occupant.</param>
-            <param name="nodeOccupant">The retrieved occupant if found.</param>
+            <param name="voxelOccupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.ScanCell.GetHashCode">
@@ -1273,118 +808,118 @@
         <member name="T:GridForge.Grids.ScanManager">
             <summary>
             Provides efficient querying methods for retrieving occupants within a grid.
-            Handles spatial lookups for nodes, filtering by occupant type, and fetching occupants using unique tickets.
+            Handles spatial lookups for voxels, filtering by occupant type, and fetching occupants using unique tickets.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupants(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d)">
             <summary>
             Retrieves all occupants at a given world position within the grid.
             </summary>
             <param name="grid">The grid to query.</param>
             <param name="position">The world position to check for occupants.</param>
-            <returns>An enumerable collection of node occupants.</returns>
+            <returns>An enumerable collection of voxel occupants.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupants(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex)">
             <summary>
-            Retrieves all occupants at a given node coordinate within the grid.
+            Retrieves all occupants at a given voxel coordinate within the grid.
             </summary>
             <param name="grid">The grid to query.</param>
-            <param name="coordinates">The local coordinates of the node.</param>
-            <returns>An enumerable collection of node occupants.</returns>
+            <param name="voxelIndex">The local coordinates of the voxel.</param>
+            <returns>An enumerable collection of voxel occupants.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupants(GridForge.Grids.Grid,GridForge.Grids.Node)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupants(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel)">
             <summary>
-            Retrieves all occupants at a given node.
+            Retrieves all occupants at a given voxel.
             </summary>
-            <param name="grid">The grid containing the node.</param>
-            <param name="targetNode">The target node to retrieve occupants from.</param>
-            <returns>An enumerable collection of node occupants.</returns>
+            <param name="grid">The grid containing the voxel.</param>
+            <param name="targetVoxel">The target voxel to retrieve occupants from.</param>
+            <returns>An enumerable collection of voxel occupants.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupantsByType``1(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d)">
             <summary>
             Retrieves all occupants of a specific type at a given world position.
             </summary>
             <typeparam name="T">The type of occupant to retrieve.</typeparam>
             <param name="grid">The grid to query.</param>
-            <param name="position">The world position of the node.</param>
+            <param name="position">The world position of the voxel.</param>
             <returns>An enumerable collection of occupants of the specified type.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupantsByType``1(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex)">
             <summary>
-            Retrieves all occupants of a specific type at a given node coordinate.
+            Retrieves all occupants of a specific type at a given voxel coordinate.
             </summary>
             <typeparam name="T">The type of occupant to retrieve.</typeparam>
             <param name="grid">The grid to query.</param>
-            <param name="coordinates">The local node coordinates.</param>
+            <param name="voxelIndex">The local voxel coordinates.</param>
             <returns>An enumerable collection of occupants of the specified type.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetNodeOccupantsByType``1(GridForge.Grids.Grid,GridForge.Grids.Node)">
+        <member name="M:GridForge.Grids.ScanManager.GetVoxelOccupantsByType``1(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel)">
             <summary>
-            Retrieves all occupants of a specific type at a given node.
+            Retrieves all occupants of a specific type at a given voxel.
             </summary>
             <typeparam name="T">The type of occupant to retrieve.</typeparam>
-            <param name="grid">The grid containing the node.</param>
-            <param name="targetNode">The target node.</param>
+            <param name="grid">The grid containing the voxel.</param>
+            <param name="targetVoxel">The target voxel.</param>
             <returns>An enumerable collection of occupants of the specified type.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Int32,GridForge.Spatial.INodeOccupant@)">
+        <member name="M:GridForge.Grids.ScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Retrieves a specific occupant at a given world position using an occupant ticket.
             </summary>
             <param name="grid">The grid to query.</param>
-            <param name="position">The world position of the node.</param>
+            <param name="position">The world position of the voxel.</param>
             <param name="occupantTicket">The unique identifier of the occupant.</param>
             <param name="occupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Int32,GridForge.Spatial.INodeOccupant@)">
+        <member name="M:GridForge.Grids.ScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
-            Retrieves a specific occupant at a given node coordinate using an occupant ticket.
+            Retrieves a specific occupant at a given voxel coordinate using an occupant ticket.
             </summary>
             <param name="grid">The grid to query.</param>
-            <param name="coordinatesLocal">The local node coordinates.</param>
+            <param name="voxelIndex">The local voxel coordinates.</param>
             <param name="occupantTicket">The unique identifier of the occupant.</param>
             <param name="occupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.TryGetNodeOccupant(GridForge.Grids.Grid,GridForge.Grids.Node,System.Int32,GridForge.Spatial.INodeOccupant@)">
+        <member name="M:GridForge.Grids.ScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
-            Retrieves a specific occupant from a given node using an occupant ticket.
+            Retrieves a specific occupant from a given voxel using an occupant ticket.
             </summary>
-            <param name="grid">The grid containing the node.</param>
-            <param name="targetNode">The target node.</param>
+            <param name="grid">The grid containing the voxel.</param>
+            <param name="targetVoxel">The target voxel.</param>
             <param name="occupantTicket">The unique identifier of the occupant.</param>
             <param name="occupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d)">
             <summary>
             Retrieves all occupants at a given world position within the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal)">
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex)">
             <summary>
             Retrieves all occupants at a given coordinate within the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.Grid,GridForge.Grids.Node)">
+        <member name="M:GridForge.Grids.ScanManager.GetOccupants(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel)">
             <summary>
-            Retrieves all occupants at a given node.
+            Retrieves all occupants at a given voxel.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,FixedMathSharp.Vector3d,System.Func{System.Byte,System.Boolean})">
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,System.Func{System.Byte,System.Boolean})">
             <summary>
             Retrieves occupants whose group Ids match a given condition.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,GridForge.Spatial.CoordinatesLocal,System.Func{System.Byte,System.Boolean})">
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,System.Func{System.Byte,System.Boolean})">
             <summary>
             Retrieves occupants whose group Ids match a given condition.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.Grid,GridForge.Grids.Node,System.Func{System.Byte,System.Boolean})">
+        <member name="M:GridForge.Grids.ScanManager.GetConditionalOccupants(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Func{System.Byte,System.Boolean})">
             <summary>
-            Retrieves occupants at a given node that match a specified group condition.
+            Retrieves occupants at a given voxel that match a specified group condition.
             </summary>
         </member>
         <member name="M:GridForge.Grids.ScanManager.ScanRadius(FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{System.Byte,System.Boolean})">
@@ -1401,149 +936,566 @@
             Scans for occupants of a specific type within a given radius.
             </summary>
         </member>
-        <member name="T:GridForge.Spatial.CoordinatesGlobal">
+        <member name="T:GridForge.Grids.Voxel">
             <summary>
-            Represents the global coordinates of a node, linking it to a specific grid.
-            Used for uniquely identifying nodes across multiple grids.
+            Represents a voxel within a 3D grid, handling spatial positioning, obstacles, occupants, and neighbor relationships.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.CoordinatesGlobal.GridIndex">
+        <member name="P:GridForge.Grids.Voxel.SpawnToken">
+            <summary>
+            Unique token identifying this voxel instance.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.GlobalIndex">
+            <summary>
+            The global and local coordinates of this voxel within the grid system.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.GridIndex">
+            <summary>
+            The global index of the grid this voxel belongs to.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.Index">
+            <summary>
+            The local coordinates of this voxel within its grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.ScanCellKey">
+            <summary>
+            The spatial hash key of the scan cell that this voxel belongs to.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.WorldPosition">
+            <summary>
+            The world-space position of this voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._isNeighborCacheValid">
+            <summary>
+            Indicates whether the neighbor cache is valid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._cachedNeighbors">
+            <summary>
+            Cached array of neighboring voxels for fast lookup representing a 3x3x3 linear direction grid
+            </summary>
+            <remarks>
+            Unlike Grid adjacency (which is 1:many), voxels can only have 1 neighbor in any one direction (1:1).
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.ObstacleTracker">
+            <summary>
+            Stores a unique hash value for each obstacle added to this voxel to prevent adding duplicates
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.ObstacleCount">
+            <summary>
+            The current number of obstacles on this voxel.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.OccupantCount">
+            <summary>
+            The current number of occupants on this voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._partitionProvider">
+            <summary>
+            Handles management of partitioned data.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsPartioned">
+            <summary>
+            Indicates whether this voxel has any active partitions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsBoundaryVoxel">
+            <summary>
+            Determines if this voxel is a boundary voxel.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.CachedGridVersion">
+            <summary>
+            The current version of the grid at the time this voxel was created.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsAllocated">
+            <summary>
+            Indicates whether this voxel is allocated within a grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsBlocked">
+            <summary>
+            Determines whether this voxel is blocked due to obstacles.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsBlockable">
+            <summary>
+            Determines if this voxel can accept additional obstacles.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.IsOccupied">
+            <summary>
+            Determines whether this voxel is occupied by entities.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Voxel.HasVacancy">
+            <summary>
+            Checks if this voxel has open slots for new occupants.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Voxel.OnObstacleChange">
+            <summary>
+            Event triggered when an obstacle is added or removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Voxel.OnOccupantChange">
+            <summary>
+            Event triggered when an occupant is added or removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.Initialize(GridForge.Spatial.GlobalVoxelIndex,FixedMathSharp.Vector3d,System.Int32,System.Boolean,System.UInt32)">
+            <summary>
+            Configures the voxel with its position, grid version, and boundary status.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.Reset">
+            <summary>
+            Resets the voxel, clearing all allocated data and returning it to pools.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.GeneratePartitionKey(System.String)">
+            <summary>
+            Generates a unique key for a partition based on the voxel's spawn token and partition name.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.TryAddPartition(GridForge.Spatial.IVoxelPartition)">
+            <summary>
+            Adds a partition to this voxel, allowing specialized behaviors.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.TryRemovePartition``1">
+            <summary>
+            Removes a partition from this voxel.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.HasPartition``1">
+            <summary>
+            Checks whether or not this voxel contains a specific partition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.TryGetPartition``1(``0@)">
+            <summary>
+            Retrieves a partition from the voxel by type.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.GetPartitionOrDefault``1">
+            <summary>
+            Retrieves a partition from the voxel by type and returns null if it doesn't exist.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.InvalidateNeighborCache">
+            <summary>
+            Invalidates the neighbor cache when a boundary relationship changes.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.GetNeighbors(System.Boolean)">
+            <summary>
+            Retrieves the neighbors of this voxel, caching results if specified.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.TryGetNeighborFromDirection(GridForge.Grids.LinearDirection,GridForge.Grids.Voxel@,System.Boolean)">
+            <summary>
+            Retrieves a neighbor voxel in a specific direction.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.TryGetNeighborFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32},GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a neighbor voxel based on a coordinate offset.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.RefreshNeighborCache">
+            <summary>
+            Updates and caches the neighboring voxels of this voxel.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.Equals(GridForge.Grids.Voxel)">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Grids.VoxelGrid">
+            <summary>
+            Represents a 3D grid structure for spatial organization, managing voxels and scan cells.
+            Handles initialization, neighbor relationships, and occupancy tracking.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.SpawnToken">
+            <summary>
+            Unique token identifying the grid instance.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.GlobalIndex">
+            <summary>
+            Global index of the grid within the world.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Configuration">
+            <inheritdoc cref="T:GridForge.Configuration.GridConfiguration"/>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.BoundsMin">
+            <summary>
+            Minimum bounds of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.BoundsMax">
+            <summary>
+            Maximum bounds of the grid in world coordinates.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.BoundsCenter">
+            <summary>
+            Center position of the grid in world space.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Width">
+            <summary>
+            Grid width in number of voxels.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Height">
+            <summary>
+            Grid height in number of voxels.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Length">
+            <summary>
+            Grid length in number of voxels.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Size">
+            <summary>
+            Total number of voxels within the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Voxels">
+            <summary>
+            The primary 3D collection of voxels managed by this grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Neighbors">
+            <summary>
+            Stores the indices of neighboring grids.
+            </summary>
+            <remarks>
+            Unlike voxel adjacency (which is always 1:1), grids can share multiple neighbors in the same direction.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.NeighborCount">
+            <summary>
+            Count of currently linked neighboring grids.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.IsConjoined">
+            <summary>
+            Determines whether this grid has any linked neighbors.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.ScanCellSize">
+            <summary>
+            Size of a scan cell used for spatial partitioning.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.ScanCells">
+            <summary>
+            Collection of scan cells indexed by their spatial hash key.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.ActiveScanCells">
+            <summary>
+            Stores currently active (occupied) scan cells within the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.IsActive">
+            <summary>
+            Indicates whether the grid is currently active.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.IsOccupied">
+            <summary>
+            Determines whether the grid is occupied (active and containing occupants).
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.ObstacleCount">
+            <summary>
+            Tracks the number of obstacles currently registered in the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.Version">
+            <summary>
+            Tracks the version of the grid, incremented when a <see cref="T:GridForge.Grids.Voxel"/> is modified.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.Initialize(System.UInt16,GridForge.Configuration.GridConfiguration)">
+            <summary>
+            Initializes the grid with the given settings.
+            </summary>
+            <param name="globalIndex">The unique index of this grid in the world.</param>
+            <param name="configuration">The configuration settings for the grid.</param>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.Reset">
+            <summary>
+            Resets the grid, clearing all voxels and scan cells.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GenerateScanCells">
+            <summary>
+            Generates the scan cell overlay for the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GenerateVoxels">
+            <summary>
+            Generates the 3D grid structure based on the configured settings.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetNeighborDirection(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid)">
+            <summary>
+            Determines the relative direction of a neighboring grid based on its center offset.
+            </summary>
+            <param name="a">The first grid.</param>
+            <param name="b">The second grid.</param>
+            <returns>The direction from grid 'a' to grid 'b'.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryAddGridNeighbor(GridForge.Grids.VoxelGrid)">
+            <summary>
+            Adds a neighboring grid and updates relationships.
+            </summary>
+            <param name="neighborGrid">The neighboring grid to add.</param>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryRemoveGridNeighbor(GridForge.Grids.VoxelGrid)">
+            <summary>
+            Removes a neighboring grid relationship.
+            </summary>
+            <param name="neighborGrid">The neighboring grid to remove.</param>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.NotifyBoundaryChange(GridForge.Grids.LinearDirection)">
+            <summary>
+            Notifies only the relevant boundary voxels when a neighboring grid is added or removed.
+            Instead of looping through all voxels, it targets specific boundary rows or columns.
+            </summary>
+            <param name="direction">The direction of the affected boundary.</param>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsOnBoundary(GridForge.Spatial.VoxelIndex)">
+            <summary>
+            Determines if a voxel coordinate is at the boundary of the grid.
+            Used to determine if a voxel should update when a neighboring grid is added/removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsInBounds(FixedMathSharp.Vector3d)">
+            <summary>
+            Checks whether a given position falls within the grid bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsGridOverlapValid(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid,FixedMathSharp.Fixed64)">
+            <summary>
+            Checks if two grids are overlapping within a given tolerance threshold.
+            This is used to determine if grids should be linked as neighbors.
+            </summary>
+            <param name="a">The first grid.</param>
+            <param name="b">The second grid.</param>
+            <param name="tolerance">Optional tolerance to account for minor floating-point errors.</param>
+            <returns>True if the grids overlap within the tolerance, otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetAllGridNeighbors">
+            <summary>
+            Retrieves all neighboring grids connected to this grid.
+            </summary>
+            <returns>An enumeration of all neighboring grids.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsValidVoxelIndex(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Determines whether the given voxel coordinates are within the valid range of the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsFacingBoundaryDirection(GridForge.Spatial.VoxelIndex,GridForge.Grids.LinearDirection)">
+            <summary>
+            Determines if a voxel is facing the boundary of the grid in a specific direction.
+            Used to notify voxels when adjacent grids are added/removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxelIndex(FixedMathSharp.Vector3d,GridForge.Spatial.VoxelIndex@)">
+            <summary>
+            Converts a world position to voxel index within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsVoxelAllocated(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Checks if a voxel at the given coordinates is allocated within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(System.Int32,System.Int32,System.Int32,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the <see cref="T:GridForge.Grids.Voxel"/> at the specified coordinates, if allocated.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(GridForge.Spatial.VoxelIndex,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a grid voxel from a given coordinate.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(FixedMathSharp.Vector3d,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieve <see cref="T:GridForge.Grids.Voxel"/> from world <see cref="T:FixedMathSharp.Vector3d"/> points
+            </summary>
+            <returns><see cref="T:GridForge.Grids.Voxel"/> at the given position or null if the position is not valid.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetScanCellKey(FixedMathSharp.Vector3d)">
+            <summary>
+            Computes the scan cell key for a given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetScanCellKey(GridForge.Spatial.VoxelIndex)">
+            <summary>
+            Calculates the spatial cell index for a given position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetScanCell(System.Int32,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves a scan cell from the grid using its hashed key.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetScanCell(FixedMathSharp.Vector3d,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves the scan cell corresponding to a given world position.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetScanCell(GridForge.Spatial.VoxelIndex,GridForge.Grids.ScanCell@)">
+            <summary>
+            Retrieves the scan cell associated with the given voxel index.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetActiveScanCells">
+            <summary>
+            Enumerates all currently active scan cells within the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.CeilToGrid(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's voxel size, ensuring it stays within grid bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.FloorToGrid(FixedMathSharp.Vector3d)">
+            <summary>
+            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's voxel size, ensuring it stays within grid bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.SnapToScanCell(FixedMathSharp.Vector3d)">
+            <summary>
+            Snaps a given position to the closest scan cell in the grid
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Spatial.GlobalVoxelIndex">
+            <summary>
+            Represents the global coordinates of a voxel, linking it to a specific grid.
+            Used for uniquely identifying voxels across multiple grids.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.GlobalVoxelIndex.GridIndex">
             <summary>
             The index of the grid in <see cref="P:GridForge.Grids.GlobalGridManager.ActiveGrids"/>.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.CoordinatesGlobal.NodeCoordinates">
+        <member name="F:GridForge.Spatial.GlobalVoxelIndex.VoxelIndex">
             <summary>
-            The local coordinate of a grid node within the grid at <see cref="F:GridForge.Spatial.CoordinatesGlobal.GridIndex"/>.
+            The local coordinate of a voxel within the grid at <see cref="F:GridForge.Spatial.GlobalVoxelIndex.GridIndex"/>.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.CoordinatesGlobal.GridSpawnToken">
+        <member name="F:GridForge.Spatial.GlobalVoxelIndex.GridSpawnToken">
             <summary>
             The unique identifier generated by the grid during initialization.
-            Used to ensure the correct instance is at the assigned <see cref="F:GridForge.Spatial.CoordinatesGlobal.GridIndex"/>.
+            Used to ensure the correct instance is at the assigned <see cref="F:GridForge.Spatial.GlobalVoxelIndex.GridIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.CoordinatesGlobal.#ctor(System.UInt16,GridForge.Spatial.CoordinatesLocal,System.Int32)">
+        <member name="M:GridForge.Spatial.GlobalVoxelIndex.#ctor(System.UInt16,GridForge.Spatial.VoxelIndex,System.Int32)">
             <summary>
-            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesGlobal"/>, linking a node to a grid.
+            Initializes a new instance of <see cref="T:GridForge.Spatial.GlobalVoxelIndex"/>, linking a voxel to a grid.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.CoordinatesGlobal.ToString">
+        <member name="M:GridForge.Spatial.GlobalVoxelIndex.ToString">
             <summary>
             Returns a string representation of the global coordinates.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.CoordinatesGlobal.GetHashCode">
+        <member name="M:GridForge.Spatial.GlobalVoxelIndex.GetHashCode">
             <summary>
             Computes a hash code for uniquely identifying this set of global coordinates.
             </summary>
         </member>
-        <member name="T:GridForge.Spatial.CoordinatesLocal">
+        <member name="T:GridForge.Spatial.IVoxelOccupant">
             <summary>
-            Represents the local coordinates of a node within a single grid.
-            Used to index nodes within a grid's spatial structure.
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.CoordinatesLocal.x">
-            <summary>
-            The X position of the node in the local grid.
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.CoordinatesLocal.y">
-            <summary>
-            The Y position of the node in the local grid.
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.CoordinatesLocal.z">
-            <summary>
-            The Z position of the node in the local grid.
-            </summary>
-        </member>
-        <member name="P:GridForge.Spatial.CoordinatesLocal.IsAllocated">
-            <summary>
-            Flag to determine is the struct instance was constructed or is default
-            </summary>
-        </member>
-        <member name="M:GridForge.Spatial.CoordinatesLocal.#ctor(System.Int32,System.Int32)">
-            <summary>
-            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesLocal"/> with an X and Y coordinate.
-            Defaults Z to zero.
-            </summary>
-        </member>
-        <member name="M:GridForge.Spatial.CoordinatesLocal.#ctor(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Initializes a new instance of <see cref="T:GridForge.Spatial.CoordinatesLocal"/> with X, Y, and Z coordinates.
-            </summary>
-        </member>
-        <member name="M:GridForge.Spatial.CoordinatesLocal.ToString">
-            <summary>
-            Returns a string representation of the coordinates.
-            </summary>
-        </member>
-        <member name="M:GridForge.Spatial.CoordinatesLocal.GetHashCode">
-            <summary>
-            Computes a hash code for the coordinates, ensuring uniqueness in hashing collections.
-            Uses <see cref="M:GridForge.Grids.GlobalGridManager.GetSpawnHash(System.Int32,System.Int32,System.Int32)"/> to generate a stable and consistent hash.
-            </summary>
-        </member>
-        <member name="T:GridForge.Spatial.INodeOccupant">
-            <summary>
-            Represents an entity that can occupy a <see cref="T:GridForge.Grids.Node"/>.
+            Represents an entity that can occupy a <see cref="T:GridForge.Grids.Voxel"/>.
             Occupants can be dynamic entities such as units or items (obstacles).
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodeOccupant.OccupantGroupId">
+        <member name="P:GridForge.Spatial.IVoxelOccupant.OccupantGroupId">
             <summary>
             The group Id used for grouping occupants within a scan cell.
             Occupants with the same group Id belong to the same logical group.
             This allows efficient retrieval of related occupants in spatial queries.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodeOccupant.IsNodeOccupant">
+        <member name="P:GridForge.Spatial.IVoxelOccupant.IsVoxelOccupant">
             <summary>
-            Flag used to determine if occupant is current occupying a node
+            Flag used to determine if occupant is current occupying a voxel
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodeOccupant.OccupantTicket">
+        <member name="P:GridForge.Spatial.IVoxelOccupant.OccupantTicket">
             <summary>
             A unique ticket identifier assigned when this occupant is added to a scan cell.
             Used for efficient tracking and removal.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodeOccupant.WorldPosition">
+        <member name="P:GridForge.Spatial.IVoxelOccupant.WorldPosition">
             <summary>
             The absolute world-space position of the occupant, representing its precise location in the environment.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodeOccupant.GridCoordinates">
+        <member name="P:GridForge.Spatial.IVoxelOccupant.GlobalIndex">
             <summary>
-            The global grid coordinates of the <see cref="T:GridForge.Grids.Node"/> this occupant is being added to.
+            The global grid coordinates of the <see cref="T:GridForge.Grids.Voxel"/> this occupant is being added to.
             </summary>
         </member>
-        <member name="T:GridForge.Spatial.INodePartition">
+        <member name="T:GridForge.Spatial.IVoxelPartition">
             <summary>
-            Represents a partition within a <see cref="T:GridForge.Grids.Node"/> that modifies its behavior.
-            Partitions can define special attributes or metadata for a node, such as terrain type or navigation properties.
+            Represents a partition within a <see cref="T:GridForge.Grids.Voxel"/> that modifies its behavior.
+            Partitions can define special attributes or metadata for a voxel, such as terrain type or navigation properties.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodePartition.NodeCoordinates">
+        <member name="P:GridForge.Spatial.IVoxelPartition.GlobalIndex">
             <summary>
-            The global coordinates of the parent node where this partition is attached.
+            The global index of the parent voxel where this partition is attached.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodePartition.IsPartitioned">
+        <member name="P:GridForge.Spatial.IVoxelPartition.IsPartitioned">
             <summary>
-            Flag to determine if this partition is currently attached to a <see cref="T:GridForge.Grids.Node"/>
+            Flag to determine if this partition is currently attached to a <see cref="T:GridForge.Grids.Voxel"/>
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.INodePartition.OnAddToNode(GridForge.Grids.Node)">
+        <member name="M:GridForge.Spatial.IVoxelPartition.OnAddToVoxel(GridForge.Grids.Voxel)">
             <summary>
-            Called when adding this partition to a <see cref="T:GridForge.Grids.Node"/>.
+            Called when adding this partition to a <see cref="T:GridForge.Grids.Voxel"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.INodePartition.OnRemoveFromNode(GridForge.Grids.Node)">
+        <member name="M:GridForge.Spatial.IVoxelPartition.OnRemoveFromVoxel(GridForge.Grids.Voxel)">
             <summary>
-            Called when this partition is removed from a <see cref="T:GridForge.Grids.Node"/>.
+            Called when this partition is removed from a <see cref="T:GridForge.Grids.Voxel"/>.
             Cleans up any associated data.
             </summary>
         </member>
@@ -1601,6 +1553,54 @@
         <member name="M:GridForge.Spatial.PartitionProvider`1.Clear">
             <summary>
             Removes all partitions from the provider, clearing its internal storage.
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.VoxelIndex">
+            <summary>
+            Represents the local coordinates of a voxel within a single grid.
+            Used to index voxels within a grid's spatial structure.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelIndex.x">
+            <summary>
+            The X position of the voxel in the local grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelIndex.y">
+            <summary>
+            The Y position of the voxel in the local grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelIndex.z">
+            <summary>
+            The Z position of the voxel in the local grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.VoxelIndex.IsAllocated">
+            <summary>
+            Flag to determine is the struct instance was constructed or is default
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.VoxelIndex.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Spatial.VoxelIndex"/> with an X and Y coordinate.
+            Defaults Z to zero.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.VoxelIndex.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:GridForge.Spatial.VoxelIndex"/> with X, Y, and Z coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.VoxelIndex.ToString">
+            <summary>
+            Returns a string representation of the coordinates.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.VoxelIndex.GetHashCode">
+            <summary>
+            Computes a hash code for the coordinates, ensuring uniqueness in hashing collections.
+            Uses <see cref="M:GridForge.Grids.GlobalGridManager.GetSpawnHash(System.Int32,System.Int32,System.Int32)"/> to generate a stable and consistent hash.
             </summary>
         </member>
         <member name="T:GridForge.GridForgeLogger">
@@ -1680,31 +1680,31 @@
             <param name="method">The calling method name, automatically captured.</param>
             <param name="filePath">The calling file name, automatically captured to get the class name.</param>
         </member>
-        <member name="T:GridForge.Utility.GridNodeSet">
+        <member name="T:GridForge.Utility.GridVoxelSet">
             <summary>
-            Used to group query results on a grid to node level
+            Used to group query results on a grid to voxel level
             </summary>
         </member>
-        <member name="F:GridForge.Utility.GridNodeSet.Grid">
+        <member name="F:GridForge.Utility.GridVoxelSet.Grid">
             <summary>
-            The grid containing the nodes from the resulting query
+            The grid containing the voxels from the resulting query
             </summary>
         </member>
-        <member name="F:GridForge.Utility.GridNodeSet.Nodes">
+        <member name="F:GridForge.Utility.GridVoxelSet.Voxels">
             <summary>
-            A list of nodes that match the provided query
+            A list of voxels that match the provided query
             </summary>
         </member>
         <member name="T:GridForge.Utility.GridTracer">
             <summary>
-            Provides utilities for tracing lines or bounding areas in a grid, aligning them to grid nodes.
+            Provides utilities for tracing lines or bounding areas in a grid, aligning them to grid voxels.
             Uses fixed-point calculations to ensure deterministic and accurate grid traversal.
             </summary>
         </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double,System.Boolean)">
             <summary>
             Traces a 3D line between two points in the grid.
-            The traced points are returned as grid nodes.
+            The traced points are returned as grid voxels.
             </summary>
             <remarks>
             Uses a fractional step algorithm inspired by Bresenham’s line algorithm.
@@ -1713,8 +1713,8 @@
             <param name="start">Starting position in world space.</param>
             <param name="end">Ending position in world space.</param>
             <param name="padding">Value applied to the start/end positions before snapping.</param>
-            <param name="includeEnd">Whether to include the end node in the traced line.</param>
-            <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+            <returns>A collection of <see cref="T:GridForge.Utility.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Double,System.Boolean)">
             <summary>
@@ -1726,12 +1726,12 @@
             <param name="start">Starting 2D position.</param>
             <param name="end">Ending 2D position.</param>
             <param name="padding">Value applied to the start/end positions before snapping.</param>
-            <param name="includeEnd">Whether to include the end node.</param>
-            <returns>A collection of <see cref="T:GridForge.Utility.GridNodeSet"/> objects representing the traced path.</returns>
+            <param name="includeEnd">Whether to include the end voxel.</param>
+            <returns>A collection of <see cref="T:GridForge.Utility.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredNodes(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
             <summary>
-            Retrieves all grid nodes covered by the given bounding area.
+            Retrieves all grid voxels covered by the given bounding area.
             </summary>
             <param name="boundsMin">The minimum corner of the bounding area.</param>
             <param name="boundsMax">The maximum corner of the bounding area.</param>
@@ -1748,23 +1748,23 @@
         </member>
         <member name="T:PartitionExtensions">
             <summary>
-            Provides extension methods for managing <see cref="T:GridForge.Spatial.INodePartition"/> instances on <see cref="T:GridForge.Grids.Node"/> objects.
+            Provides extension methods for managing <see cref="T:GridForge.Spatial.IVoxelPartition"/> instances on <see cref="T:GridForge.Grids.Voxel"/> objects.
             This allows adding and removing partitions while maintaining their state.
             </summary>
         </member>
-        <member name="M:PartitionExtensions.AddToNode(GridForge.Spatial.INodePartition,GridForge.Grids.Node)">
+        <member name="M:PartitionExtensions.AddToVoxel(GridForge.Spatial.IVoxelPartition,GridForge.Grids.Voxel)">
             <summary>
-            Attaches a partition to a specified <see cref="T:GridForge.Grids.Node"/>, updating its state and invoking initialization logic.
+            Attaches a partition to a specified <see cref="T:GridForge.Grids.Voxel"/>, updating its state and invoking initialization logic.
             </summary>
             <param name="partition">The partition to attach.</param>
-            <param name="node">The target node where the partition will be added.</param>
+            <param name="voxel">The target voxel where the partition will be added.</param>
         </member>
-        <member name="M:PartitionExtensions.RemoveFromNode(GridForge.Spatial.INodePartition,GridForge.Grids.Node)">
+        <member name="M:PartitionExtensions.RemoveFromVoxel(GridForge.Spatial.IVoxelPartition,GridForge.Grids.Voxel)">
             <summary>
-            Detaches a partition from a specified <see cref="T:GridForge.Grids.Node"/>, resetting its state and invoking cleanup logic.
+            Detaches a partition from a specified <see cref="T:GridForge.Grids.Voxel"/>, resetting its state and invoking cleanup logic.
             </summary>
             <param name="partition">The partition to detach.</param>
-            <param name="node">The target node from which the partition will be removed.</param>
+            <param name="voxel">The target voxel from which the partition will be removed.</param>
         </member>
     </members>
 </doc>

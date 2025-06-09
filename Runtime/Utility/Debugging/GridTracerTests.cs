@@ -7,7 +7,7 @@ namespace GridForge.Utility
 {
     /// <summary>
     /// Unity MonoBehaviour for testing and visualizing grid-aligned line tracing.
-    /// Draws lines and highlights nodes along a path in the Scene View.
+    /// Draws lines and highlights voxels along a path in the Scene View.
     /// </summary>
     [ExecuteAlways] // Allows visualization in edit mode
     public class GridTracerTests : MonoBehaviour
@@ -15,11 +15,11 @@ namespace GridForge.Utility
         #region Inspector Fields
 
         /// <summary>
-        /// Enables visualization of grid nodes along the traced path.
+        /// Enables visualization of grid voxels along the traced path.
         /// </summary>
-        [Tooltip("Enable to display the grid nodes along the traced path.")]
+        [Tooltip("Enable to display the grid voxels along the traced path.")]
         [SerializeField]
-        private bool _showNodeTrail = true;
+        private bool _showVoxelTrail = true;
 
         /// <summary>
         /// Enables visualization of the traced line.
@@ -29,11 +29,11 @@ namespace GridForge.Utility
         private bool _showLine = true;
 
         /// <summary>
-        /// Controls the Y-axis offset of the grid visualization.
+        /// Controls the Y-axis offset of the traced line visualization.
         /// </summary>
-        [Tooltip("Adjusts the height offset for the traced grid nodes.")]
+        [Tooltip("Adjusts the height offset for the traced line.")]
         [SerializeField]
-        private Fixed64 _gridHeight = Fixed64.One;
+        private Fixed64 _lineHeight = Fixed64.One;
 
         /// <summary>
         /// The starting position for the traced line.
@@ -52,12 +52,12 @@ namespace GridForge.Utility
         #region Visualization Parameters
 
         /// <summary>
-        /// Size of filled cubes drawn at each grid node.
+        /// Size of filled cubes drawn at each grid voxel.
         /// </summary>
         private Vector3 FillSize;
 
         /// <summary>
-        /// Size of wireframe cubes drawn around each grid node.
+        /// Size of wireframe cubes drawn around each grid voxel.
         /// </summary>
         private Vector3 WireSize;
 
@@ -67,13 +67,13 @@ namespace GridForge.Utility
 
         public void Start()
         {
-            FillSize = Vector3.one * (float)GlobalGridManager.NodeSize;
+            FillSize = Vector3.one * (float)GlobalGridManager.VoxelSize;
             WireSize = FillSize * 1.02f;
         }
 
         /// <summary>
         /// Unity's Gizmo drawing callback. 
-        /// This method visualizes the traced line and the grid nodes in the Scene View.
+        /// This method visualizes the traced line and the grid voxels in the Scene View.
         /// </summary>
         public void OnDrawGizmos()
         {
@@ -90,22 +90,21 @@ namespace GridForge.Utility
             Vector3d startPos = startTransform.position.ToVector3d();
             Vector3d endPos = endTransform.position.ToVector3d();
 
-            // If grid visualization is enabled, trace the line and draw the grid nodes
-            if (_showNodeTrail)
+            // If grid visualization is enabled, trace the line and draw the grid voxels
+            if (_showVoxelTrail)
             {
                 Gizmos.color = Color.red;
 
-                foreach (GridNodeSet covered in GridTracer.TraceLine(startPos, endPos))
+                foreach (GridVoxelSet covered in GridTracer.TraceLine(startPos, endPos))
                 {
-                    foreach (Node node in covered.Nodes)
+                    foreach (Voxel voxel in covered.Voxels)
                     {
-                        Vector3 drawPos = node.WorldPosition.ToVector3();
-                        drawPos.y += (float)_gridHeight; // Adjust for visualization height
+                        Vector3 drawPos = voxel.WorldPosition.ToVector3();
 
-                        // Draw a filled red cube for the grid node
+                        // Draw a filled red cube for the grid voxel
                         Gizmos.DrawCube(drawPos, FillSize);
 
-                        // Draw a black wireframe around the node
+                        // Draw a black wireframe around the voxel
                         Gizmos.color = Color.black;
                         Gizmos.DrawWireCube(drawPos, WireSize);
                         Gizmos.color = Color.red; // Reset color
@@ -117,7 +116,7 @@ namespace GridForge.Utility
             if (_showLine)
             {
                 Gizmos.color = Color.white;
-                float adjustedY = (float)(_gridHeight + Fixed64.Half); // Slight height offset for visibility
+                float adjustedY = (float)(_lineHeight + Fixed64.Half); // Slight height offset for visibility
 
                 Gizmos.DrawLine(startPos.ToVector3(adjustedY), endPos.ToVector3(adjustedY));
             }

@@ -23,7 +23,7 @@ namespace GridForge.Blockers
 
         [SerializeField] private bool _isActive;
 
-        [SerializeField] private bool _cacheCoveredNodes;
+        [SerializeField] private bool _cacheCoveredVoxels;
 
         [SerializeField] private BoundingArea _manualBlockArea;
 
@@ -59,7 +59,7 @@ namespace GridForge.Blockers
         }
 
         public bool IsActive => _isActive;
-        public bool CacheCoveredNodes => _cacheCoveredNodes;
+        public bool CacheCoveredVoxels => _cacheCoveredVoxels;
         public BoundingArea ManualBlockArea => _manualBlockArea;
     }
 
@@ -72,7 +72,7 @@ namespace GridForge.Blockers
                 BlockerType.Bounds => new BoundsBlocker(
                     component.ManualBlockArea,
                     component.IsActive,
-                    component.CacheCoveredNodes),
+                    component.CacheCoveredVoxels),
                 _ => null
             };
         }

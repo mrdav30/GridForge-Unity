@@ -23,12 +23,12 @@ namespace GridForge.Configuration
         public int SpatialGridCellSize => _spatialGridCellSize;
 
         /// <summary>
-        /// The size of each grid node in world units.
+        /// The size of each grid voxel in world units.
         /// </summary>
-        [SerializeField] private Fixed64 _nodeSize = Fixed64.One;
+        [SerializeField] private Fixed64 _voxelSize = Fixed64.One;
 
-        /// <inheritdoc cref="_nodeSize"/>
-        public Fixed64 NodeSize => _nodeSize;
+        /// <inheritdoc cref="_voxelSize"/>
+        public Fixed64 VoxelSize => _voxelSize;
 
         /// <summary>
         /// List of saved grid configurations.
@@ -87,7 +87,7 @@ namespace GridForge.Configuration
                 return;
 
             Gizmos.color = Color.green;
-            Vector3 scale = Vector3.one * (float)_nodeSize;
+            Vector3 scale = Vector3.one * (float)_voxelSize;
 
             foreach (var serializedConfig in SavedGridConfigurations)
             {
