@@ -3,7 +3,9 @@ GridForge-Unity
 
 ![GridForge Icon](https://raw.githubusercontent.com/mrdav30/GridForge/main/icon.png)
 
-**A high-performance, deterministic spatial grid management system for Unity, optimized for lockstep simulations, AI navigation, and world partitioning.**   
+**A high-performance, deterministic voxel grid system for spatial partitioning, simulation, and game development in Unity.**
+
+Lightweight and optimized for lockstep engines.
 
 This package is a Unity-specific implementation of the [GridForge](https://github.com/mrdav30/GridForge) library
 
@@ -11,10 +13,12 @@ This package is a Unity-specific implementation of the [GridForge](https://githu
 
 ## 🚀 Key Features
 
-- **Deterministic Execution** – Supports **lockstep simulation** and **fixed-point** arithmetic.
-- **Optimized Grid Management** – **Low memory allocations, spatial partitioning, and fast queries**.
-- **Multi-Layered Grid System** – **Dynamic, hierarchical, and persistent  grids**.
-- **Efficient Object Queries** – Retrieve **occupants, obstacles, and partitions** with minimal overhead.
+- **Voxel-Based Spatial Partitioning** – Build efficient 3D **voxel grids** with fast access & updates.
+- **Deterministic & Lockstep Ready** – Designed for **synchronized multiplayer** and physics-safe environments.
+- **ScanCell Overlay System** – Accelerated **proximity and radius queries** using spatial hashing.
+- **Dynamic Occupancy & Obstacle Tracking** – Manage **moving occupants, dynamic obstacles**, and voxel metadata.
+- **Minimal Allocations & Fast Queries** – Built with **SwiftCollections** and **FixedMathSharp** for optimal performance.
+- **Multi-Layered Grid System** – **Dynamic, hierarchical, and persistent grids**.
 
 ---
 
@@ -61,12 +65,8 @@ GlobalGridManager.TryAddGrid(config, out ushort gridIndex);
 ### **🔹 Querying a Grid for Nodes**
 ```csharp
 Vector3d queryPosition = new Vector3d(5, 0, 5);
-if (GlobalGridManager.TryGetGrid(queryPosition, out Grid grid))
-{
-    if (grid.TryGetNode(queryPosition, out Node node))
-    {
-        Console.WriteLine($"Node at {queryPosition} is {(node.IsOccupied ? "occupied" : "empty")}");
-    }
+if (GlobalGridManager.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel))
+	Console.WriteLine($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
 }
 ```
 
@@ -77,13 +77,13 @@ Blocker blocker = new Blocker(blockArea);
 blocker.ApplyBlockage();
 ```
 
-### **🔹 Attaching a Partition to a Node**
+### **🔹 Attaching a Partition to a Voxel**
 ```csharp
-if (GlobalGridManager.TryGetGrid(queryPosition, out Grid grid) && grid.TryGetNode(queryPosition, out Node node))
+if (GlobalGridManager.TryGetGrid(queryPosition, out VoxelGrid grid, out Voxel voxel))
 {
     PathPartition partition = new PathPartition();
-    partition.Setup(node.GlobalCoordinates);
-    node.AddPartition(partition);
+    partition.Setup(voxel.GlobalVoxelIndex);
+    voxel.AddPartition(partition);
 }
 ```
 
@@ -91,7 +91,7 @@ if (GlobalGridManager.TryGetGrid(queryPosition, out Grid grid) && grid.TryGetNod
 ```csharp
 Vector3d scanCenter = new Vector3d(0, 0, 0);
 Fixed64 scanRadius = (Fixed64)5;
-foreach (INodeOccupant occupant in ScanManager.ScanRadius(scanCenter, scanRadius))
+foreach (IVoxelOccupant occupant in ScanManager.ScanRadius(scanCenter, scanRadius))
 {
     Console.WriteLine($"Found occupant at {occupant.WorldPosition}");
 }
@@ -101,7 +101,7 @@ foreach (INodeOccupant occupant in ScanManager.ScanRadius(scanCenter, scanRadius
 
 GridForge includes **editor utilities** for debugging:
 
-- **GridDebugger** – Visualizes **grids, nodes, and selected areas**.
+- **GridDebugger** – Visualizes **grids, voxels, and selected areas**.
 - **GridTracer Debuging** – Helps debug **line-of-sight & navigation**.
 - **Blocker Editor** – Allows **visual blocker placement** via Unity Inspector.
 
