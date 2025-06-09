@@ -1,6 +1,6 @@
 {
   "name": "com.mrdav30.gridforge",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "displayName": "GridForge",
   "description": "A high-performance, deterministic spatial grid management system for simulations and game development.",
   "unity": "2020.3",
