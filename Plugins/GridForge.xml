@@ -1018,9 +1018,9 @@
             The current number of occupants on this node.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.Node._partitions">
+        <member name="F:GridForge.Grids.Node._partitionProvider">
             <summary>
-            Dictionary mapping partition names to their respective partitions.
+            Handles management of partitioned data.
             </summary>
         </member>
         <member name="P:GridForge.Grids.Node.IsPartioned">
@@ -1083,7 +1083,7 @@
             Resets the node, clearing all allocated data and returning it to pools.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.Node.GetPartitionKey(System.String)">
+        <member name="M:GridForge.Grids.Node.GeneratePartitionKey(System.String)">
             <summary>
             Generates a unique key for a partition based on the node's spawn token and partition name.
             </summary>
@@ -1098,9 +1098,19 @@
             Removes a partition from this node.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.Node.HasPartition``1">
+            <summary>
+            Checks whether or not this node contains a specific partition.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.Node.TryGetPartition``1(``0@)">
             <summary>
-            Retrieves a partition from the node by name.
+            Retrieves a partition from the node by type.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Node.GetPartitionOrDefault``1">
+            <summary>
+            Retrieves a partition from the node by type and returns null if it doesn't exist.
             </summary>
         </member>
         <member name="M:GridForge.Grids.Node.InvalidateNeighborCache">
@@ -1123,7 +1133,7 @@
             Retrieves a neighbor node based on a coordinate offset.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.Node.SetNeighborCache">
+        <member name="M:GridForge.Grids.Node.RefreshNeighborCache">
             <summary>
             Updates and caches the neighboring nodes of this node.
             </summary>
@@ -1132,6 +1142,9 @@
             <inheritdoc/>
         </member>
         <member name="M:GridForge.Grids.Node.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Node.Equals(GridForge.Grids.Node)">
             <inheritdoc/>
         </member>
         <member name="F:GridForge.Grids.Pools.GridPool">
@@ -1513,7 +1526,7 @@
             Partitions can define special attributes or metadata for a node, such as terrain type or navigation properties.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.INodePartition.ParentCoordinate">
+        <member name="P:GridForge.Spatial.INodePartition.NodeCoordinates">
             <summary>
             The global coordinates of the parent node where this partition is attached.
             </summary>
@@ -1533,6 +1546,139 @@
             Called when this partition is removed from a <see cref="T:GridForge.Grids.Node"/>.
             Cleans up any associated data.
             </summary>
+        </member>
+        <member name="T:GridForge.Spatial.PartitionProvider`1">
+            <summary>
+            Provides efficient storage and retrieval of partitions keyed by integer values, supporting type-safe queries and management of partitioned data.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.PartitionProvider`1._partitions">
+            <summary>
+            Backing dictionary that stores partition instances keyed by integer identifiers.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.PartitionProvider`1.Partitions">
+            <summary>
+            Returns an enumerable of all partitions currently stored in the provider.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.PartitionProvider`1.IsEmpty">
+            <summary>
+            Indicates whether the provider currently contains any partitions.
+            Returns true if empty; otherwise, false.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.PartitionProvider`1.Count">
+            <summary>
+            Gets the current number of partitions stored in the provider.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.PartitionProvider`1.TryAdd(System.Int32,`0)">
+            <summary>
+            Attempts to add a partition to the provider with the specified key.
+            Returns true if the partition was added; false if a partition with the same key already exists.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.PartitionProvider`1.TryRemove(System.Int32,`0@)">
+            <summary>
+            Attempts to remove a partition associated with the specified key.
+            If successful, the removed partition is returned in the out parameter.
+            Returns true if the partition was removed; otherwise, false.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.PartitionProvider`1.TryGet``1(System.Int32,``0@)">
+            <summary>
+            Attempts to retrieve a partition of the specified type associated with the given key.
+            Returns true and sets the out parameter if the partition exists and is of the requested type; otherwise, returns false.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.PartitionProvider`1.Has``1(System.Int32)">
+            <summary>
+            Determines whether the provider contains a partition of the specified type associated with the given key.
+            Returns true if such a partition exists; otherwise, false.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.PartitionProvider`1.Clear">
+            <summary>
+            Removes all partitions from the provider, clearing its internal storage.
+            </summary>
+        </member>
+        <member name="T:GridForge.GridForgeLogger">
+            <summary>
+            Provides a configurable logging system for GridForge with support for log levels, formatting, and file output.
+            </summary>
+        </member>
+        <member name="T:GridForge.GridForgeLogger.LogLevel">
+            <summary>
+            Represents the severity level of a log message.
+            </summary>
+        </member>
+        <member name="F:GridForge.GridForgeLogger.LogHandler">
+            <summary>
+            Delegate for handling log messages. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            </summary>
+        </member>
+        <member name="F:GridForge.GridForgeLogger.CustomFormatter">
+            <summary>
+            Delegate for custom log formatting. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            </summary>
+        </member>
+        <member name="P:GridForge.GridForgeLogger.LogFilePath">
+            <summary>
+            Gets or sets the file path for logging. If null, file logging is disabled.
+            </summary>
+        </member>
+        <member name="P:GridForge.GridForgeLogger.Verbosity">
+            <summary>
+            Gets or sets the minimum log level required for messages to be logged.
+            </summary>
+        </member>
+        <member name="F:GridForge.GridForgeLogger._lock">
+            <summary>
+            Synchronization lock for thread-safe logging.
+            </summary>
+        </member>
+        <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(GridForge.GridForgeLogger.LogLevel,System.String,System.String)">
+            <summary>
+            The default handler for logging messages, writing them to the console and optionally to a file.
+            </summary>
+            <param name="level">The severity level of the log message.</param>
+            <param name="message">The log message.</param>
+            <param name="source">The source of the log message (e.g., calling method).</param>
+        </member>
+        <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(GridForge.GridForgeLogger.LogLevel,System.String,System.String)">
+            <summary>
+            The default log formatter that formats log messages with timestamp, log level, and source information.
+            </summary>
+            <param name="level">The severity level of the log message.</param>
+            <param name="message">The log message.</param>
+            <param name="source">The source of the log message (e.g., calling method).</param>
+            <returns>A formatted log entry as a string.</returns>
+        </member>
+        <member name="M:GridForge.GridForgeLogger.Info(System.String,System.String,System.String)">
+            <summary>
+            Logs an informational message.
+            </summary>
+            <param name="message">The message to log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
+        </member>
+        <member name="M:GridForge.GridForgeLogger.Warn(System.String,System.String,System.String)">
+            <summary>
+            Logs a warning message.
+            </summary>
+            <param name="message">The warning message to log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
+        </member>
+        <member name="M:GridForge.GridForgeLogger.Error(System.String,System.Exception,System.String,System.String)">
+            <summary>
+            Logs an error message, optionally including an exception stack trace.
+            </summary>
+            <param name="message">The error message to log.</param>
+            <param name="ex">An optional exception whose details will be included in the log.</param>
+            <param name="method">The calling method name, automatically captured.</param>
+            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
         </member>
         <member name="T:GridForge.Utility.GridNodeSet">
             <summary>
@@ -1619,83 +1765,6 @@
             </summary>
             <param name="partition">The partition to detach.</param>
             <param name="node">The target node from which the partition will be removed.</param>
-        </member>
-        <member name="T:GridForgeLogger">
-            <summary>
-            Provides a configurable logging system for GridForge with support for log levels, formatting, and file output.
-            </summary>
-        </member>
-        <member name="T:GridForgeLogger.LogLevel">
-            <summary>
-            Represents the severity level of a log message.
-            </summary>
-        </member>
-        <member name="F:GridForgeLogger.LogHandler">
-            <summary>
-            Delegate for handling log messages. Defaults to <see cref="M:GridForgeLogger.DefaultLogHandler(GridForgeLogger.LogLevel,System.String,System.String)"/>.
-            </summary>
-        </member>
-        <member name="F:GridForgeLogger.CustomFormatter">
-            <summary>
-            Delegate for custom log formatting. Defaults to <see cref="M:GridForgeLogger.DefaultLogFormatter(GridForgeLogger.LogLevel,System.String,System.String)"/>.
-            </summary>
-        </member>
-        <member name="P:GridForgeLogger.LogFilePath">
-            <summary>
-            Gets or sets the file path for logging. If null, file logging is disabled.
-            </summary>
-        </member>
-        <member name="P:GridForgeLogger.Verbosity">
-            <summary>
-            Gets or sets the minimum log level required for messages to be logged.
-            </summary>
-        </member>
-        <member name="F:GridForgeLogger._lock">
-            <summary>
-            Synchronization lock for thread-safe logging.
-            </summary>
-        </member>
-        <member name="M:GridForgeLogger.DefaultLogHandler(GridForgeLogger.LogLevel,System.String,System.String)">
-            <summary>
-            The default handler for logging messages, writing them to the console and optionally to a file.
-            </summary>
-            <param name="level">The severity level of the log message.</param>
-            <param name="message">The log message.</param>
-            <param name="source">The source of the log message (e.g., calling method).</param>
-        </member>
-        <member name="M:GridForgeLogger.DefaultLogFormatter(GridForgeLogger.LogLevel,System.String,System.String)">
-            <summary>
-            The default log formatter that formats log messages with timestamp, log level, and source information.
-            </summary>
-            <param name="level">The severity level of the log message.</param>
-            <param name="message">The log message.</param>
-            <param name="source">The source of the log message (e.g., calling method).</param>
-            <returns>A formatted log entry as a string.</returns>
-        </member>
-        <member name="M:GridForgeLogger.Info(System.String,System.String,System.String)">
-            <summary>
-            Logs an informational message.
-            </summary>
-            <param name="message">The message to log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
-        </member>
-        <member name="M:GridForgeLogger.Warn(System.String,System.String,System.String)">
-            <summary>
-            Logs a warning message.
-            </summary>
-            <param name="message">The warning message to log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
-        </member>
-        <member name="M:GridForgeLogger.Error(System.String,System.Exception,System.String,System.String)">
-            <summary>
-            Logs an error message, optionally including an exception stack trace.
-            </summary>
-            <param name="message">The error message to log.</param>
-            <param name="ex">An optional exception whose details will be included in the log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
         </member>
     </members>
 </doc>

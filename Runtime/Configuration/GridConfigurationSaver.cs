@@ -1,10 +1,9 @@
-﻿#if UNITY_EDITOR
-using FixedMathSharp;
+﻿using FixedMathSharp;
 using GridForge.Grids;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GridForge.Configuration.Unity_Editor
+namespace GridForge.Configuration
 {
     /// <summary>
     /// Unity Editor utility for saving and applying grid configurations.
@@ -112,4 +111,3 @@ namespace GridForge.Configuration.Unity_Editor
         #endregion
     }
 }
-#endif

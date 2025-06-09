@@ -1,9 +1,8 @@
-﻿#if UNITY_EDITOR
-using FixedMathSharp;
+﻿using FixedMathSharp;
 using GridForge.Grids;
 using UnityEngine;
 
-namespace GridForge.Blockers.Unity_Editor
+namespace GridForge.Blockers
 {
     /// <summary>
     /// Available blocker types for Unity selection.
@@ -20,7 +19,6 @@ namespace GridForge.Blockers.Unity_Editor
     [DisallowMultipleComponent]
     public class BlockerComponent : MonoBehaviour
     {
-#pragma warning disable CS0649 // These fields are serialized via Unity Editor
         [SerializeField] private BlockerType _blockerType;
 
         [SerializeField] private bool _isActive;
@@ -28,7 +26,6 @@ namespace GridForge.Blockers.Unity_Editor
         [SerializeField] private bool _cacheCoveredNodes;
 
         [SerializeField] private BoundingArea _manualBlockArea;
-#pragma warning restore CS0649
 
         private IBlocker _blocker;
 
@@ -81,4 +78,3 @@ namespace GridForge.Blockers.Unity_Editor
         }
     }
 }
-#endif

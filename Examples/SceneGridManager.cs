@@ -1,4 +1,4 @@
-using GridForge.Configuration.Unity_Editor;
+using GridForge.Configuration;
 using GridForge.Grids;
 using UnityEngine;
 

@@ -2,7 +2,7 @@
 using UnityEngine;
 using FixedMathSharp;
 
-namespace GridForge.Configuration.Unity_Editor
+namespace GridForge.Configuration
 {
     /// <summary>
     /// A Unity-serializable version of <see cref="GridConfiguration"/> for editor use.
@@ -16,9 +16,9 @@ namespace GridForge.Configuration.Unity_Editor
         [Tooltip("Defaults to 8.")]
         private int _scanCellSize;
 
-        public Vector3d BoundsMin => _boundsMin;
-        public Vector3d BoundsMax => _boundsMax;
-        public int ScanCellSize => _scanCellSize;
+        public readonly Vector3d BoundsMin => _boundsMin;
+        public readonly Vector3d BoundsMax => _boundsMax;
+        public readonly int ScanCellSize => _scanCellSize;
 
         public SerializableGridConfiguration(Vector3d boundsMin, Vector3d boundsMax, int scanCellSize)
         {
@@ -30,7 +30,7 @@ namespace GridForge.Configuration.Unity_Editor
         /// <summary>
         /// Converts this Unity-serializable struct to the GridForge <see cref="GridConfiguration"/>.
         /// </summary>
-        public GridConfiguration ToGridConfiguration()
+        public readonly GridConfiguration ToGridConfiguration()
         {
             return new GridConfiguration(
                 _boundsMin,

@@ -3,7 +3,7 @@ using FixedMathSharp;
 using GridForge.Grids;
 using UnityEngine;
 
-namespace GridForge.Utility.Debugging.Unity_Editor
+namespace GridForge.Utility
 {
     /// <summary>
     /// Unity MonoBehaviour for testing and visualizing grid-aligned line tracing.

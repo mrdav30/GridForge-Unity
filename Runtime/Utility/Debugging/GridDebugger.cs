@@ -3,7 +3,7 @@ using UnityEngine;
 using FixedMathSharp;
 using GridForge.Grids;
 
-namespace GridForge.Utility.Debugging.Unity_Editor
+namespace GridForge.Utility
 {
     /// <summary>
     /// Defines types of nodes that can be visualized in the debugger.
@@ -53,7 +53,7 @@ namespace GridForge.Utility.Debugging.Unity_Editor
         public bool EnableNodeSelection => _enableNodeSelection;
         public Node SelectedNode { get; private set; }
 
-        private Vector3 _scale => Vector3.one * (float) GlobalGridManager.NodeSize;
+        private Vector3 Scale => Vector3.one * (float) GlobalGridManager.NodeSize;
 
         #endregion
 
@@ -91,7 +91,7 @@ namespace GridForge.Utility.Debugging.Unity_Editor
                 if (Physics.Raycast(ray, out RaycastHit hit, 100f))
                 {
                     Vector3d hitPos = new Vector3d(hit.point.x, hit.point.y, hit.point.z);
-                    if (GlobalGridManager.TryGetGridAndNode(hitPos, out Grids.Grid grid, out Node node))
+                    if (GlobalGridManager.TryGetGridAndNode(hitPos, out _, out Node node))
                     {
                         _highlightedNodePosition = node.WorldPosition.ToVector3();
 
@@ -134,7 +134,7 @@ namespace GridForge.Utility.Debugging.Unity_Editor
             if (_enableNodeSelection)
             {
                 Gizmos.color = _highlightColor;
-                Gizmos.DrawCube(_highlightedNodePosition, _scale);
+                Gizmos.DrawCube(_highlightedNodePosition, Scale);
             }
         }
 
@@ -155,9 +155,9 @@ namespace GridForge.Utility.Debugging.Unity_Editor
             Vector3 nodePos = node.WorldPosition.ToVector3();
             Color renderColor = node.IsBlocked ? Color.red : node.IsOccupied ? Color.yellow : Color.magenta;
             Gizmos.color = renderColor;
-            Gizmos.DrawCube(nodePos, _scale); // Draws the solid cube
+            Gizmos.DrawCube(nodePos, Scale); // Draws the solid cube
             Gizmos.color = Color.black; // Change color for wireframe
-            Gizmos.DrawWireCube(nodePos, _scale * 1.02f); // Slightly larger for visibility
+            Gizmos.DrawWireCube(nodePos, Scale * 1.02f); // Slightly larger for visibility
             Gizmos.color = renderColor; // Reset to original color
         }
 
