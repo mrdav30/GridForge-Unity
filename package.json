@@ -19,8 +19,8 @@
     "AI"
   ],
   "dependencies": {
-    "com.mrdav30.fixedmathsharp": "https://github.com/mrdav30/FixedMathSharp-Unity.git#1.1.4",
-    "com.mrdav30.swiftcollections": "https://github.com/mrdav30/SwiftCollections-Unity.git#1.0.6"
+    "com.mrdav30.fixedmathsharp": "https://github.com/mrdav30/FixedMathSharp-Unity.git#7d92dfc87d159615699144f42aaac79f1d92b26e",
+    "com.mrdav30.swiftcollections": "https://github.com/mrdav30/SwiftCollections-Unity.git#a3b6695f846780edc651d9b7635c66de0c391c5d"
   },
   "repository": {
     "type": "git",
