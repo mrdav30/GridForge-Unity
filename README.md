@@ -1,4 +1,4 @@
-GridForge-Unity
+# GridForge-Unity
 ==============
 
 ![GridForge Icon](https://raw.githubusercontent.com/mrdav30/GridForge/main/icon.png)
@@ -24,6 +24,15 @@ This package is a Unity-specific implementation of the [GridForge](https://githu
 
 ## 📦 Installation
 
+### 🧩 Dependencies
+
+GridForge-Unity depends on the following Unity packages:
+
+- [FixedMathSharp-Unity](https://github.com/mrdav30/FixedMathSharp-Unity)
+- [SwiftCollections-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
+
+These dependencies must be installed before using GridForge-Unity.
+
 ### Via Unity Package Manager (UPM)
 
 1. Open **Unity**.
@@ -31,7 +40,7 @@ This package is a Unity-specific implementation of the [GridForge](https://githu
 3. Click the **+** icon and select **"Add package from git URL..."**.
 4. Enter:
 
-https://github.com/mrdav30/GridForge-Unity.git
+    <https://github.com/mrdav30/GridForge-Unity.git>
 
 5. Click **Add**.
 
@@ -43,34 +52,26 @@ https://github.com/mrdav30/GridForge-Unity.git
 
 ---
 
-## 🧩 Dependencies
-
-GridForge-Unity depends on the following Unity packages:
-
-- [FixedMathSharp-Unity](https://github.com/mrdav30/FixedMathSharp-Unity)
-- [SwiftCollections-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
-
-These dependencies are automatically included when installing via UPM.
-
----
-
 ## 📖 Usage Examples
 
 ### **🔹 Creating a Grid**
+
 ```csharp
 GridConfiguration config = new GridConfiguration(new Vector3d(-10, 0, -10), new Vector3d(10, 0, 10));
 GlobalGridManager.TryAddGrid(config, out ushort gridIndex);
 ```
 
 ### **🔹 Querying a Grid for Nodes**
+
 ```csharp
 Vector3d queryPosition = new Vector3d(5, 0, 5);
-if (GlobalGridManager.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel))
-	Console.WriteLine($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
+if (GlobalGridManager.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel)) {
+    Console.WriteLine($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
 }
 ```
 
 ### **🔹 Adding a Blocker**
+
 ```csharp
 BoundingArea blockArea = new BoundingArea(new Vector3d(3, 0, 3), new Vector3d(5, 0, 5));
 Blocker blocker = new Blocker(blockArea);
@@ -78,6 +79,7 @@ blocker.ApplyBlockage();
 ```
 
 ### **🔹 Attaching a Partition to a Voxel**
+
 ```csharp
 if (GlobalGridManager.TryGetGrid(queryPosition, out VoxelGrid grid, out Voxel voxel))
 {
@@ -88,6 +90,7 @@ if (GlobalGridManager.TryGetGrid(queryPosition, out VoxelGrid grid, out Voxel vo
 ```
 
 ### **🔹 Scanning for Nearby Occupants**
+
 ```csharp
 Vector3d scanCenter = new Vector3d(0, 0, 0);
 Fixed64 scanRadius = (Fixed64)5;
