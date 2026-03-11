@@ -3,14 +3,14 @@ using FixedMathSharp;
 using FixedMathSharp.Editor;
 using UnityEditor;
 
-namespace GridForge.Configuration.Unity_Editor
+namespace GridForge.Configuration.Editor
 {
     /// <summary>
     /// Custom Unity Editor inspector for <see cref="GridConfigurationSaver"/>.
     /// Provides UI controls for managing multiple grid configurations in the scene.
     /// </summary>
     [CustomEditor(typeof(GridConfigurationSaver))]
-    public class EditorGridConfigurationSaver : Editor
+    public class EditorGridConfigurationSaver : UnityEditor.Editor
     {
         SerializedProperty _voxelSize;
         SerializedProperty _spatialGridCellSize;

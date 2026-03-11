@@ -4,14 +4,14 @@ using GridForge.Grids;
 using System.Linq;
 using UnityEditor;
 
-namespace GridForge.Utility.Debugging.Unity_Editor
+namespace GridForge.Utility.Debugging.Editor
 {
     /// <summary>
     /// Custom Unity Editor inspector for <see cref="GridDebugger"/>.
     /// Displays detailed voxel metadata in the Inspector when a voxel is selected.
     /// </summary>
     [CustomEditor(typeof(GridDebugger))]
-    public class EditorGridDebugger : Editor
+    public class EditorGridDebugger : UnityEditor.Editor
     {
         private GridDebugger _debugger;
         private ushort[] _availableGridIndexes = new ushort[0];

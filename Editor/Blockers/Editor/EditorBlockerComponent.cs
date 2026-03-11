@@ -2,14 +2,14 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace GridForge.Blockers.Unity_Editor
+namespace GridForge.Blockers.Editor
 {
     /// <summary>
     /// Custom Unity Editor inspector for <see cref="BlockerComponent"/>.
     /// Dynamically displays relevant fields based on the selected blocker type.
     /// </summary>
     [CustomEditor(typeof(BlockerComponent))]
-    public class EditorBlockerComponent : Editor
+    public class EditorBlockerComponent : UnityEditor.Editor
     {
         SerializedProperty _blockerType;
         SerializedProperty _isActive;
