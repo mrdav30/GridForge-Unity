@@ -69,7 +69,7 @@ namespace GridForge.Configuration
                 }
 
                 GridConfiguration config = serializedConfig.ToGridConfiguration();
-                if(GlobalGridManager.TryAddGrid(config, out _) != GridAddResult.Success)
+                if(!GlobalGridManager.TryAddGrid(config, out _))
                 {
                     Debug.LogWarning($"Failed to add grid to global state: " +
                         $"{config.BoundsMin} - {config.BoundsMax}");
