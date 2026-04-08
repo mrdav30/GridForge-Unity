@@ -1,5 +1,5 @@
 {
-    "name": "GridForge.Examples",
+    "name": "GridForge.Samples",
     "rootNamespace": "",
     "references": [
         "FixedMathSharp.Editor",

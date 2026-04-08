@@ -4,6 +4,31 @@
         <name>GridForge</name>
     </assembly>
     <members>
+        <member name="T:GridForge.Blockers.BlockageEventInfo">
+            <summary>
+            Immutable snapshot describing a blocker application or removal.
+            </summary>
+        </member>
+        <member name="F:GridForge.Blockers.BlockageEventInfo.BlockageToken">
+            <summary>
+            The unique token representing the blocker coverage.
+            </summary>
+        </member>
+        <member name="F:GridForge.Blockers.BlockageEventInfo.BoundsMin">
+            <summary>
+            The minimum bounds of the blocker coverage.
+            </summary>
+        </member>
+        <member name="F:GridForge.Blockers.BlockageEventInfo.BoundsMax">
+            <summary>
+            The maximum bounds of the blocker coverage.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.BlockageEventInfo.#ctor(GridForge.BoundsKey,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Initializes a new immutable blockage snapshot.
+            </summary>
+        </member>
         <member name="T:GridForge.Blockers.Blocker">
             <summary>
             Base class for all grid blockers that handles applying and removing obstacles.
@@ -49,10 +74,21 @@
             Grid indices currently covered by this blocker.
             </summary>
         </member>
-        <member name="E:GridForge.Blockers.Blocker.OnBlockageChanged">
+        <member name="F:GridForge.Blockers.Blocker._onBlockageApplied">
             <summary>
-            Event triggered when a blockage is added or removed.
+            Event triggered when a blocker is applied.
             </summary>
+        </member>
+        <member name="E:GridForge.Blockers.Blocker.OnBlockageApplied">
+            <inheritdoc cref="F:GridForge.Blockers.Blocker._onBlockageApplied"/>
+        </member>
+        <member name="F:GridForge.Blockers.Blocker._onBlockageRemoved">
+            <summary>
+            Event triggered when a blocker is removed.
+            </summary>
+        </member>
+        <member name="E:GridForge.Blockers.Blocker.OnBlockageRemoved">
+            <inheritdoc cref="F:GridForge.Blockers.Blocker._onBlockageRemoved"/>
         </member>
         <member name="M:GridForge.Blockers.Blocker.#ctor(System.Boolean,System.Boolean)">
             <summary>
@@ -79,9 +115,19 @@
             Removes the blockage by clearing obstacle markers from voxels.
             </summary>
         </member>
-        <member name="M:GridForge.Blockers.Blocker.NotifyBlockageChanged(GridForge.Grids.GridChange)">
+        <member name="M:GridForge.Blockers.Blocker.CreateBlockageEventInfo">
             <summary>
-            Notifies subscribers of blockage changes with error handling to prevent exceptions from disrupting the system.
+            Creates a snapshot describing the current blocker coverage.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.NotifyBlockageApplied">
+            <summary>
+            Notifies subscribers that blockage has been applied.
+            </summary>
+        </member>
+        <member name="M:GridForge.Blockers.Blocker.NotifyBlockageRemoved(GridForge.Blockers.BlockageEventInfo)">
+            <summary>
+            Notifies subscribers that blockage has been removed.
             </summary>
         </member>
         <member name="M:GridForge.Blockers.Blocker.GetBoundsMin">
@@ -186,8 +232,8 @@
             Initializes a new instance of <see cref="T:GridForge.Configuration.GridConfiguration"/> with specified bounds and scan cell size.
             Ensures that <see cref="F:GridForge.Configuration.GridConfiguration.BoundsMin"/> is always less than or equal to <see cref="F:GridForge.Configuration.GridConfiguration.BoundsMax"/>.
             </summary>
-            <param name="min">The minimum boundary of the grid.</param>
-            <param name="max">The maximum boundary of the grid.</param>
+            <param name="boundsMin">The minimum boundary of the grid.</param>
+            <param name="boundsMax">The maximum boundary of the grid.</param>
             <param name="scanCellSize">The size of scan cells within the grid. Default is 8.</param>
         </member>
         <member name="M:GridForge.Configuration.GridConfiguration.ToBoundsKey">
@@ -229,7 +275,7 @@
             The size of a spatial hash cell used for grid lookup.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GlobalGridManager.VoxelResolution">
+        <member name="P:GridForge.Grids.GlobalGridManager.VoxelResolution">
             <summary>
             Resolution for snapping or searching within the grid (half of VoxelSize).
             </summary>
@@ -266,17 +312,41 @@
             Ensures thread safety for read/write operations.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.GlobalGridManager.OnActiveGridChange">
+        <member name="F:GridForge.Grids.GlobalGridManager._onActiveGridAdded">
             <summary>
-            Event triggers when grid is added or removed.
-            Allows external systems to react to the active grid mutation.
+            Event triggered when a new grid is added.
+            Subscribers can use this to initialize references or update systems dependent on grid presence.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.GlobalGridManager.OnReset">
+        <member name="E:GridForge.Grids.GlobalGridManager.OnActiveGridAdded">
+            <inheritdoc cref="F:GridForge.Grids.GlobalGridManager._onActiveGridAdded"/>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager._onActiveGridRemoved">
+            <summary>
+            Event triggered when a grid is removed.
+            Subscribers should use this to clean up references or handle the loss of a grid in their systems.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GlobalGridManager.OnActiveGridRemoved">
+            <inheritdoc cref="F:GridForge.Grids.GlobalGridManager._onActiveGridRemoved"/>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager._onActiveGridChange">
+            <summary>
+            Event triggered when a grid undergoes a significant change (e.g., structure modification).
+            Subscribers can use this to react to changes in grid state, such as updating pathfinding data or refreshing visuals.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GlobalGridManager.OnActiveGridChange">
+            <inheritdoc cref="F:GridForge.Grids.GlobalGridManager._onActiveGridChange"/>
+        </member>
+        <member name="F:GridForge.Grids.GlobalGridManager._onReset">
             <summary>
             Event triggered when the GlobalGridManager is reset.
             Allows external systems to react to a full grid wipe.
             </summary>
+        </member>
+        <member name="E:GridForge.Grids.GlobalGridManager.OnReset">
+            <inheritdoc cref="F:GridForge.Grids.GlobalGridManager._onReset"/>
         </member>
         <member name="M:GridForge.Grids.GlobalGridManager.Setup">
             <summary>
@@ -384,7 +454,7 @@
             Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to a grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GlobalGridManager.SnapBoundsToVoxelSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+        <member name="M:GridForge.Grids.GlobalGridManager.SnapBoundsToVoxelSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Snaps the given bounds to the the global voxel size
             </summary>
@@ -400,10 +470,29 @@
             Maximum number of obstacles that can exist on a single voxel.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.GridObstacleManager.OnObstacleChange">
+        <member name="F:GridForge.Grids.GridObstacleManager._onObstacleAdded">
             <summary>
-            Event triggered when an obstacle is added or removed.
+            Event triggered when an obstacle is added.
             </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridObstacleManager.OnObstacleAdded">
+            <inheritdoc cref="F:GridForge.Grids.GridObstacleManager._onObstacleAdded"/>
+        </member>
+        <member name="F:GridForge.Grids.GridObstacleManager._onObstacleRemoved">
+            <summary>
+            Event triggered when an obstacle is removed.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridObstacleManager.OnObstacleRemoved">
+            <inheritdoc cref="F:GridForge.Grids.GridObstacleManager._onObstacleRemoved"/>
+        </member>
+        <member name="F:GridForge.Grids.GridObstacleManager._onObstaclesCleared">
+            <summary>
+            Event triggered when all obstacles on a voxel are cleared at once.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridObstacleManager.OnObstaclesCleared">
+            <inheritdoc cref="F:GridForge.Grids.GridObstacleManager._onObstaclesCleared"/>
         </member>
         <member name="F:GridForge.Grids.GridObstacleManager._gridLocks">
             <summary>
@@ -451,9 +540,19 @@
             <param name="grid"></param>
             <param name="targetVoxel"></param>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleChange(GridForge.Grids.GridChange,GridForge.Grids.Voxel,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleAdded(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey,System.Byte,System.UInt32)">
             <summary>
-            Notifies listeners of an obstacle state change.
+            Notifies listeners that an obstacle was added.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleRemoved(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey,System.Byte,System.UInt32)">
+            <summary>
+            Notifies listeners that an obstacle was removed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstaclesCleared(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Byte,System.UInt32)">
+            <summary>
+            Notifies listeners that all obstacles on a voxel were cleared.
             </summary>
         </member>
         <member name="T:GridForge.Grids.GridOccupantManager">
@@ -467,20 +566,67 @@
             Maximum number of occupants allowed per voxel.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.GridOccupantManager.OnOccupantChange">
+        <member name="F:GridForge.Grids.GridOccupantManager._onOccupantAdded">
             <summary>
-            Event triggered when an occupant is added or removed.
+            Event triggered when an occupant is added.
             </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridOccupantManager.OnOccupantAdded">
+            <inheritdoc cref="F:GridForge.Grids.GridOccupantManager._onOccupantAdded"/>
+        </member>
+        <member name="F:GridForge.Grids.GridOccupantManager._onOccupantRemoved">
+            <summary>
+            Event triggered when an occupant is removed.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridOccupantManager.OnOccupantRemoved">
+            <inheritdoc cref="F:GridForge.Grids.GridOccupantManager._onOccupantRemoved"/>
         </member>
         <member name="F:GridForge.Grids.GridOccupantManager._gridLocks">
             <summary>
             Per-grid locks to ensure thread safety when modifying occupant data.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.GridOccupantManager._occupancyRegistryLock">
+            <summary>
+            Synchronizes access to the global occupant registry.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridOccupantManager._occupancyRegistry">
+            <summary>
+            Tracks all active occupant registrations owned by GridForge.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridOccupantManager.OccupancyRecord">
+            <summary>
+            Tracks all voxel registrations for a single occupant.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridOccupantManager.TrackedOccupancy">
+            <summary>
+            Immutable snapshot of one tracked occupancy.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.GridOccupantManager.TryRegister(GridForge.Spatial.IVoxelOccupant)">
             <summary>
             Attempts to register the occupant with the current voxel it is on.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.GetOccupiedIndices(GridForge.Spatial.IVoxelOccupant)">
+            <summary>
+            Returns a snapshot of the voxel indices currently tracked for the occupant.
+            </summary>
+            <param name="occupant">The occupant whose tracked voxel indices should be returned.</param>
+            <returns>A deterministic snapshot of the occupant's currently tracked voxel indices.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.TryGetOccupancyTicket(GridForge.Spatial.IVoxelOccupant,GridForge.Spatial.GlobalVoxelIndex,System.Int32@)">
+            <summary>
+            Attempts to retrieve the scan-cell ticket for the occupant at a specific voxel.
+            </summary>
+            <param name="occupant">The occupant whose registration should be queried.</param>
+            <param name="index">The tracked voxel index to look up.</param>
+            <param name="ticket">The tracked scan-cell ticket for the occupant at that voxel.</param>
+            <returns>True if the occupant is registered to the voxel, otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.GridOccupantManager.TryAddVoxelOccupant(GridForge.Spatial.GlobalVoxelIndex,GridForge.Spatial.IVoxelOccupant)">
             <summary>
@@ -504,7 +650,7 @@
         </member>
         <member name="M:GridForge.Grids.GridOccupantManager.TryDeregister(GridForge.Spatial.IVoxelOccupant)">
             <summary>
-            Attempts to de-register the occupant from the voxel it was on.
+            Attempts to de-register the occupant from every voxel currently tracked by GridForge.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GridOccupantManager.TryRemoveVoxelOccupant(GridForge.Spatial.GlobalVoxelIndex,GridForge.Spatial.IVoxelOccupant)">
@@ -527,9 +673,14 @@
             Removes an occupant from this grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantChange(GridForge.Grids.GridChange,GridForge.Grids.Voxel)">
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantAdded(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
             <summary>
-            Notifies listeners of an occupant state change.
+            Notifies listeners that an occupant was added.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantRemoved(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
+            <summary>
+            Notifies listeners that an occupant was removed.
             </summary>
         </member>
         <member name="T:GridForge.Grids.GridScanManager">
@@ -886,15 +1037,45 @@
             Checks if this voxel has open slots for new occupants.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.Voxel.OnObstacleChange">
+        <member name="F:GridForge.Grids.Voxel._onObstacleAdded">
             <summary>
-            Event triggered when an obstacle is added or removed.
+            Event triggered when an obstacle is added.
             </summary>
         </member>
-        <member name="E:GridForge.Grids.Voxel.OnOccupantChange">
+        <member name="E:GridForge.Grids.Voxel.OnObstacleAdded">
+            <inheritdoc cref="F:GridForge.Grids.Voxel._onObstacleAdded"/>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._onObstacleRemoved">
             <summary>
-            Event triggered when an occupant is added or removed.
+            Event triggered when an obstacle is removed.
             </summary>
+        </member>
+        <member name="E:GridForge.Grids.Voxel.OnObstacleRemoved">
+            <inheritdoc cref="F:GridForge.Grids.Voxel._onObstacleRemoved"/>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._onObstaclesCleared">
+            <summary>
+            Event triggered when all obstacles on the voxel are cleared at once.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.Voxel.OnObstaclesCleared">
+            <inheritdoc cref="F:GridForge.Grids.Voxel._onObstaclesCleared"/>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._onOccupantAdded">
+            <summary>
+            Event triggered when an occupant is added.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.Voxel.OnOccupantAdded">
+            <inheritdoc cref="F:GridForge.Grids.Voxel._onOccupantAdded"/>
+        </member>
+        <member name="F:GridForge.Grids.Voxel._onOccupantRemoved">
+            <summary>
+            Event triggered when an occupant is removed.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.Voxel.OnOccupantRemoved">
+            <inheritdoc cref="F:GridForge.Grids.Voxel._onOccupantRemoved"/>
         </member>
         <member name="M:GridForge.Grids.Voxel.Initialize(GridForge.Spatial.GlobalVoxelIndex,FixedMathSharp.Vector3d,System.Int32,System.Boolean,System.UInt32)">
             <summary>
@@ -968,30 +1149,149 @@
         <member name="M:GridForge.Grids.Voxel.Equals(System.Object)">
             <inheritdoc/>
         </member>
-        <member name="T:GridForge.Grids.GridChange">
+        <member name="T:GridForge.Grids.GridEventInfo">
             <summary>
-            Represents different types of grid-related changes that can occur.
-            Used to track modifications such as adding/removing neighbors, obstacles, or occupants.
+            Immutable snapshot describing a grid at the time a global grid notification is raised.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GridChange.None">
+        <member name="F:GridForge.Grids.GridEventInfo.GridIndex">
             <summary>
-            Default, nothing happened
+            The stable slot index assigned to the grid within <see cref="P:GridForge.Grids.GlobalGridManager.ActiveGrids"/>.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GridChange.Add">
+        <member name="F:GridForge.Grids.GridEventInfo.GridSpawnToken">
             <summary>
-            Signifies an add operation occured
+            The unique spawn token for the specific grid instance occupying <see cref="F:GridForge.Grids.GridEventInfo.GridIndex"/>.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GridChange.Remove">
+        <member name="F:GridForge.Grids.GridEventInfo.Configuration">
             <summary>
-            Signifies a remove operation occured
+            The snapped configuration for the grid when the notification was raised.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GridChange.Update">
+        <member name="F:GridForge.Grids.GridEventInfo.GridVersion">
             <summary>
-            Signifies an update operation occured
+            The per-grid version recorded when the notification was raised.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridEventInfo.BoundsMin">
+            <summary>
+            The minimum snapped bounds of the grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridEventInfo.BoundsMax">
+            <summary>
+            The maximum snapped bounds of the grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.UInt16,System.Int32,GridForge.Configuration.GridConfiguration,System.UInt32)">
+            <summary>
+            Initializes a new immutable grid event snapshot.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridEventInfo.ToBoundsKey">
+            <summary>
+            Creates an exact bounds key from the stored grid configuration.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.ObstacleClearEventInfo">
+            <summary>
+            Immutable snapshot describing a bulk obstacle clear operation on a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleClearEventInfo.VoxelIndex">
+            <summary>
+            The voxel that had its obstacles cleared.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleClearEventInfo.ClearedObstacleCount">
+            <summary>
+            The number of obstacles removed by the clear operation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleClearEventInfo.GridVersion">
+            <summary>
+            The grid version recorded after the clear operation completes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ObstacleClearEventInfo.GridIndex">
+            <summary>
+            The grid index containing <see cref="F:GridForge.Grids.ObstacleClearEventInfo.VoxelIndex"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ObstacleClearEventInfo.#ctor(GridForge.Spatial.GlobalVoxelIndex,System.Byte,System.UInt32)">
+            <summary>
+            Initializes a new immutable obstacle clear snapshot.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.ObstacleEventInfo">
+            <summary>
+            Immutable snapshot describing a single obstacle mutation on a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleEventInfo.VoxelIndex">
+            <summary>
+            The voxel affected by the obstacle mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleEventInfo.ObstacleToken">
+            <summary>
+            The token identifying the obstacle that was added or removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleEventInfo.ObstacleCount">
+            <summary>
+            The number of active obstacles on the voxel after the mutation completes.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleEventInfo.GridVersion">
+            <summary>
+            The grid version recorded after the mutation completes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ObstacleEventInfo.GridIndex">
+            <summary>
+            The grid index containing <see cref="F:GridForge.Grids.ObstacleEventInfo.VoxelIndex"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ObstacleEventInfo.#ctor(GridForge.Spatial.GlobalVoxelIndex,GridForge.BoundsKey,System.Byte,System.UInt32)">
+            <summary>
+            Initializes a new immutable obstacle mutation snapshot.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.OccupantEventInfo">
+            <summary>
+            Immutable snapshot describing an occupant mutation on a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.OccupantEventInfo.VoxelIndex">
+            <summary>
+            The voxel affected by the occupant mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.OccupantEventInfo.Occupant">
+            <summary>
+            The occupant that was added to or removed from the voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.OccupantEventInfo.Ticket">
+            <summary>
+            The scan-cell ticket assigned to the occupant for this voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.OccupantEventInfo.OccupantCount">
+            <summary>
+            The number of occupants on the voxel after the mutation completes.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.OccupantEventInfo.GridIndex">
+            <summary>
+            The grid index containing <see cref="F:GridForge.Grids.OccupantEventInfo.VoxelIndex"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.OccupantEventInfo.#ctor(GridForge.Spatial.GlobalVoxelIndex,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
+            <summary>
+            Initializes a new immutable occupant mutation snapshot.
             </summary>
         </member>
         <member name="F:GridForge.Grids.Pools.GridPool">
@@ -1345,6 +1645,7 @@
             <summary>
             Represents an entity that can occupy a <see cref="T:GridForge.Grids.Voxel"/>.
             Occupants can be dynamic entities such as units or items (obstacles).
+            GridForge owns occupancy bookkeeping for registered occupants.
             </summary>
         </member>
         <member name="P:GridForge.Spatial.IVoxelOccupant.GlobalId">
@@ -1363,25 +1664,6 @@
             Occupants with the same group Id belong to the same logical group.
             This allows efficient retrieval of related occupants in spatial queries.
             </summary>
-        </member>
-        <member name="P:GridForge.Spatial.IVoxelOccupant.OccupyingIndexMap">
-            <summary>
-            Maps the global grid coordinates of the occupied <see cref="T:GridForge.Grids.Voxel"/> 
-            to the unique ticket identifier assigned when this occupant is added to a scan cell.
-            </summary>
-        </member>
-        <member name="M:GridForge.Spatial.IVoxelOccupant.SetOccupancy(GridForge.Spatial.GlobalVoxelIndex,System.Int32)">
-            <summary>
-            Called when adding the occupant from a voxel.
-            </summary>
-            <param name="occupyingIndex">The global voxel index the occupant was added to.</param>
-            <param name="ticket">The occupants assigned ticket in a grid's scancell.</param>
-        </member>
-        <member name="M:GridForge.Spatial.IVoxelOccupant.RemoveOccupancy(GridForge.Spatial.GlobalVoxelIndex)">
-            <summary>
-            Called when removing the occupant from a voxel.
-            </summary>
-            <param name="occupyingIndex">The global voxel index the occupant was removed from.</param>
         </member>
         <member name="T:GridForge.Spatial.IVoxelPartition">
             <summary>
@@ -1790,31 +2072,26 @@
             Provides a configurable logging system for GridForge with support for log levels, formatting, and file output.
             </summary>
         </member>
-        <member name="T:GridForge.GridForgeLogger.LogLevel">
-            <summary>
-            Represents the severity level of a log message.
-            </summary>
-        </member>
         <member name="F:GridForge.GridForgeLogger._logHandler">
             <summary>
-            Delegate for handling log messages. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            Delegate for handling log messages. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.LogHandler">
             <summary>
             Gets or sets the delegate used to write formatted log messages.
-            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="F:GridForge.GridForgeLogger._customFormatter">
             <summary>
-            Delegate for custom log formatting. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            Delegate for custom log formatting. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.CustomFormatter">
             <summary>
             Gets or sets the formatter used to transform log arguments into a final log entry.
-            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(GridForge.GridForgeLogger.LogLevel,System.String,System.String)"/>.
+            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.LogFilePath">
@@ -1822,7 +2099,7 @@
             Gets or sets the file path for logging. If null, file logging is disabled.
             </summary>
         </member>
-        <member name="P:GridForge.GridForgeLogger.Verbosity">
+        <member name="P:GridForge.GridForgeLogger.MinimumLevel">
             <summary>
             Gets or sets the minimum log level required for messages to be logged.
             </summary>
@@ -1832,7 +2109,7 @@
             Synchronization lock for thread-safe logging.
             </summary>
         </member>
-        <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(GridForge.GridForgeLogger.LogLevel,System.String,System.String)">
+        <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
             The default handler for logging messages, writing them to the console and optionally to a file.
             </summary>
@@ -1840,7 +2117,7 @@
             <param name="message">The log message.</param>
             <param name="source">The source of the log message (e.g., calling method).</param>
         </member>
-        <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(GridForge.GridForgeLogger.LogLevel,System.String,System.String)">
+        <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
             The default log formatter that formats log messages with timestamp, log level, and source information.
             </summary>
@@ -1880,7 +2157,7 @@
             Uses fixed-point calculations to ensure deterministic and accurate grid traversal.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double,System.Boolean)">
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
             <summary>
             Traces a 3D line between two points in the grid.
             The traced points are returned as grid voxels.
@@ -1895,7 +2172,7 @@
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Double,System.Boolean)">
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
             <summary>
             Traces a 2D line between two points, snapping them to grid coordinates.
             </summary>
@@ -1908,7 +2185,7 @@
             <param name="includeEnd">Whether to include the end voxel.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all grid voxels covered by the given bounding area.
             </summary>
@@ -1916,7 +2193,7 @@
             <param name="boundsMax">The maximum corner of the bounding area.</param>
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Double)">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all scan cells within the given bounding area across relevant grids.
             </summary>
