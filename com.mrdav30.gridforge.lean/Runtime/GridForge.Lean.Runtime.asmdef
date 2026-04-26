@@ -2,8 +2,8 @@
     "name": "GridForge.Lean.Runtime",
     "rootNamespace": "",
     "references": [
-        "FixedMathSharp.Lean.Runtime",
-        "SwiftCollections.Lean.Runtime"
+        "GUID:ee06434641accdc4bbbc7acbdb9ac78f",
+        "GUID:70f31dc611535b241a8b13d3179e2861"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -2,9 +2,9 @@
     "name": "GridForge.Lean.Editor",
     "rootNamespace": "",
     "references": [
-        "GridForge.Lean.Runtime",
-        "FixedMathSharp.Lean.Runtime",
-        "FixedMathSharp.Lean.Editor"
+        "GUID:520aad56fae3a764faa04ce00743810c",
+        "GUID:64c1e0e8ae81a464d87081f295cc3f26",
+        "GUID:ee06434641accdc4bbbc7acbdb9ac78f"
     ],
     "includePlatforms": [
         "Editor"

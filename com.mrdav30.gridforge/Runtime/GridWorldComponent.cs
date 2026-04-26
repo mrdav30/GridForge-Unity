@@ -30,30 +30,22 @@ namespace GridForge.Unity
         private void Awake()
         {
             if (_initializeOnAwake)
-            {
                 EnsureWorld();
-            }
         }
 
         private void OnDestroy()
         {
             if (_disposeOnDestroy)
-            {
                 DisposeWorld();
-            }
         }
 
         private void OnValidate()
         {
             if (_voxelSize <= Fixed64.Zero)
-            {
                 _voxelSize = GridWorld.DefaultVoxelSize;
-            }
 
             if (_spatialGridCellSize < 1)
-            {
                 _spatialGridCellSize = 1;
-            }
         }
 
         /// <summary>
@@ -62,9 +54,7 @@ namespace GridForge.Unity
         public GridWorld EnsureWorld()
         {
             if (World != null && World.IsActive)
-            {
                 return World;
-            }
 
             DisposeWorld();
             World = new GridWorld(_voxelSize, _spatialGridCellSize);
@@ -90,16 +80,12 @@ namespace GridForge.Unity
         public void ResetWorld(bool deactivate = false)
         {
             if (World == null)
-            {
                 return;
-            }
 
             World.Reset(deactivate);
 
             if (deactivate)
-            {
                 World = null;
-            }
         }
 
         /// <summary>
@@ -108,9 +94,7 @@ namespace GridForge.Unity
         public void DisposeWorld()
         {
             if (World == null)
-            {
                 return;
-            }
 
             World.Dispose();
             World = null;
@@ -125,22 +109,16 @@ namespace GridForge.Unity
         public static GridWorldComponent Resolve(Component context, GridWorldComponent assignedComponent)
         {
             if (assignedComponent != null)
-            {
                 return assignedComponent;
-            }
 
             if (context != null)
             {
                 if (context.TryGetComponent(out GridWorldComponent localWorld))
-                {
                     return localWorld;
-                }
 
                 GridWorldComponent parentWorld = context.GetComponentInParent<GridWorldComponent>();
                 if (parentWorld != null)
-                {
                     return parentWorld;
-                }
             }
 
             return Object.FindFirstObjectByType<GridWorldComponent>();

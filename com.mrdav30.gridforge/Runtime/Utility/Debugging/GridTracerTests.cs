@@ -93,7 +93,7 @@ namespace GridForge.Utility
         private GridWorld ResolveWorld()
         {
             GridWorldComponent worldComponent = GridWorldComponentUtility.Resolve(this, _gridWorldComponent);
-            return worldComponent?.World;
+            return worldComponent != null ? worldComponent.World : null;
         }
 
         #endregion

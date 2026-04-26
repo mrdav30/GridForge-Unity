@@ -37,6 +37,15 @@ namespace GridForge.Blockers
 
         public bool IsSet;
 
+        public GridWorld World
+        {
+            get
+            {
+                var worldComp = ResolveGridWorldComponent();
+                return worldComp != null ? worldComp.World : null;
+            }
+        }
+
         public void Start()
         {
             _hasStarted = true;
@@ -46,9 +55,7 @@ namespace GridForge.Blockers
         public void OnEnable()
         {
             if (_hasStarted)
-            {
                 TryApplyBlockage();
-            }
         }
 
         public void OnDisable()
@@ -59,7 +66,7 @@ namespace GridForge.Blockers
 
         private void TryApplyBlockage()
         {
-            GridWorld world = ResolveWorld();
+            GridWorld world = World;
             if (world == null || !world.IsActive)
             {
                 WarnMissingWorld();
@@ -69,14 +76,10 @@ namespace GridForge.Blockers
             _missingWorldWarningLogged = false;
 
             if (IsSet && ReferenceEquals(_resolvedWorld, world))
-            {
                 return;
-            }
 
             if (!TryCreateBlocker(world))
-            {
                 return;
-            }
 
             _blocker.ApplyBlockage();
             IsSet = true;
@@ -85,9 +88,7 @@ namespace GridForge.Blockers
         private bool TryCreateBlocker(GridWorld world)
         {
             if (_blocker != null && ReferenceEquals(_resolvedWorld, world))
-            {
                 return true;
-            }
 
             if (_blocker != null)
             {
@@ -99,17 +100,10 @@ namespace GridForge.Blockers
             _resolvedWorld = world;
 
             if (_blocker != null)
-            {
                 return true;
-            }
 
             Debug.LogWarning($"{nameof(BlockerComponent)} on {name} has no valid blocker type selected.", this);
             return false;
-        }
-
-        private GridWorld ResolveWorld()
-        {
-            return ResolveGridWorldComponent()?.World;
         }
 
         private GridWorldComponent ResolveGridWorldComponent()
@@ -121,9 +115,7 @@ namespace GridForge.Blockers
         private void WarnMissingWorld()
         {
             if (_missingWorldWarningLogged)
-            {
                 return;
-            }
 
             Debug.LogWarning(
                 $"{nameof(BlockerComponent)} on {name} could not resolve an active {nameof(GridWorldComponent)}. " +

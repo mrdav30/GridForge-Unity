@@ -2,9 +2,9 @@
     "name": "GridForge.Lean.Samples",
     "rootNamespace": "",
     "references": [
-        "FixedMathSharp.Lean.Editor",
-        "GridForge.Lean.Runtime",
-        "GridForge.Lean.Editor"
+        "GUID:cd50d08190013584795f1e21488e3e78",
+        "GUID:520aad56fae3a764faa04ce00743810c",
+        "GUID:8b80b61f7d4ad3e4f97aa4625614ac72"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

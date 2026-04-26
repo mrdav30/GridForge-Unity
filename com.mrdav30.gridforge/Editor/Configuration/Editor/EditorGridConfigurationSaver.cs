@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using FixedMathSharp;
 using FixedMathSharp.Editor;
 using UnityEditor;
 

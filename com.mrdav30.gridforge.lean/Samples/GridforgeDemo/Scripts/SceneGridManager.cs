@@ -4,6 +4,7 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(GridConfigurationSaver))]
+[RequireComponent(typeof(GridWorldComponent))]
 public class SceneGridManager : MonoBehaviour
 {
     private GridConfigurationSaver _configurationSaver;

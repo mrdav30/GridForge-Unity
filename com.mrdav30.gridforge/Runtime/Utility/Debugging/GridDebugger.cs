@@ -58,7 +58,14 @@ namespace GridForge.Utility
 
         public GridWorldComponent GridWorldComponent => ResolveGridWorldComponent();
 
-        public GridWorld World => ResolveGridWorldComponent()?.World;
+        public GridWorld World
+        {
+            get
+            {
+                var worldComp = ResolveGridWorldComponent();
+                return worldComp != null ? worldComp.World : null;
+            }
+        }
 
         private VoxelGrid _targetGrid;
         private int _warnedMissingGridIndex = -1;
@@ -72,22 +79,16 @@ namespace GridForge.Utility
         public void Update()
         {
             if (_enableVoxelSelection && Application.isPlaying)
-            {
                 HandleVoxelSelection();
-            }
         }
 
         public void OnDrawGizmos()
         {
             if (!_showGrid || !Application.isPlaying)
-            {
                 return;
-            }
 
             if (!TryResolveGrid(out _targetGrid))
-            {
                 return;
-            }
 
             DrawGrid();
         }
@@ -99,20 +100,16 @@ namespace GridForge.Utility
         private void HandleVoxelSelection()
         {
             if (!Input.GetMouseButtonDown(0))
-            {
                 return;
-            }
 
             GridWorld world = World;
             if (world == null || !world.IsActive || Camera.main == null)
-            {
                 return;
-            }
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f))
             {
-                Vector3d hitPos = new Vector3d(hit.point.x, hit.point.y, hit.point.z);
+                Vector3d hitPos = new(hit.point.x, hit.point.y, hit.point.z);
                 if (world.TryGetGridAndVoxel(hitPos, out _, out Voxel voxel))
                 {
                     _highlightedVoxelPosition = voxel.WorldPosition.ToVector3();
@@ -178,9 +175,7 @@ namespace GridForge.Utility
         private void DrawGrid()
         {
             if (_targetGrid == null)
-            {
                 return;
-            }
 
             int width = _targetGrid.Width;
             int height = _targetGrid.Height;
@@ -195,9 +190,7 @@ namespace GridForge.Utility
                     for (int z = 0; z < length; z++)
                     {
                         if (!_targetGrid.TryGetVoxel(x, y, z, out Voxel voxel) || !ShouldRenderVoxel(voxel))
-                        {
                             continue;
-                        }
 
                         DrawVoxelGizmo(voxel);
                     }

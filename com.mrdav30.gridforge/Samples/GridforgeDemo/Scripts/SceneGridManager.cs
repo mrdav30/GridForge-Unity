@@ -4,6 +4,7 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(GridConfigurationSaver))]
+[RequireComponent(typeof(GridWorldComponent))]
 public class SceneGridManager : MonoBehaviour
 {
     private GridConfigurationSaver _configurationSaver;
@@ -15,9 +16,7 @@ public class SceneGridManager : MonoBehaviour
         _gridWorldComponent = GetComponent<GridWorldComponent>();
 
         if (_gridWorldComponent == null)
-        {
             _gridWorldComponent = gameObject.AddComponent<GridWorldComponent>();
-        }
 
         _configurationSaver.EarlyApply(
             _gridWorldComponent.RebuildWorld(

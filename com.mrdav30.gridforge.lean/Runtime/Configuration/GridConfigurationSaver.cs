@@ -121,7 +121,7 @@ namespace GridForge.Configuration
                     {
                         for (Fixed64 z = serializedConfig.BoundsMin.z; z <= serializedConfig.BoundsMax.z; z++)
                         {
-                            Vector3d drawPos = new Vector3d(x, y, z);
+                            Vector3d drawPos = new(x, y, z);
                             Gizmos.DrawCube(drawPos.ToVector3(), scale);
                             Gizmos.color = Color.black;
                             Gizmos.DrawWireCube(drawPos.ToVector3(), scale * 1.02f);

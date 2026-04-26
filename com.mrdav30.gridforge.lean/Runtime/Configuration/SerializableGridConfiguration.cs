@@ -1,6 +1,6 @@
-﻿using System;
+﻿using FixedMathSharp;
+using System;
 using UnityEngine;
-using FixedMathSharp;
 
 namespace GridForge.Configuration
 {

@@ -58,7 +58,14 @@ namespace GridForge.Utility
 
         public GridWorldComponent GridWorldComponent => ResolveGridWorldComponent();
 
-        public GridWorld World => ResolveGridWorldComponent()?.World;
+        public GridWorld World
+        {
+            get
+            {
+                var worldComp = ResolveGridWorldComponent();
+                return worldComp != null ? worldComp.World : null;
+            }
+        }
 
         private VoxelGrid _targetGrid;
         private int _warnedMissingGridIndex = -1;
@@ -112,7 +119,7 @@ namespace GridForge.Utility
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f))
             {
-                Vector3d hitPos = new Vector3d(hit.point.x, hit.point.y, hit.point.z);
+                Vector3d hitPos = new(hit.point.x, hit.point.y, hit.point.z);
                 if (world.TryGetGridAndVoxel(hitPos, out _, out Voxel voxel))
                 {
                     _highlightedVoxelPosition = voxel.WorldPosition.ToVector3();

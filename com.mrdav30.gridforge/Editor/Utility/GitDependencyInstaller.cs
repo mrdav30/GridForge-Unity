@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
-using System.Text.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -48,7 +48,7 @@ namespace GridForge.Editor
                 "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
                 "v3.0.1"
             ),
-			new(
+            new(
                 "com.mrdav30.swiftcollections",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
                 "v4.0.1"
