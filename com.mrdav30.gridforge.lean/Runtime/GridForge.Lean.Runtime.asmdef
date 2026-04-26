@@ -1,0 +1,17 @@
+{
+    "name": "GridForge.Lean.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "FixedMathSharp.Lean.Runtime",
+        "SwiftCollections.Lean.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

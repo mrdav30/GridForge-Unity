@@ -1,142 +1,58 @@
 # GridForge-Unity
-==============
 
-![GridForge Icon](https://raw.githubusercontent.com/mrdav30/GridForge/main/icon.png)
+Unity package host for GridForge.
 
-**A high-performance, deterministic voxel grid system for spatial partitioning, simulation, and game development in Unity.**
+This repository contains two installable Unity Package Manager variants. Choose
+one package only. The variants overlap and are not meant to be installed
+together.
 
-Lightweight and optimized for lockstep engines.
+## Which Package Should I Use?
 
-This package is a Unity-specific implementation of the [GridForge](https://github.com/mrdav30/GridForge) library
+| Package | Use it when | Install |
+| --- | --- | --- |
+| `com.mrdav30.gridforge` | You want the default GridForge Unity package with the standard dependency chain. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge` |
+| `com.mrdav30.gridforge.lean` | You want the same Unity integration without the `MemoryPack` dependency chain. Prefer this for Burst AOT or your own serialization stack. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean` |
 
----
+## How The Variants Differ
 
-## 🚀 Key Features
+`Lean` variants:
 
-- **Voxel-Based Spatial Partitioning** – Build efficient 3D **voxel grids** with fast access & updates.
-- **Deterministic & Lockstep Ready** – Designed for **synchronized multiplayer** and physics-safe environments.
-- **ScanCell Overlay System** – Accelerated **proximity and radius queries** using spatial hashing.
-- **Dynamic Occupancy & Obstacle Tracking** – Manage **moving occupants, dynamic obstacles**, and voxel metadata.
-- **Minimal Allocations & Fast Queries** – Built with **SwiftCollections** and **FixedMathSharp** for optimal performance.
-- **Multi-Layered Grid System** – **Dynamic, hierarchical, and persistent grids**.
+- Omit the `MemoryPack` dependency chain.
+- Prefer these when Burst AOT compatibility or a custom serialization layer is
+  more important than the default serialization path.
 
----
+Shared behavior:
 
-## 📦 Installation
+- Both packages target GridForge v6 and use explicit `GridWorld` ownership.
+- Both packages include the same Unity-facing helpers such as
+  `GridWorldComponent`, `GridConfigurationSaver`, `BlockerComponent`,
+  `GridDebugger`, and `GridTracerTests`.
+- If you use multiple worlds in one scene, assign the intended
+  `GridWorldComponent` explicitly on blockers and debugging helpers instead of
+  relying on auto-resolution.
 
-### 🧩 Dependencies
+## Dependency Handling
 
-GridForge-Unity depends on the following Unity packages:
+Each package includes an editor-side dependency installer that attempts to add
+the matching `FixedMathSharp-Unity` and `SwiftCollections-Unity` package
+variants for you.
 
-- [FixedMathSharp-Unity](https://github.com/mrdav30/FixedMathSharp-Unity)
-- [SwiftCollections-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
+If Unity does not resolve those dependencies cleanly, use the matching install
+URLs below or run the package repair menu item under `Tools > mrdav30`.
 
-These dependencies must be installed before using GridForge-Unity.
+- Standard dependencies:
+  `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp`
+  and
+  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections`
+- Lean dependencies:
+  `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean`
+  and
+  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean`
 
-### Via Unity Package Manager (UPM)
+## Notes
 
-1. Open **Unity**.
-2. Go to **Window** → **Package Manager**.
-3. Click the **+** icon and select **"Add package from git URL..."**.
-4. Enter:
-
-    <https://github.com/mrdav30/GridForge-Unity.git>
-
-5. Click **Add**.
-
-### Manual Installation
-
-1. Download the .unitypackage file from the [latest release](https://github.com/mrdav30/SwiftCollections-Unity/releases).
-2. Open Unity and import the package via **Assets → Import Package → Custom Package...**.
-3. Select the downloaded file and import the contents.
-
----
-
-## 📖 Usage Examples
-
-### **🔹 Creating a Grid**
-
-```csharp
-GridConfiguration config = new GridConfiguration(new Vector3d(-10, 0, -10), new Vector3d(10, 0, 10));
-GlobalGridManager.TryAddGrid(config, out ushort gridIndex);
-```
-
-### **🔹 Querying a Grid for Nodes**
-
-```csharp
-Vector3d queryPosition = new Vector3d(5, 0, 5);
-if (GlobalGridManager.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel)) {
-    Console.WriteLine($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
-}
-```
-
-### **🔹 Adding a Blocker**
-
-```csharp
-BoundingArea blockArea = new BoundingArea(new Vector3d(3, 0, 3), new Vector3d(5, 0, 5));
-Blocker blocker = new Blocker(blockArea);
-blocker.ApplyBlockage();
-```
-
-### **🔹 Attaching a Partition to a Voxel**
-
-```csharp
-if (GlobalGridManager.TryGetGrid(queryPosition, out VoxelGrid grid, out Voxel voxel))
-{
-    PathPartition partition = new PathPartition();
-    partition.Setup(voxel.GlobalVoxelIndex);
-    voxel.AddPartition(partition);
-}
-```
-
-### **🔹 Scanning for Nearby Occupants**
-
-```csharp
-Vector3d scanCenter = new Vector3d(0, 0, 0);
-Fixed64 scanRadius = (Fixed64)5;
-foreach (IVoxelOccupant occupant in ScanManager.ScanRadius(scanCenter, scanRadius))
-{
-    Console.WriteLine($"Found occupant at {occupant.WorldPosition}");
-}
-```
-
-## 🎮 Unity Debugging Tools
-
-GridForge includes **editor utilities** for debugging:
-
-- **GridDebugger** – Visualizes **grids, voxels, and selected areas**.
-- **GridTracer Debuging** – Helps debug **line-of-sight & navigation**.
-- **Blocker Editor** – Allows **visual blocker placement** via Unity Inspector.
-
----
-
-## 🔄 Compatibility
-
-- **Unity 2020+**
-- **Supports deterministic lockstep engines**
-- **Compatible with AI navigation and procedural world systems**
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the `LICENSE` file for details.
-
----
-
-## 👥 Contributors
-
-- **David Oravsky** - Lead Developer
-- **Contributions Welcome!** Open a PR or issue.
-
----
-
-## 💬 Community & Support
-
-For questions, discussions, or general support, join the official Discord community:
-
-👉 **[Join the Discord Server](https://discord.gg/mhwK2QFNBA)**
-
-For bug reports or feature requests, please open an issue in this repository.
-
-We welcome feedback, contributors, and community discussion across all projects.
+- All packages in this repo target Unity `2022.3+`.
+- The underlying .NET library lives here:
+  [GridForge](https://github.com/mrdav30/GridForge)
+- Each package folder keeps a short, package-specific install README with
+  `GridWorld` usage examples.
