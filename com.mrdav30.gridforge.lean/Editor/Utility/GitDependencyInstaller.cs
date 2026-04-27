@@ -39,7 +39,7 @@ namespace GridForge.Editor
 
         private const string ManifestPath = "Packages/manifest.json";
 
-        private const string CollectionsPackage = "com.mrdav30.gridforge.lean";
+        private const string CollectionsPackage = "GridForge.Lean";
 
         private static readonly Dependency[] RequiredDependencies =
         {
@@ -62,7 +62,7 @@ namespace GridForge.Editor
             EditorApplication.delayCall += Install;
         }
 
-        [MenuItem("Tools/mrdav30/Repair " + CollectionsPackage + " Dependencies")]
+        [MenuItem("Tools/ " + CollectionsPackage + " /Repair Dependencies")]
         private static void RepairDependenciesMenu()
         {
             SessionState.SetBool(Key, false); // allow reinstall

@@ -38,7 +38,7 @@ the matching `FixedMathSharp-Unity` and `SwiftCollections-Unity` package
 variants for you.
 
 If Unity does not resolve those dependencies cleanly, use the matching install
-URLs below or run the package repair menu item under `Tools > mrdav30`.
+URLs below or run the package repair menu item under `Tools > GridForge*`.
 
 - Standard dependencies:
   `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp`
@@ -64,3 +64,9 @@ URLs below or run the package repair menu item under `Tools > mrdav30`.
   `Tools > GridForge > Sync Managed Package Files`.
 - Sync from the command line via Unity batchmode and
   `-executeMethod GridForge.Build.Editor.GridForgePackageSync.SyncPackagesBatchMode`.
+- Export both `.unitypackage` archives from Unity via
+  `Tools > GridForge > Export Unity Packages`.
+- Export from the command line via Unity batchmode and
+  `-executeMethod GridForge.Build.Editor.GridForgeUnityPackageExporter.ExportUnityPackagesBatchMode`.
+  Optionally pass `-gridforgeUnityPackageOutputPath <folder>` to override the
+  default export folder `UnityPackageExports~` at the project root.
