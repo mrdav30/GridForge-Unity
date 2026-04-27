@@ -1,6 +1,6 @@
 # GridForge-Unity
 
-Unity package host for GridForge.
+Unity package host for [GridForge](https://github.com/mrdav30/GridForge).
 
 This repository contains two installable Unity Package Manager variants. Choose
 one package only. The variants overlap and are not meant to be installed
@@ -56,3 +56,10 @@ URLs below or run the package repair menu item under `Tools > mrdav30`.
   [GridForge](https://github.com/mrdav30/GridForge)
 - Each package folder keeps a short, package-specific install README with
   `GridWorld` usage examples.
+- Repo maintenance note:
+  `.variants/gridforge/` is the authored source of truth. The automated
+  packaging workflow stages each variant through Unity batchmode and emits final
+  package folders under `UpmPackages~/` via
+  `python3 .variants/gridforge/build-packages.py`, then
+  mirrors the generated results back into the visible `com.mrdav30.gridforge*`
+  folders so the repo install paths stay current.
