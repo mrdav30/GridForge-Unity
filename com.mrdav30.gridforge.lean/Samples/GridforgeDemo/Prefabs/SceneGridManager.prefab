@@ -9,8 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1501001554770277346}
-  - component: {fileID: -6459351685516642275}
-  - component: {fileID: 3118868396956509893}
+  - component: {fileID: 6854994468277239238}
+  - component: {fileID: 1179012785331720637}
+  - component: {fileID: 4980361377559853614}
   m_Layer: 0
   m_Name: SceneGridManager
   m_TagString: Untagged
@@ -33,7 +34,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-6459351685516642275
+--- !u!114 &6854994468277239238
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,10 +43,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5048625497584760286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e9ffdc925129d446bf3932cadd78a88, type: 3}
+  m_Script: {fileID: 11500000, guid: aa1d6e1b09011a3408862f9d867607be, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &3118868396956509893
+  m_EditorClassIdentifier: GridForge.Lean.Samples::SceneGridManager
+--- !u!114 &1179012785331720637
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -54,23 +55,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 5048625497584760286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0246e683ea7fca341b36b09f6f163963, type: 3}
+  m_Script: {fileID: 11500000, guid: a2054855da532764b98a918f14ded7fc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  _savedGridConfigurations:
-  - _boundsMin:
-      x:
-        m_rawValue: -214748364800
-      y:
-        m_rawValue: -4294967296
-      z:
-        m_rawValue: -214748364800
-    _boundsMax:
-      x:
-        m_rawValue: 214748364800
-      y:
-        m_rawValue: 4294967296
-      z:
-        m_rawValue: 214748364800
-    _scanCellSize: 0
+  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
+  _spatialGridCellSize: 50
+  _voxelSize:
+    m_rawValue: 4294967296
+  _savedGridConfigurations: []
   Show: 1
+--- !u!114 &4980361377559853614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5048625497584760286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec67418943f17494987fa8ac482c73cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Unity.GridWorldComponent
+  _voxelSize:
+    m_rawValue: 4294967296
+  _spatialGridCellSize: 50
+  _initializeOnAwake: 1
+  _disposeOnDestroy: 1

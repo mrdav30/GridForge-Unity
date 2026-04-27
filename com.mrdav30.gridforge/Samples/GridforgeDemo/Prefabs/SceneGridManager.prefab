@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1501001554770277346}
   - component: {fileID: -6459351685516642275}
   - component: {fileID: 3118868396956509893}
+  - component: {fileID: 7289868829356878611}
   m_Layer: 0
   m_Name: SceneGridManager
   m_TagString: Untagged
@@ -42,7 +43,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5048625497584760286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e9ffdc925129d446bf3932cadd78a88, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f0dbe959f3a50a4a8b7b1531a82dfa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &3118868396956509893
@@ -54,23 +55,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 5048625497584760286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0246e683ea7fca341b36b09f6f163963, type: 3}
+  m_Script: {fileID: 11500000, guid: 6dbdb1512c48d3d45b31ed705cdfe943, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _savedGridConfigurations:
-  - _boundsMin:
-      x:
-        m_rawValue: -214748364800
-      y:
-        m_rawValue: -4294967296
-      z:
-        m_rawValue: -214748364800
-    _boundsMax:
-      x:
-        m_rawValue: 214748364800
-      y:
-        m_rawValue: 4294967296
-      z:
-        m_rawValue: 214748364800
-    _scanCellSize: 0
+  _spatialGridCellSize: 50
+  _voxelSize:
+    m_rawValue: 4294967296
+  _savedGridConfigurations: []
   Show: 1
+--- !u!114 &7289868829356878611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5048625497584760286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35cea9583918cf24782b06ea52e28359, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Unity.GridWorldComponent
+  _voxelSize:
+    m_rawValue: 4294967296
+  _spatialGridCellSize: 50
+  _initializeOnAwake: 1
+  _disposeOnDestroy: 1

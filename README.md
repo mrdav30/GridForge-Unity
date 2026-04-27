@@ -57,9 +57,10 @@ URLs below or run the package repair menu item under `Tools > mrdav30`.
 - Each package folder keeps a short, package-specific install README with
   `GridWorld` usage examples.
 - Repo maintenance note:
-  `.variants/gridforge/` is the authored source of truth. The automated
-  packaging workflow stages each variant through Unity batchmode and emits final
-  package folders under `UpmPackages~/` via
-  `python3 .variants/gridforge/build-packages.py`, then
-  mirrors the generated results back into the visible `com.mrdav30.gridforge*`
-  folders so the repo install paths stay current.
+  `Assets/Packages/Build/Base/` is the shared managed-code source of truth.
+  The package-specific folders keep their own package metadata, plugins, asmdefs,
+  and serialized sample assets.
+- Sync shared managed code from Unity via
+  `Tools > GridForge > Sync Managed Package Files`.
+- Sync from the command line via Unity batchmode and
+  `-executeMethod GridForge.Build.Editor.GridForgePackageSync.SyncPackagesBatchMode`.

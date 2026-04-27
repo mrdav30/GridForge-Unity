@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3045444101906071416}
-  - component: {fileID: 2997840345724796969}
+  - component: {fileID: 4587617491230436874}
   - component: {fileID: 2147489866034159609}
   m_Layer: 0
   m_Name: GridDebugger
@@ -33,7 +33,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2997840345724796969
+--- !u!114 &4587617491230436874
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,15 +42,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 958925474289856290}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aa07b0f961f79c408302c368571048c, type: 3}
+  m_Script: {fileID: 11500000, guid: 708f64f6e12d9f646a9099a012702676, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Utility.GridDebugger
   _showGrid: 1
-  _nodeFilter: 0
-  _enableNodeSelection: 1
+  _voxelFilter: 0
+  _enableVoxelSelection: 0
   _highlightColor: {r: 0, g: 1, b: 0, a: 1}
-  _highlightedNodePosition: {x: 0, y: 0, z: 0}
+  _highlightedVoxelPosition: {x: 0, y: 0, z: 0}
   _gridIndex: 0
+  _gridWorldComponent: {fileID: 0}
 --- !u!114 &2147489866034159609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,12 +61,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 958925474289856290}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 777cc404b1e7049429ad9a718eac2c83, type: 3}
+  m_Script: {fileID: 11500000, guid: f6dbe62fda8688e438dd745c5abd8905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _showGrid: 1
+  _showVoxelTrail: 1
   _showLine: 1
-  _gridHeight:
+  _lineHeight:
     m_rawValue: 4294967296
   startTransform: {fileID: 0}
   endTransform: {fileID: 0}
+  _gridWorldComponent: {fileID: 0}
