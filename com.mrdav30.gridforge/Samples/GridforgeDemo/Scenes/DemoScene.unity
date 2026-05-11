@@ -168,6 +168,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3118868396956509893, guid: 2e315353c6b5b7749b8dff055a835e4b, type: 3}
+      propertyPath: Show
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3118868396956509893, guid: 2e315353c6b5b7749b8dff055a835e4b, type: 3}
       propertyPath: _savedGridConfigurations.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -346,6 +350,10 @@ PrefabInstance:
       value: Blocker
       objectReference: {fileID: 0}
     - target: {fileID: 8635610293623470319, guid: af67dab839a2b954c93f43202ee64f83, type: 3}
+      propertyPath: _cacheCoveredVoxels
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8635610293623470319, guid: af67dab839a2b954c93f43202ee64f83, type: 3}
       propertyPath: _manualBlockArea.Corner1.x.m_rawValue
       value: 21474836480
       objectReference: {fileID: 0}
@@ -355,7 +363,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8635610293623470319, guid: af67dab839a2b954c93f43202ee64f83, type: 3}
       propertyPath: _manualBlockArea.Corner2.x.m_rawValue
-      value: 42949672960
+      value: 64424509440
       objectReference: {fileID: 0}
     - target: {fileID: 8635610293623470319, guid: af67dab839a2b954c93f43202ee64f83, type: 3}
       propertyPath: _manualBlockArea.Corner2.y.m_rawValue
@@ -637,6 +645,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3045444101906071416, guid: 4593aa859c39e624cb13255696c58111, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4587617491230436874, guid: 4593aa859c39e624cb13255696c58111, type: 3}
+      propertyPath: _showGrid
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4587617491230436874, guid: 4593aa859c39e624cb13255696c58111, type: 3}

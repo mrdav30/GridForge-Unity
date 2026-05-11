@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 2930497301884771607}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 10, y: 1, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -127,21 +127,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridForge.Runtime::GridForge.Blockers.BlockerComponent
   _blockerType: 1
   _isActive: 1
-  _cacheCoveredVoxels: 0
+  _cacheCoveredVoxels: 1
   _manualBlockArea:
     Corner1:
       x:
-        m_rawValue: 42949672960
+        m_rawValue: 21474836480
+      y:
+        m_rawValue: 0
+      z:
+        m_rawValue: -12884901888
+    Corner2:
+      x:
+        m_rawValue: 64424509440
       y:
         m_rawValue: 0
       z:
         m_rawValue: -55834574848
-    Corner2:
-      x:
-        m_rawValue: 21474836480
-      y:
-        m_rawValue: 4294967296
-      z:
-        m_rawValue: -12884901888
   _gridWorldComponent: {fileID: 0}
   IsSet: 0
