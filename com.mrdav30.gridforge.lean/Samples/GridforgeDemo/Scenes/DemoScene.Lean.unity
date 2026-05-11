@@ -623,6 +623,10 @@ PrefabInstance:
       value: Blocker
       objectReference: {fileID: 0}
     - target: {fileID: 7061918156684520014, guid: 91a8369a93eb99044b490bdbd6ac537b, type: 3}
+      propertyPath: _blockAreaSource
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7061918156684520014, guid: 91a8369a93eb99044b490bdbd6ac537b, type: 3}
       propertyPath: _manualBlockArea.Corner1.x.m_rawValue
       value: 38654705664
       objectReference: {fileID: 0}
