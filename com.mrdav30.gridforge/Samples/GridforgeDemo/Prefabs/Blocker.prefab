@@ -131,17 +131,17 @@ MonoBehaviour:
   _manualBlockArea:
     Corner1:
       x:
-        m_rawValue: -21474836480
+        m_rawValue: 42949672960
       y:
         m_rawValue: 0
       z:
-        m_rawValue: -21474836480
+        m_rawValue: -55834574848
     Corner2:
       x:
         m_rawValue: 21474836480
       y:
         m_rawValue: 4294967296
       z:
-        m_rawValue: 21474836480
+        m_rawValue: -12884901888
   _gridWorldComponent: {fileID: 0}
   IsSet: 0

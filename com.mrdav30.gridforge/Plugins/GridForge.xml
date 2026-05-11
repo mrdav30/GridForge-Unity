@@ -254,6 +254,16 @@
         <member name="M:GridForge.Configuration.GridConfiguration.GetHashCode">
             <inheritdoc/>
         </member>
+        <member name="T:GridForge.Grids.GridScanScratch">
+            <summary>
+            Reusable temporary storage for allocation-sensitive grid scan operations.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanScratch.Clear">
+            <summary>
+            Clears all temporary scan state while retaining allocated backing storage.
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.GridDirectionUtility">
             <summary>
             Provides stateless helpers for translating relative grid offsets into directions.
@@ -496,6 +506,26 @@
         <member name="M:GridForge.Grids.GridScanManager.ScanRadius``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Scans for occupants of a specific type within a given radius in the supplied world.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned storage with occupants within the supplied radius.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},GridForge.Grids.GridScanScratch,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned storage with typed occupants within the supplied radius.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},GridForge.Grids.GridScanScratch,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned typed storage using caller-owned scratch collections.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GridScanManager.GetVoxelOccupantsByType``1(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex)">
@@ -762,6 +792,11 @@
             Enumerates the spatial-hash cells that intersect the supplied bounds.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridWorld.GetSpatialGridCellBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Computes normalized spatial-hash cell bounds for the supplied world-space bounds.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.GridWorld.FindOverlappingGrids(GridForge.Grids.VoxelGrid)">
             <summary>
             Finds active grids in this world that overlap the supplied target grid.
@@ -870,6 +905,16 @@
         <member name="M:GridForge.Grids.ScanCell.GetConditionalOccupants(System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Retrieves occupants whose group Ids match a given condition.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.AddOccupantsWithinRadiusTo(SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Appends occupants within the squared radius to caller-owned storage without allocating an iterator.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.AddOccupantsWithinRadiusTo``1(SwiftCollections.SwiftList{``0},FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Appends typed occupants within the squared radius to caller-owned storage without LINQ.
             </summary>
         </member>
         <member name="M:GridForge.Grids.ScanCell.GetOccupantsFor(GridForge.Spatial.WorldVoxelIndex)">
@@ -2061,20 +2106,25 @@
             Provides a configurable logging system for GridForge with support for log levels, formatting, and file output.
             </summary>
         </member>
-        <member name="F:GridForge.GridForgeLogger._logHandler">
+        <member name="P:GridForge.GridForgeLogger.Channel">
             <summary>
-            Delegate for handling log messages. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
+            Gets the diagnostic channel used by GridForge logging.
+            </summary>
+        </member>
+        <member name="P:GridForge.GridForgeLogger.DebugChannel">
+            <summary>
+            Gets the diagnostic channel used for verbose debug diagnostics.
+            </summary>
+        </member>
+        <member name="P:GridForge.GridForgeLogger.EnableDebugLogging">
+            <summary>
+            Gets or sets a value indicating whether verbose debug diagnostics should be emitted.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.LogHandler">
             <summary>
             Gets or sets the delegate used to write formatted log messages.
             Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
-            </summary>
-        </member>
-        <member name="F:GridForge.GridForgeLogger._customFormatter">
-            <summary>
-            Delegate for custom log formatting. Defaults to <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.CustomFormatter">
@@ -2093,10 +2143,12 @@
             Gets or sets the minimum log level required for messages to be logged.
             </summary>
         </member>
-        <member name="F:GridForge.GridForgeLogger._lock">
+        <member name="M:GridForge.GridForgeLogger.IsEnabled(SwiftCollections.Diagnostics.DiagnosticLevel)">
             <summary>
-            Synchronization lock for thread-safe logging.
+            Determines whether diagnostics at the specified level are currently enabled.
             </summary>
+            <param name="level">The diagnostic level to evaluate.</param>
+            <returns><see langword="true"/> when messages at <paramref name="level"/> will be emitted; otherwise, <see langword="false"/>.</returns>
         </member>
         <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
@@ -2104,7 +2156,7 @@
             </summary>
             <param name="level">The severity level of the log message.</param>
             <param name="message">The log message.</param>
-            <param name="source">The source of the log message (e.g., calling method).</param>
+            <param name="source">The source of the log message.</param>
         </member>
         <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
@@ -2112,33 +2164,8 @@
             </summary>
             <param name="level">The severity level of the log message.</param>
             <param name="message">The log message.</param>
-            <param name="source">The source of the log message (e.g., calling method).</param>
+            <param name="source">The source of the log message.</param>
             <returns>A formatted log entry as a string.</returns>
-        </member>
-        <member name="M:GridForge.GridForgeLogger.Info(System.String,System.String,System.String)">
-            <summary>
-            Logs an informational message.
-            </summary>
-            <param name="message">The message to log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
-        </member>
-        <member name="M:GridForge.GridForgeLogger.Warn(System.String,System.String,System.String)">
-            <summary>
-            Logs a warning message.
-            </summary>
-            <param name="message">The warning message to log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
-        </member>
-        <member name="M:GridForge.GridForgeLogger.Error(System.String,System.Exception,System.String,System.String)">
-            <summary>
-            Logs an error message, optionally including an exception stack trace.
-            </summary>
-            <param name="message">The error message to log.</param>
-            <param name="ex">An optional exception whose details will be included in the log.</param>
-            <param name="method">The calling method name, automatically captured.</param>
-            <param name="filePath">The calling file name, automatically captured to get the class name.</param>
         </member>
         <member name="T:GridForge.Utility.GridTracer">
             <summary>
@@ -2184,6 +2211,26 @@
             <param name="boundsMax">The maximum corner of the bounding area.</param>
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage with scan cells covered by the supplied bounding area.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.AddCoveredScanCellsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Appends covered scan cells without allocating an iterator for hot-path callers.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.AddCoveredScanCellsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Appends covered scan cells using caller-owned scratch state for allocation-sensitive scans.
+            </summary>
         </member>
     </members>
 </doc>
