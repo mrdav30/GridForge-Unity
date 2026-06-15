@@ -1,4 +1,3 @@
-using FixedMathSharp;
 using GridForge.Grids;
 using UnityEngine;
 
@@ -11,8 +10,6 @@ namespace GridForge.Unity
     [DefaultExecutionOrder(-1000)]
     public class GridWorldComponent : MonoBehaviour
     {
-        [SerializeField] private Fixed64 _voxelSize = Fixed64.One;
-
         [SerializeField] private int _spatialGridCellSize = GridWorld.DefaultSpatialGridCellSize;
 
         [SerializeField] private bool _initializeOnAwake = true;

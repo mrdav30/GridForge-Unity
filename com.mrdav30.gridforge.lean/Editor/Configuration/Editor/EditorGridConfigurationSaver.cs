@@ -1,6 +1,6 @@
-﻿#if UNITY_EDITOR
-using FixedMathSharp.Editor;
+#if UNITY_EDITOR
 using UnityEditor;
+using UnityEngine;
 
 namespace GridForge.Configuration.Editor
 {
@@ -11,33 +11,55 @@ namespace GridForge.Configuration.Editor
     [CustomEditor(typeof(GridConfigurationSaver))]
     public class EditorGridConfigurationSaver : UnityEditor.Editor
     {
-        SerializedProperty _voxelSize;
-        SerializedProperty _spatialGridCellSize;
-        SerializedProperty _savedGridConfigurations;
+        private SerializedProperty _spatialGridCellSize;
+        private SerializedProperty _savedGridConfigurations;
+        private SerializedProperty _show;
 
         private void OnEnable()
         {
-            _voxelSize = serializedObject.FindProperty("_voxelSize");
             _spatialGridCellSize = serializedObject.FindProperty("_spatialGridCellSize");
             _savedGridConfigurations = serializedObject.FindProperty("_savedGridConfigurations");
+            _show = serializedObject.FindProperty("Show");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            FMSEditorUtility.FixedNumberField("Voxel Size", ref _voxelSize, 0, 1);
-
             EditorGUILayout.PropertyField(_spatialGridCellSize);
-
             EditorGUILayout.PropertyField(_savedGridConfigurations, true);
+
+            if (!EditorApplication.isPlaying)
+                EditorGUILayout.PropertyField(_show);
 
             serializedObject.ApplyModifiedProperties();
 
-            if (!EditorApplication.isPlaying)
+            DrawValidationMessages((GridConfigurationSaver)target);
+        }
+
+        private static void DrawValidationMessages(GridConfigurationSaver saver)
+        {
+            for (int i = 0; i < saver.SavedGridConfigurations.Count; i++)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("Show"));
-                serializedObject.ApplyModifiedProperties();
+                SerializableGridConfiguration config = saver.SavedGridConfigurations[i];
+                if (config.BoundsMax < config.BoundsMin)
+                {
+                    EditorGUILayout.HelpBox(
+                        $"Grid {i}: bounds max must be greater than or equal to bounds min.",
+                        MessageType.Warning);
+                    continue;
+                }
+
+                if (!config.TryToGridConfiguration(out _, out string configFailure))
+                {
+                    EditorGUILayout.HelpBox($"Grid {i}: {configFailure}", MessageType.Warning);
+                    continue;
+                }
+
+                if (!config.TryGetConfiguredSparseVoxels(out _, out string sparseFailure))
+                {
+                    EditorGUILayout.HelpBox($"Grid {i}: {sparseFailure}", MessageType.Warning);
+                }
             }
         }
     }

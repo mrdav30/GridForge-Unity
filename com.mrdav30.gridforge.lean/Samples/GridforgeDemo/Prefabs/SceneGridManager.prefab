@@ -59,8 +59,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 50
-  _voxelSize:
-    m_rawValue: 4294967296
   _savedGridConfigurations: []
   Show: 1
 --- !u!114 &4980361377559853614
@@ -75,8 +73,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec67418943f17494987fa8ac482c73cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Unity.GridWorldComponent
-  _voxelSize:
-    m_rawValue: 4294967296
   _spatialGridCellSize: 50
   _initializeOnAwake: 1
   _disposeOnDestroy: 1

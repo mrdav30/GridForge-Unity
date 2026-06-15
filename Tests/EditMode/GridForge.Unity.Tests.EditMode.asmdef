@@ -2,6 +2,7 @@
     "name": "GridForge.Unity.Tests.EditMode",
     "references": [
         "GridForge.Runtime",
+        "FixedMathSharp.Runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
@@ -13,7 +14,9 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "nunit.framework.dll",
-        "GridForge.dll"
+        "GridForge.dll",
+        "FixedMathSharp.dll",
+        "SwiftCollections.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

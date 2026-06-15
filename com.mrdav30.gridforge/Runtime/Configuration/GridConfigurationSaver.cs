@@ -1,5 +1,7 @@
 using FixedMathSharp;
 using GridForge.Grids;
+using GridForge.Grids.Storage;
+using GridForge.Spatial;
 using GridForge.Unity;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,14 +26,6 @@ namespace GridForge.Configuration
         public int SpatialGridCellSize => _spatialGridCellSize;
 
         /// <summary>
-        /// The size of each grid voxel in world units.
-        /// </summary>
-        [SerializeField] private Fixed64 _voxelSize = Fixed64.One;
-
-        /// <inheritdoc cref="_voxelSize"/>
-        public Fixed64 VoxelSize => _voxelSize;
-
-        /// <summary>
         /// List of saved grid configurations.
         /// </summary>
         [SerializeField] private List<SerializableGridConfiguration> _savedGridConfigurations = new();
@@ -45,6 +39,12 @@ namespace GridForge.Configuration
 
         #endregion
 
+        private void OnValidate()
+        {
+            if (_spatialGridCellSize < 1)
+                _spatialGridCellSize = 1;
+        }
+
         #region Grid Management
 
         /// <summary>
@@ -52,7 +52,15 @@ namespace GridForge.Configuration
         /// </summary>
         public void Save(Vector3d boundsMin, Vector3d boundsMax, int scanCellSize)
         {
-            _savedGridConfigurations.Add(new SerializableGridConfiguration(boundsMin, boundsMax, scanCellSize));
+            Save(new SerializableGridConfiguration(boundsMin, boundsMax, scanCellSize));
+        }
+
+        /// <summary>
+        /// Saves the supplied grid configuration into the list.
+        /// </summary>
+        public void Save(SerializableGridConfiguration configuration)
+        {
+            _savedGridConfigurations.Add(configuration);
         }
 
         /// <summary>
@@ -82,21 +90,52 @@ namespace GridForge.Configuration
             }
 
             foreach (SerializableGridConfiguration serializedConfig in SavedGridConfigurations)
+                TryApplyConfiguration(world, serializedConfig);
+        }
+
+        private bool TryApplyConfiguration(GridWorld world, SerializableGridConfiguration serializedConfig)
+        {
+            if (serializedConfig.BoundsMax < serializedConfig.BoundsMin)
             {
-                if (serializedConfig.BoundsMax < serializedConfig.BoundsMin)
+                Debug.LogWarning("Invalid Grid Bounds: GridMax must be greater than or equal to GridMin.", this);
+                return false;
+            }
+
+            if (!serializedConfig.TryToGridConfiguration(out GridConfiguration config, out string configFailure))
+            {
+                Debug.LogWarning($"Invalid Grid Configuration: {configFailure}", this);
+                return false;
+            }
+
+            if (config.StorageKind == GridStorageKind.Sparse)
+            {
+                if (!serializedConfig.TryGetConfiguredSparseVoxels(out VoxelIndex[] configuredVoxels, out string sparseFailure))
                 {
-                    Debug.LogWarning("Invalid Grid Bounds: GridMax must be greater than or equal to GridMin.", this);
-                    continue;
+                    Debug.LogWarning($"Invalid Sparse Voxel Configuration: {sparseFailure}", this);
+                    return false;
                 }
 
-                GridConfiguration config = serializedConfig.ToGridConfiguration();
-                if (!world.TryAddGrid(config, out _))
+                if (!world.TryAddGrid(config, configuredVoxels, out _))
                 {
                     Debug.LogWarning(
-                        $"Failed to add grid to {nameof(GridWorld)}: {config.BoundsMin} - {config.BoundsMax}",
+                        $"Failed to add sparse grid to {nameof(GridWorld)}: {config.BoundsMin} - {config.BoundsMax}. " +
+                        "Check that configured sparse indices are within normalized grid dimensions.",
                         this);
+                    return false;
                 }
+
+                return true;
             }
+
+            if (!world.TryAddGrid(config, out _))
+            {
+                Debug.LogWarning(
+                    $"Failed to add grid to {nameof(GridWorld)}: {config.BoundsMin} - {config.BoundsMax}",
+                    this);
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
@@ -108,26 +147,25 @@ namespace GridForge.Configuration
             if (!Show || Application.isPlaying)
                 return;
 
-            Gizmos.color = Color.green;
-            Vector3 scale = Vector3.one * (float)_voxelSize;
-
             foreach (SerializableGridConfiguration serializedConfig in SavedGridConfigurations)
             {
-                for (Fixed64 x = serializedConfig.BoundsMin.X; x <= serializedConfig.BoundsMax.X; x++)
-                {
-                    for (Fixed64 y = serializedConfig.BoundsMin.Y; y <= serializedConfig.BoundsMax.Y; y++)
-                    {
-                        for (Fixed64 z = serializedConfig.BoundsMin.Z; z <= serializedConfig.BoundsMax.Z; z++)
-                        {
-                            Vector3d drawPos = new(x, y, z);
-                            Gizmos.DrawCube(drawPos.ToVector3(), scale);
-                            Gizmos.color = Color.black;
-                            Gizmos.DrawWireCube(drawPos.ToVector3(), scale * 1.02f);
-                            Gizmos.color = Color.green;
-                        }
-                    }
-                }
+                if (!serializedConfig.TryToGridConfiguration(out GridConfiguration config, out _))
+                    continue;
+
+                Gizmos.color = config.StorageKind == GridStorageKind.Sparse
+                    ? new Color(1f, 0.78f, 0.16f, 0.9f)
+                    : Color.green;
+                Gizmos.DrawWireCube(config.GridCenter.ToVector3(), CalculateBoundsSize(config));
             }
+        }
+
+        private static Vector3 CalculateBoundsSize(GridConfiguration config)
+        {
+            Vector3d size = config.BoundsMax - config.BoundsMin;
+            return new Vector3(
+                Mathf.Max((float)size.X, 0.05f),
+                Mathf.Max((float)size.Y, 0.05f),
+                Mathf.Max((float)size.Z, 0.05f));
         }
 
         #endregion

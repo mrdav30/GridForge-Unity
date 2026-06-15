@@ -70,8 +70,6 @@ namespace GridForge.Utility
         private VoxelGrid _targetGrid;
         private int _warnedMissingGridIndex = -1;
         private bool _missingWorldWarningLogged;
-        //private Vector3 Scale => Vector3.one * (float)(World?.VoxelSize ?? Fixed64.One);
-
         #endregion
 
         #region Unity Lifecycle

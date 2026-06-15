@@ -40,8 +40,32 @@
   - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project path.
   - stale `v6`, `GridWorld(Fixed64`, and `BoundingArea` grep across package READMEs: clean.
   - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
-- Local Unity EditMode caveat: a direct local Unity `-runTests` attempt exited without a result XML or TestRunner execution lines, so local Unity test execution is not counted as verified yet. CI's fresh test project remains the intended Unity validation surface for this slice.
-- Next phase target: Phase 2, redesign Unity grid authoring around v7 topology, metrics, storage, and sparse configuration.
+- Follow-up found the local Unity EditMode runner issue: invoking `-runTests` with `-quit` exits before the Test Framework runs. Use `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`, which intentionally omits `-quit` and requires a fresh result XML.
+- Next phase target at the time: Phase 2, redesign Unity grid authoring around v7 topology, metrics, storage, and sparse configuration.
+
+### 2026-06-15 - Phase 2 Grid Authoring Redesign
+
+- Added `SerializableGridTopologyMetrics` for rectangular and hex-prism metrics authoring.
+- Added `SerializableSparseVoxelSet` and `SerializableVoxelIndex` for explicit sparse configured cells.
+- Expanded `SerializableGridConfiguration` to carry topology kind, topology metrics, storage kind, configured sparse cells, safe `TryToGridConfiguration(...)`, and sparse index conversion.
+- Updated `GridConfigurationSaver` so world spatial-hash size remains the only world-level sizing concept, dense grids use `TryAddGrid(config, out _)`, sparse grids use `TryAddGrid(config, configuredVoxels, out _)`, and invalid authoring data logs Unity warnings before registration.
+- Removed v6 `_voxelSize` compatibility state instead of preserving it; v7 authoring now requires explicit per-grid topology metrics.
+- Updated `GridWorldComponent` so it owns only the world lifecycle and spatial hash cell size, with no hidden legacy voxel-size storage.
+- Updated the custom `GridConfigurationSaver` inspector to remove the voxel-size field and show validation help boxes for invalid bounds, metrics, and sparse indices.
+- Added `GridConfigurationAuthoringEditModeTests.cs` covering default rectangular authoring, rectangular metric round-trip, pointy/flat hex metrics, sparse rectangular/hex configured cells, no legacy compatibility fields, scan-cell fallback, and invalid metric rejection.
+- Synced shared managed source from `Build/Base` into both standard and lean package variants; Unity's package sync reported 0 remaining copied/deleted files afterward.
+- Verification completed:
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 10 total, 10 passed, 0 failed, result XML written.
+  - Unity script compilation: pass (`Tundra build success`, no `error CS` lines).
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project path.
+  - stale visible `Voxel Size`, `public Fixed64 VoxelSize`, `GridWorld(Fixed64`, `BoundingArea`, and `v6` grep across package source/docs/tests: clean.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Local Unity EditMode execution is now verified through the dedicated script. Do not add `-quit` to Unity Test Framework runs; let the Test Framework exit Unity after writing results.
+- Next phase target: Phase 3, rebuild grid debugging around `GridForge.Diagnostics`.
 
 ## Source Material
 
@@ -109,9 +133,8 @@
 
 - `README.md`, `com.mrdav30.gridforge/README.md`, and `com.mrdav30.gridforge.lean/README.md` still describe GridForge v6 and contain v6-era examples such as `new GridWorld(Fixed64.One, 50)`.
 - The package readmes do not cover hex-prism grids, sparse storage, `GridDiagnostics`, or `GridForgeLogger`.
-- `SerializableGridConfiguration` only stores bounds and scan-cell size. It cannot author topology kind, topology metrics, storage kind, or sparse configured cells.
-- `GridConfigurationSaver` still exposes `_voxelSize` and draws editor cubes by looping bounds directly. v7 cell geometry is per-grid topology metrics, and dense loops are the wrong debug/tooling path for sparse and hex.
-- `GridWorldComponent` still serializes `_voxelSize`, but v7 `GridWorld` no longer owns voxel size.
+- Phase 2 resolved grid configuration authoring for topology kind, topology metrics, storage kind, and sparse configured cells.
+- Phase 2 removed `_voxelSize` authoring and compatibility storage; v7 cell geometry is explicitly per-grid topology metrics.
 - `GridDebugger` loops `Width`, `Height`, and `Length`, calls `TryGetVoxel(x, y, z)`, and draws unit cubes. It cannot correctly visualize sparse holes, sparse physical-only grids, hex geometry, or topology-specific cell metrics.
 - `GridTracerTests` is still a rectangular/cube trail tool and should become a topology-aware trace visualizer.
 - `Build/Base` and both package copies have drifted in `GridDebugger.cs` and `GridTracerTests.cs`. Package copies of `GridTracerTests.cs` introduce `FillSize` without assigning it, which makes the drawn cubes zero-sized.
@@ -132,7 +155,7 @@
 - Do not make missing sparse cells behave like empty dense cells.
 - Do not use floating-point math before the Unity adapter boundary.
 - Do not require users to install both package variants together.
-- Do not preserve stale v6 docs or serialized fields as public concepts after migration; preserve serialized data only long enough to migrate safely.
+- Do not preserve stale v6 docs or serialized fields as compatibility baggage during this breaking v7 migration unless a future plan explicitly calls for it.
 
 ## Phase 0: Stabilize The Migration Baseline
 
@@ -212,6 +235,37 @@ git diff --check
 
 **Goal:** Let users author rectangular, hex, dense, and sparse grids through Unity without hiding GridForge's explicit configuration model.
 
+**Execution Status:** Implemented locally as of 2026-06-15; local Unity EditMode execution is verified through `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`.
+
+**Focused Implementation Plan:**
+
+1. [x] Add EditMode tests first for the desired public authoring surface:
+   - default rectangular dense config
+   - no legacy `_voxelSize` compatibility fields or serialized migration attributes
+   - independent rectangular metrics
+   - pointy-top and flat-top hex metrics
+   - sparse rectangular and sparse hex configured indices
+   - scan-cell fallback
+   - invalid topology metrics rejected before `GridWorld.TryAddGrid(...)`
+2. [x] Implement serializable runtime data in `Build/Base`:
+   - `SerializableGridTopologyMetrics`
+   - `SerializableSparseVoxelSet`
+   - expanded `SerializableGridConfiguration`
+3. [x] Update `GridConfigurationSaver`:
+   - keep `_spatialGridCellSize` as the only world-level sizing concept
+   - remove old `_voxelSize` compatibility state
+   - use dense `TryAddGrid(config, out _)` and sparse `TryAddGrid(config, configuredVoxels, out _)`
+   - emit Unity warnings for invalid bounds, metrics, sparse indices, and registration failures
+4. [x] Update `GridWorldComponent`:
+   - remove voxel-size authoring from the visible component model
+   - keep no hidden serialized voxel-size migration storage
+5. [x] Update the editor inspector:
+   - remove the world-level voxel-size field
+   - expose spatial cell size, saved grid configs, and visualization toggle
+   - rely on v7 field names: topology, metrics, storage, sparse configured cells
+6. [x] Sync `Build/Base` to both package variants and run the package sync validator.
+7. [x] Update this ledger with verification results and any Unity TestRunner caveats.
+
 **Files:**
 
 - Modify: `Build/Base/Runtime/Configuration/SerializableGridConfiguration.cs`
@@ -244,37 +298,39 @@ git diff --check
 
 **Work:**
 
-- [ ] Add topology and storage fields to `SerializableGridConfiguration`.
-- [ ] Use `GridTopologyMetrics.Rectangular(...)` for rectangular configs.
-- [ ] Use `GridTopologyMetrics.Hex(...)` for hex configs.
-- [ ] Use `GridStorageKind.Dense` as the default storage kind.
-- [ ] Use `GridStorageKind.Sparse` only when explicit configured sparse indices are supplied or the user intentionally creates an empty sparse grid.
-- [ ] Remove `_voxelSize` from new authoring UI as a world-level concept.
-- [ ] Preserve old serialized `_voxelSize` values by migrating them into rectangular topology metrics for existing scenes.
-- [ ] Use `UnityEngine.Serialization.FormerlySerializedAs` for renamed serialized fields where Unity can migrate them safely.
-- [ ] Add editor validation for positive rectangular width/layer/length and positive hex radius/layer height.
-- [ ] In `EarlyApply`, call:
+- [x] Add topology and storage fields to `SerializableGridConfiguration`.
+- [x] Use `GridTopologyMetrics.Rectangular(...)` for rectangular configs.
+- [x] Use `GridTopologyMetrics.Hex(...)` for hex configs.
+- [x] Use `GridStorageKind.Dense` as the default storage kind.
+- [x] Use `GridStorageKind.Sparse` only when explicit configured sparse indices are supplied or the user intentionally creates an empty sparse grid.
+- [x] Remove `_voxelSize` from new authoring UI as a world-level concept.
+- [x] Remove old serialized `_voxelSize` compatibility fields instead of migrating them.
+- [x] Guard against reintroducing `[FormerlySerializedAs("_voxelSize")]` compatibility state in authoring components.
+- [x] Add editor validation for positive rectangular width/layer/length and positive hex radius/layer height.
+- [x] In `EarlyApply`, call:
   - `world.TryAddGrid(config, out _)` for dense grids
   - `world.TryAddGrid(config, configuredVoxels, out _)` for sparse grids
-- [ ] Log clear Unity warnings for invalid bounds, invalid metrics, invalid sparse indices, and failed grid registration.
+- [x] Log clear Unity warnings for invalid bounds, invalid metrics, invalid sparse indices, and failed grid registration.
 
 **Tests:**
 
-- [ ] Rectangular default authoring creates v7 default rectangular config.
-- [ ] Old voxel-size authoring migrates to rectangular topology metrics.
-- [ ] Rectangular independent X/Y/Z metrics round-trip through `ToGridConfiguration`.
-- [ ] Pointy-top hex config round-trips.
-- [ ] Flat-top hex config round-trips.
-- [ ] Sparse rectangular configured indices are passed into `TryAddGrid`.
-- [ ] Sparse hex configured axial indices are passed into `TryAddGrid`.
-- [ ] Invalid scan cell size clamps or resolves to `GridConfiguration.DefaultScanCellSize`.
-- [ ] Invalid metrics are rejected before world registration.
+- [x] Rectangular default authoring creates v7 default rectangular config.
+- [x] Authoring components do not retain legacy voxel-size compatibility fields.
+- [x] Rectangular independent X/Y/Z metrics round-trip through `ToGridConfiguration`.
+- [x] Pointy-top hex config round-trips.
+- [x] Flat-top hex config round-trips.
+- [x] Sparse rectangular configured indices are passed into `TryAddGrid`.
+- [x] Sparse hex configured axial indices are passed into `TryAddGrid`.
+- [x] Invalid scan cell size clamps or resolves to `GridConfiguration.DefaultScanCellSize`.
+- [x] Invalid metrics are rejected before world registration.
+
+> 2026-06-15 follow-up: the local TestRunner issue was caused by passing `-quit` with `-runTests`. `.assets/scripts/run-gridforge-unity-editmode-tests.ps1` omits `-quit`, produces a result XML, and currently reports 10/10 EditMode tests passing.
 
 **Exit Criteria:**
 
-- Users can create dense rectangular, dense hex, sparse rectangular, and sparse hex grids from the Inspector.
-- Existing rectangular scenes migrate without losing bounds or intended cell size.
-- The authoring UI uses v7 names: topology, topology metrics, storage, sparse configured cells.
+- [x] Users can create dense rectangular, dense hex, sparse rectangular, and sparse hex grids from the Inspector.
+- [x] v7 authoring uses explicit topology metrics; old scene `_voxelSize` migration is intentionally not retained for this breaking release.
+- [x] The authoring UI uses v7 names: topology, topology metrics, storage, sparse configured cells.
 
 ## Phase 3: Rebuild Grid Debugging Around `GridForge.Diagnostics`
 
@@ -564,7 +620,7 @@ git diff --check
 
 | Risk | Why It Matters | Mitigation |
 | --- | --- | --- |
-| Serialized scene data breaks when `_voxelSize` disappears | Existing user scenes may lose intended rectangular cell size | Migrate old value into rectangular topology metrics using serialized-field migration and explicit tests |
+| Serialized scene data breaks when `_voxelSize` disappears | Existing user scenes may lose intended rectangular cell size | Accepted for the breaking v7 authoring redesign; document the explicit topology-metrics replacement |
 | Debugger freezes large sparse worlds | Sparse address spaces can be huge | Use bounded diagnostics, max-cell budgets, and clear query status |
 | Hex visualization looks correct but uses float math too early | Unity rendering can hide deterministic projection mistakes | Query geometry from core diagnostics in fixed-point, convert to `Vector3` only for drawing |
 | Package variants drift | Standard and lean bugs become inconsistent | Enforce `Build/Base` sync validation and CI matrix |
