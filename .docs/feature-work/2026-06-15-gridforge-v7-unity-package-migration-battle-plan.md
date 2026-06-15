@@ -87,8 +87,33 @@
   - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
   - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
   - debugger-only stale scan for `VoxelFilterType`, `_voxelFilter`, dense `Width`/`Height`/`Length` loops, `TryGetVoxel`, and `Gizmos.DrawCube`: clean except the intentional edge-list loop in `GridDiagnosticGizmoDrawer`.
-  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- `git diff --check`: no whitespace errors; line-ending normalization warnings only.
 - Next phase target: Phase 4, modernize tracing, blockers, and scene tools.
+
+### 2026-06-15 - Phase 4 Tracing And Blocker Modernization
+
+- Reframed `GridTracerTests` as the user-facing Grid Trace Visualizer through component menu/name text while preserving the existing script asset path.
+- Replaced trace cube drawing with diagnostic cell drawing through `GridDiagnosticGizmoDrawer`, so rectangular and hex traced cells use `GridDiagnosticGeometry`.
+- Added `GridTraceMode.World3D` and `GridTraceMode.XzLayer`; XZ tracing uses GridForge's `Vector2d` overloads with explicit `layerY`.
+- Added trace helper APIs for collecting traced voxels into caller-owned lists and resolving the first traced diagnostic cell for tooling/tests.
+- Extended `BlockerComponent` with explicit `BlockAreaMode.Bounds3D` and `BlockAreaMode.XzLayer` authoring, including manual XZ `Vector2d` bounds and layer selection.
+- Updated the blocker inspector to use `Fixed Bound Area` naming, expose XZ layer controls, and explain that preview/coverage affect configured physical voxels only.
+- Added blocker coverage preview counting/drawing through `GridTracer.GetCoveredVoxels(...)` and diagnostic gizmos without applying blockage.
+- Verified collider/renderer and transform-derived bounds convert Unity `Bounds`/`Transform` data to fixed-point at the adapter boundary.
+- Reviewed `SceneGridManager`; no code change was needed for this slice because it already bootstraps `GridConfigurationSaver` into the scene-owned `GridWorldComponent`.
+- Synced shared managed source from `Build/Base` into both standard and lean package variants; `.assets/scripts/sync-gridforge-unity-packages.ps1` reported 0 copied, 0 deleted, and 0 removed files after sync.
+- Verification completed:
+  - Initial RED Unity compile run failed on missing Phase 4 blocker and trace visualizer APIs after adding `BlockerComponentEditModeTests.cs` and `GridTraceVisualizerEditModeTests.cs`.
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 24 total, 24 passed, 0 failed, result XML written.
+  - Unity package sync: pass, 0 copied, 0 deleted, 0 removed files.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
+  - stale scan for `FillSize`, `WireSize`, cube gizmos, `BoundingArea`, and old direct trace call patterns in Phase 4 files: clean.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Next phase target: Phase 5, add Unity logging and diagnostics UX.
 
 ## Source Material
 
@@ -152,6 +177,7 @@
 - PowerShell wrappers exist for version sync, package sync, and `.unitypackage` export.
 - Unity CI scaffolding exists for standard and lean package EditMode test matrices.
 - Phase 3 rebuilt `GridDebugger` on `GridForge.Diagnostics`, including topology-aware rectangular/hex drawing, sparse missing-address descriptors, query bounds, max-cell status, and physical-only selected-cell resolution.
+- Phase 4 modernized trace visualization and blocker authoring around topology-aware coverage, XZ layer helpers, sparse physical coverage, and diagnostic gizmos.
 
 ### High-Priority Gaps
 
@@ -160,9 +186,9 @@
 - Phase 2 resolved grid configuration authoring for topology kind, topology metrics, storage kind, and sparse configured cells.
 - Phase 2 removed `_voxelSize` authoring and compatibility storage; v7 cell geometry is explicitly per-grid topology metrics.
 - Phase 3 replaced `GridDebugger` dense rectangular loops with `GridDiagnostics.VisitCells(...)`, topology-aware diagnostic geometry, sparse missing-address visualization, and physical-only cell resolution.
-- `GridTracerTests` is still a rectangular/cube trail tool and should become a topology-aware trace visualizer.
-- `Build/Base` and both package copies have drifted in `GridDebugger.cs` and `GridTracerTests.cs`. Package copies of `GridTracerTests.cs` introduce `FillSize` without assigning it, which makes the drawn cubes zero-sized.
-- `Tests/EditMode` contains only an asmdef. The CI workflow currently copies `Tests/EditMode/*.cs`; without test files this will fail before Unity runs tests.
+- Phase 4 reframed `GridTracerTests` as the Grid Trace Visualizer and replaced cube drawing with diagnostic geometry.
+- Phase 4 resolved `GridTracerTests` `FillSize`/`WireSize` drift and package sync validation now catches managed-source drift across both variants.
+- `Tests/EditMode` now contains lifecycle, authoring, diagnostics, blocker, and trace visualizer coverage.
 - `.assets/scripts/test-update-unity-package-versions.ps1` currently fails because its test config does not define a `packages` array.
 - `GitDependencyInstaller.cs` logs a mojibake arrow (`â†’`) and should be checked against Unity profile support for `System.Text.Json`.
 - Package manifests declare no UPM dependencies and rely on editor-time manifest mutation. That path needs explicit validation and friendlier failure behavior.
@@ -426,42 +452,44 @@ git diff --check
 
 **Goal:** Make Unity helper components reflect v7 coverage, 2D XZ helpers, sparse behavior, and topology-aware visuals.
 
+**Execution Status:** Implemented locally as of 2026-06-15; verified through Unity EditMode tests, generated project build, package sync validation, and package maintenance scripts.
+
 **Files:**
 
 - Modify: `Build/Base/Runtime/Utility/Debugging/GridTracerTests.cs`
 - Modify: `Build/Base/Runtime/Blockers/BlockerComponent.cs`
 - Modify: `Build/Base/Editor/Blockers/Editor/EditorBlockerComponent.cs`
-- Modify: `Build/Base/Samples/GridforgeDemo/Scripts/SceneGridManager.cs`
+- Review: `Build/Base/Samples/GridforgeDemo/Scripts/SceneGridManager.cs`
 - Test: `Tests/EditMode/BlockerComponentEditModeTests.cs`
 - Test: `Tests/EditMode/GridTraceVisualizerEditModeTests.cs`
 
 **Work:**
 
-- [ ] Rename or reframe `GridTracerTests` as a trace visualizer component in user-facing docs and inspector labels.
-- [ ] Fix the current `FillSize`/`WireSize` drift by deriving draw geometry from diagnostics instead of local cube sizing.
-- [ ] Add layer-locked XZ trace mode using v7 `Vector2d` overloads and explicit `layerY`.
-- [ ] Keep 3D trace mode for full `Vector3d` workflows.
-- [ ] Draw traced cells through diagnostic geometry so hex trails are shaped correctly.
-- [ ] Extend `BlockerComponent` authoring with an explicit 3D bounds mode and XZ layer-locked mode.
-- [ ] Use `FixedBoundArea` naming in code and docs.
-- [ ] For collider/renderer bounds, keep conversion to fixed-point at the Unity adapter boundary.
-- [ ] Document that blockers affect configured sparse voxels only.
-- [ ] Add inspector preview of blocker coverage through diagnostics or tracer output without mutating runtime state.
+- [x] Rename or reframe `GridTracerTests` as a trace visualizer component in user-facing docs and inspector labels.
+- [x] Fix the current `FillSize`/`WireSize` drift by deriving draw geometry from diagnostics instead of local cube sizing.
+- [x] Add layer-locked XZ trace mode using v7 `Vector2d` overloads and explicit `layerY`.
+- [x] Keep 3D trace mode for full `Vector3d` workflows.
+- [x] Draw traced cells through diagnostic geometry so hex trails are shaped correctly.
+- [x] Extend `BlockerComponent` authoring with an explicit 3D bounds mode and XZ layer-locked mode.
+- [x] Use `FixedBoundArea` naming in code and docs.
+- [x] For collider/renderer bounds, keep conversion to fixed-point at the Unity adapter boundary.
+- [x] Document that blockers affect configured sparse voxels only.
+- [x] Add inspector preview of blocker coverage through diagnostics or tracer output without mutating runtime state.
 
 **Tests:**
 
-- [ ] Bounds blocker applies over dense rectangular grids.
-- [ ] Bounds blocker applies over dense hex grids.
-- [ ] Bounds blocker applies only configured cells for sparse rectangular grids.
-- [ ] Bounds blocker applies only configured axial cells for sparse hex grids.
-- [ ] XZ layer-locked blocker uses `Vector2d` semantics and does not affect other layers.
-- [ ] Trace visualizer uses v7 2D overloads with explicit `layerY`.
+- [x] Bounds blocker applies over dense rectangular grids.
+- [x] Bounds blocker applies over dense hex grids.
+- [x] Bounds blocker applies only configured cells for sparse rectangular grids.
+- [x] Bounds blocker applies only configured axial cells for sparse hex grids.
+- [x] XZ layer-locked blocker uses `Vector2d` semantics and does not affect other layers.
+- [x] Trace visualizer uses v7 2D overloads with explicit `layerY`.
 
 **Exit Criteria:**
 
-- Scene-authored blockers remain easy to use but no longer imply rectangular-only coverage.
-- Trace visualization works for rectangular, hex, sparse, and mixed worlds.
-- Existing blocker samples continue working after migration.
+- [x] Scene-authored blockers remain easy to use but no longer imply rectangular-only coverage.
+- [x] Trace visualization works for rectangular, hex, sparse, and mixed worlds.
+- [x] Existing blocker samples continue working after migration.
 
 ## Phase 5: Add Unity Logging And Diagnostics UX
 

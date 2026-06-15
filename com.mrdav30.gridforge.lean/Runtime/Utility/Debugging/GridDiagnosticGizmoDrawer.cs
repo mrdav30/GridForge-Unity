@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 using FixedMathSharp;
 using GridForge.Diagnostics;
+using GridForge.Grids;
+using GridForge.Grids.Storage;
 using System;
 using UnityEngine;
 
@@ -16,6 +18,25 @@ namespace GridForge.Utility
 
         public static int GetEdgeCount(in GridDiagnosticCell cell) =>
             GridDiagnosticGeometry.GetEdgeCount(cell.TopologyKind);
+
+        public static GridDiagnosticCell CreatePhysicalCell(
+            GridWorld world,
+            VoxelGrid grid,
+            Voxel voxel)
+        {
+            return new GridDiagnosticCell(
+                GridDiagnosticCellKind.Physical,
+                world.SpawnToken,
+                grid.GridIndex,
+                grid.SpawnToken,
+                voxel.Index,
+                voxel.WorldPosition,
+                grid.Configuration.TopologyKind,
+                grid.StorageKind,
+                grid.Configuration.TopologyMetrics,
+                ResolveState(voxel),
+                voxel.WorldIndex);
+        }
 
         public static int WriteUnityVertices(in GridDiagnosticCell cell, Span<Vector3> vertices)
         {
@@ -48,6 +69,27 @@ namespace GridForge.Utility
 
                 Gizmos.DrawLine(vertices[edge.Start].ToVector3(), vertices[edge.End].ToVector3());
             }
+        }
+
+        private static GridDiagnosticCellState ResolveState(Voxel voxel)
+        {
+            GridDiagnosticCellState state = GridDiagnosticCellState.None;
+            if (!voxel.IsOccupied && !voxel.IsBlocked)
+                state |= GridDiagnosticCellState.Empty;
+
+            if (voxel.IsOccupied)
+                state |= GridDiagnosticCellState.Occupied;
+
+            if (voxel.IsBlocked)
+                state |= GridDiagnosticCellState.Blocked;
+
+            if (voxel.IsBoundaryVoxel)
+                state |= GridDiagnosticCellState.Boundary;
+
+            if (voxel.IsPartioned)
+                state |= GridDiagnosticCellState.Partitioned;
+
+            return state;
         }
     }
 }

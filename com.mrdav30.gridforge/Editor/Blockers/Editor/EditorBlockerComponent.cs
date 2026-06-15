@@ -18,8 +18,14 @@ namespace GridForge.Blockers.Editor
         private SerializedProperty _isActive;
         private SerializedProperty _cacheCoveredVoxels;
         private SerializedProperty _blockAreaSource;
+        private SerializedProperty _blockAreaMode;
         private SerializedProperty _includeChildrenInBlockArea;
         private SerializedProperty _manualBlockArea;
+        private SerializedProperty _manualXzBlockAreaMin;
+        private SerializedProperty _manualXzBlockAreaMax;
+        private SerializedProperty _layerY;
+        private SerializedProperty _showCoveragePreview;
+        private SerializedProperty _coveragePreviewColor;
 
         public void OnEnable()
         {
@@ -28,8 +34,14 @@ namespace GridForge.Blockers.Editor
             _isActive = serializedObject.FindProperty("_isActive");
             _cacheCoveredVoxels = serializedObject.FindProperty("_cacheCoveredVoxels");
             _blockAreaSource = serializedObject.FindProperty("_blockAreaSource");
+            _blockAreaMode = serializedObject.FindProperty("_blockAreaMode");
             _includeChildrenInBlockArea = serializedObject.FindProperty("_includeChildrenInBlockArea");
             _manualBlockArea = serializedObject.FindProperty("_manualBlockArea");
+            _manualXzBlockAreaMin = serializedObject.FindProperty("_manualXzBlockAreaMin");
+            _manualXzBlockAreaMax = serializedObject.FindProperty("_manualXzBlockAreaMax");
+            _layerY = serializedObject.FindProperty("_layerY");
+            _showCoveragePreview = serializedObject.FindProperty("_showCoveragePreview");
+            _coveragePreviewColor = serializedObject.FindProperty("_coveragePreviewColor");
         }
 
         public override void OnInspectorGUI()
@@ -50,6 +62,7 @@ namespace GridForge.Blockers.Editor
                 case BlockerType.Bounds:
                     EditorGUILayout.LabelField("Bounds Blocker Settings", EditorStyles.boldLabel);
                     DrawBlockAreaSettings();
+                    DrawCoveragePreviewSettings();
                     break;
             }
 
@@ -58,20 +71,47 @@ namespace GridForge.Blockers.Editor
 
         private void DrawBlockAreaSettings()
         {
+            EditorGUILayout.PropertyField(_blockAreaMode, new GUIContent("Area Mode"));
             EditorGUILayout.PropertyField(_blockAreaSource, new GUIContent("Block Area Source"));
 
+            BlockAreaMode selectedMode = (BlockAreaMode)_blockAreaMode.enumValueIndex;
             BlockAreaSource selectedSource = (BlockAreaSource)_blockAreaSource.enumValueIndex;
             if (selectedSource == BlockAreaSource.Collider || selectedSource == BlockAreaSource.Renderer)
                 EditorGUILayout.PropertyField(_includeChildrenInBlockArea, new GUIContent("Include Children"));
 
+            if (selectedMode == BlockAreaMode.XzLayer)
+                EditorGUILayout.PropertyField(_layerY, new GUIContent("Layer Y"));
+
             if (selectedSource == BlockAreaSource.Manual)
             {
-                EditorGUILayout.PropertyField(_manualBlockArea, new GUIContent("Block Area"));
+                if (selectedMode == BlockAreaMode.XzLayer)
+                {
+                    EditorGUILayout.PropertyField(_manualXzBlockAreaMin, new GUIContent("XZ Min"));
+                    EditorGUILayout.PropertyField(_manualXzBlockAreaMax, new GUIContent("XZ Max"));
+                }
+                else
+                {
+                    EditorGUILayout.PropertyField(_manualBlockArea, new GUIContent("Fixed Bound Area"));
+                }
+
                 return;
             }
 
             serializedObject.ApplyModifiedProperties();
             DrawCalculatedBlockAreaPreview();
+        }
+
+        private void DrawCoveragePreviewSettings()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Coverage Preview", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_showCoveragePreview, new GUIContent("Show Preview"));
+            if (_showCoveragePreview.boolValue)
+                EditorGUILayout.PropertyField(_coveragePreviewColor, new GUIContent("Preview Color"));
+
+            EditorGUILayout.HelpBox(
+                "Coverage preview queries physical voxels only. Missing sparse address cells are never materialized or blocked.",
+                MessageType.Info);
         }
 
         private void DrawCalculatedBlockAreaPreview()
@@ -86,8 +126,8 @@ namespace GridForge.Blockers.Editor
             using (new EditorGUI.DisabledScope(true))
             {
                 EditorGUILayout.EnumPopup("Resolved Source", resolvedSource);
-                EditorGUILayout.Vector3Field("Block Area Min", blockArea.Min.ToVector3());
-                EditorGUILayout.Vector3Field("Block Area Max", blockArea.Max.ToVector3());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Min", blockArea.Min.ToVector3());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Max", blockArea.Max.ToVector3());
             }
 
             if (!string.IsNullOrEmpty(fallbackReason))

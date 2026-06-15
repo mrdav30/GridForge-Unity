@@ -1,6 +1,7 @@
 using FixedMathSharp;
 using FixedMathSharp.Bounds;
 using GridForge.Grids;
+using GridForge.Spatial;
 using GridForge.Unity;
 using UnityEngine;
 
@@ -27,6 +28,15 @@ namespace GridForge.Blockers
     }
 
     /// <summary>
+    /// Chooses whether bounds are evaluated as full 3D bounds or as XZ-plane bounds on one world Y layer.
+    /// </summary>
+    public enum BlockAreaMode
+    {
+        Bounds3D = 0,
+        XzLayer = 1
+    }
+
+    /// <summary>
     /// Unity component that allows selection of a blocker type in the Inspector.
     /// </summary>
     [DisallowMultipleComponent]
@@ -42,9 +52,21 @@ namespace GridForge.Blockers
 
         [SerializeField] private BlockAreaSource _blockAreaSource;
 
+        [SerializeField] private BlockAreaMode _blockAreaMode;
+
         [SerializeField] private bool _includeChildrenInBlockArea;
 
         [SerializeField] private FixedBoundArea _manualBlockArea;
+
+        [SerializeField] private Vector2d _manualXzBlockAreaMin;
+
+        [SerializeField] private Vector2d _manualXzBlockAreaMax = Vector2d.One;
+
+        [SerializeField] private Fixed64 _layerY = Fixed64.Zero;
+
+        [SerializeField] private bool _showCoveragePreview;
+
+        [SerializeField] private Color _coveragePreviewColor = new(1f, 0.35f, 0.1f, 0.8f);
 
         [SerializeField] private GridWorldComponent _gridWorldComponent;
 
@@ -87,6 +109,27 @@ namespace GridForge.Blockers
             _blocker?.RemoveBlockage();
             IsSet = false;
         }
+
+#if UNITY_EDITOR
+        public void OnDrawGizmosSelected()
+        {
+            if (!_showCoveragePreview || !Application.isPlaying)
+                return;
+
+            GridWorld world = World;
+            if (world == null || !world.IsActive)
+                return;
+
+            foreach (GridVoxelSet covered in GetPreviewCoverage(world))
+            {
+                foreach (Voxel voxel in covered.Voxels)
+                {
+                    var cell = GridForge.Utility.GridDiagnosticGizmoDrawer.CreatePhysicalCell(world, covered.Grid, voxel);
+                    GridForge.Utility.GridDiagnosticGizmoDrawer.DrawWireCell(in cell, _coveragePreviewColor);
+                }
+            }
+        }
+#endif
 
         private void TryApplyBlockage()
         {
@@ -140,6 +183,16 @@ namespace GridForge.Blockers
             out BlockAreaSource resolvedSource,
             out string fallbackReason)
         {
+            if (_blockAreaMode == BlockAreaMode.XzLayer)
+                return CalculateXzBlockArea(out resolvedSource, out fallbackReason);
+
+            return Calculate3dBlockArea(out resolvedSource, out fallbackReason);
+        }
+
+        private FixedBoundArea Calculate3dBlockArea(
+            out BlockAreaSource resolvedSource,
+            out string fallbackReason)
+        {
             switch (_blockAreaSource)
             {
                 case BlockAreaSource.Manual:
@@ -185,6 +238,55 @@ namespace GridForge.Blockers
             }
         }
 
+        private FixedBoundArea CalculateXzBlockArea(
+            out BlockAreaSource resolvedSource,
+            out string fallbackReason)
+        {
+            switch (_blockAreaSource)
+            {
+                case BlockAreaSource.Manual:
+                    resolvedSource = BlockAreaSource.Manual;
+                    fallbackReason = string.Empty;
+                    return CreateXzBlockArea(_manualXzBlockAreaMin, _manualXzBlockAreaMax);
+
+                case BlockAreaSource.Transform:
+                    resolvedSource = BlockAreaSource.Transform;
+                    fallbackReason = string.Empty;
+                    return CreateTransformXzBlockArea();
+
+                case BlockAreaSource.Collider:
+                    if (TryGetColliderBounds(out Bounds colliderBounds))
+                    {
+                        resolvedSource = BlockAreaSource.Collider;
+                        fallbackReason = string.Empty;
+                        return CreateBoundsXzBlockArea(colliderBounds);
+                    }
+
+                    resolvedSource = BlockAreaSource.Transform;
+                    fallbackReason =
+                        $"could not resolve an enabled {nameof(Collider)} for {nameof(BlockAreaSource.Collider)} source.";
+                    return CreateTransformXzBlockArea();
+
+                case BlockAreaSource.Renderer:
+                    if (TryGetRendererBounds(out Bounds rendererBounds))
+                    {
+                        resolvedSource = BlockAreaSource.Renderer;
+                        fallbackReason = string.Empty;
+                        return CreateBoundsXzBlockArea(rendererBounds);
+                    }
+
+                    resolvedSource = BlockAreaSource.Transform;
+                    fallbackReason =
+                        $"could not resolve an enabled {nameof(Renderer)} for {nameof(BlockAreaSource.Renderer)} source.";
+                    return CreateTransformXzBlockArea();
+
+                default:
+                    resolvedSource = BlockAreaSource.Transform;
+                    fallbackReason = $"has unsupported block area source {_blockAreaSource}.";
+                    return CreateTransformXzBlockArea();
+            }
+        }
+
         private FixedBoundArea ResolveBlockArea()
         {
             FixedBoundArea blockArea = CalculateBlockArea(out _, out string fallbackReason);
@@ -204,9 +306,29 @@ namespace GridForge.Blockers
             return CreateBlockArea(center - extents, center + extents);
         }
 
+        private FixedBoundArea CreateTransformXzBlockArea()
+        {
+            Vector3 center = transform.position;
+            Vector3 size = transform.lossyScale;
+            size.x = Mathf.Abs(size.x);
+            size.z = Mathf.Abs(size.z);
+
+            Vector3 extents = size * 0.5f;
+            return CreateXzBlockArea(
+                Vector2d.FromDouble(center.x - extents.x, center.z - extents.z),
+                Vector2d.FromDouble(center.x + extents.x, center.z + extents.z));
+        }
+
         private static FixedBoundArea CreateBoundsBlockArea(Bounds bounds)
         {
             return CreateBlockArea(bounds.min, bounds.max);
+        }
+
+        private FixedBoundArea CreateBoundsXzBlockArea(Bounds bounds)
+        {
+            return CreateXzBlockArea(
+                Vector2d.FromDouble(bounds.min.x, bounds.min.z),
+                Vector2d.FromDouble(bounds.max.x, bounds.max.z));
         }
 
         private static FixedBoundArea CreateBlockArea(Vector3 min, Vector3 max)
@@ -214,6 +336,12 @@ namespace GridForge.Blockers
             return new FixedBoundArea(
                 Vector3d.FromDouble(min.x, min.y, min.z),
                 Vector3d.FromDouble(max.x, max.y, max.z));
+        }
+
+        private FixedBoundArea CreateXzBlockArea(Vector2d min, Vector2d max)
+        {
+            (Vector3d worldMin, Vector3d worldMax) = GridPlane2d.ToWorldBounds(min, max, _layerY);
+            return new FixedBoundArea(worldMin, worldMax);
         }
 
         private bool TryGetColliderBounds(out Bounds bounds)
@@ -340,11 +468,98 @@ namespace GridForge.Blockers
             _missingWorldWarningLogged = true;
         }
 
+        public void ConfigureBoundsBlocker(bool isActive = true, bool cacheCoveredVoxels = false)
+        {
+            _blockerType = BlockerType.Bounds;
+            _isActive = isActive;
+            _cacheCoveredVoxels = cacheCoveredVoxels;
+        }
+
+        public void ConfigureManualFixedBoundArea(FixedBoundArea blockArea)
+        {
+            _blockAreaMode = BlockAreaMode.Bounds3D;
+            _blockAreaSource = BlockAreaSource.Manual;
+            _manualBlockArea = blockArea;
+        }
+
+        public void ConfigureManualXzArea(
+            Vector2d min,
+            Vector2d max,
+            Fixed64 layerY = default)
+        {
+            _blockAreaMode = BlockAreaMode.XzLayer;
+            _blockAreaSource = BlockAreaSource.Manual;
+            _manualXzBlockAreaMin = min;
+            _manualXzBlockAreaMax = max;
+            _layerY = layerY;
+        }
+
+        public bool TryCountPreviewCoverage(
+            GridWorld world,
+            out int gridCount,
+            out int voxelCount)
+        {
+            gridCount = 0;
+            voxelCount = 0;
+
+            if (world == null || !world.IsActive)
+                return false;
+
+            foreach (GridVoxelSet covered in GetPreviewCoverage(world))
+            {
+                gridCount++;
+                voxelCount += covered.Voxels.Count;
+            }
+
+            return true;
+        }
+
+        private System.Collections.Generic.IEnumerable<GridVoxelSet> GetPreviewCoverage(GridWorld world)
+        {
+            if (_blockAreaMode == BlockAreaMode.XzLayer)
+            {
+                FixedBoundArea xzArea = ResolveBlockArea();
+                return GridForge.Utility.GridTracer.GetCoveredVoxels(
+                    world,
+                    new Vector2d(xzArea.Min.X, xzArea.Min.Z),
+                    new Vector2d(xzArea.Max.X, xzArea.Max.Z),
+                    _layerY);
+            }
+
+            FixedBoundArea area = ResolveBlockArea();
+            return GridForge.Utility.GridTracer.GetCoveredVoxels(world, area.Min, area.Max);
+        }
+
+        public IBlocker CreateBoundsBlocker(GridWorld world)
+        {
+            if (_blockAreaMode == BlockAreaMode.XzLayer)
+            {
+                FixedBoundArea xzArea = ResolveBlockArea();
+                return new BoundsBlocker(
+                    world,
+                    new Vector2d(xzArea.Min.X, xzArea.Min.Z),
+                    new Vector2d(xzArea.Max.X, xzArea.Max.Z),
+                    _layerY,
+                    _isActive,
+                    _cacheCoveredVoxels);
+            }
+
+            return new BoundsBlocker(
+                world,
+                BlockArea,
+                _isActive,
+                _cacheCoveredVoxels);
+        }
+
         public bool IsActive => _isActive;
         public bool CacheCoveredVoxels => _cacheCoveredVoxels;
         public BlockAreaSource BlockAreaSource => _blockAreaSource;
+        public BlockAreaMode BlockAreaMode => _blockAreaMode;
         public bool IncludeChildrenInBlockArea => _includeChildrenInBlockArea;
         public FixedBoundArea ManualBlockArea => _manualBlockArea;
+        public Vector2d ManualXzBlockAreaMin => _manualXzBlockAreaMin;
+        public Vector2d ManualXzBlockAreaMax => _manualXzBlockAreaMax;
+        public Fixed64 LayerY => _layerY;
         public FixedBoundArea BlockArea => ResolveBlockArea();
     }
 
@@ -354,11 +569,7 @@ namespace GridForge.Blockers
         {
             return type switch
             {
-                BlockerType.Bounds => new BoundsBlocker(
-                    world,
-                    component.BlockArea,
-                    component.IsActive,
-                    component.CacheCoveredVoxels),
+                BlockerType.Bounds => component.CreateBoundsBlocker(world),
                 _ => null
             };
         }

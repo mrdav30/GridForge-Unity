@@ -1,25 +1,43 @@
 #if UNITY_EDITOR
 using FixedMathSharp;
+using GridForge.Diagnostics;
 using GridForge.Grids;
 using GridForge.Unity;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GridForge.Utility
 {
+    public enum GridTraceMode
+    {
+        World3D = 0,
+        XzLayer = 1
+    }
+
     /// <summary>
-    /// Unity MonoBehaviour for testing and visualizing grid-aligned line tracing.
-    /// Draws lines and highlights voxels along a path in the Scene View.
+    /// Unity Scene View visualizer for topology-aware GridForge trace coverage.
     /// </summary>
     [ExecuteAlways]
+    [AddComponentMenu("GridForge/Debugging/Grid Trace Visualizer")]
     public class GridTracerTests : MonoBehaviour
     {
         #region Inspector Fields
 
-        [Tooltip("Enable to display the grid voxels along the traced path.")]
+        [Tooltip("Enable to display the grid cells along the traced path.")]
         [SerializeField] private bool _showVoxelTrail = true;
 
         [Tooltip("Enable to draw a direct line between start and end points.")]
         [SerializeField] private bool _showLine = true;
+
+        [SerializeField] private GridTraceMode _traceMode = GridTraceMode.World3D;
+
+        [Tooltip("World Y layer used by XZ layer tracing.")]
+        [SerializeField] private Fixed64 _layerY = Fixed64.Zero;
+
+        [Tooltip("Optional positive padding applied before snapping trace endpoints.")]
+        [SerializeField] private Fixed64 _padding = Fixed64.Zero;
+
+        [SerializeField] private bool _includeEnd = true;
 
         [Tooltip("Adjusts the height offset for the traced line.")]
         [SerializeField] private Fixed64 _lineHeight = Fixed64.One;
@@ -34,11 +52,13 @@ namespace GridForge.Utility
 
         #endregion
 
-        #region Visualization Parameters
+        [SerializeField] private Color _traceCellColor = Color.red;
+        [SerializeField] private Color _traceLineColor = Color.white;
 
-        private Vector3 WireSize = Vector3.one * 1.02f;
-
-        #endregion
+        public GridTraceMode TraceMode => _traceMode;
+        public Fixed64 LayerY => _layerY;
+        public int LastTracedGridCount { get; private set; }
+        public int LastTracedVoxelCount { get; private set; }
 
         #region Gizmo Rendering
 
@@ -61,28 +81,29 @@ namespace GridForge.Utility
 
             if (_showVoxelTrail)
             {
-                Gizmos.color = Color.red;
+                LastTracedGridCount = 0;
+                LastTracedVoxelCount = 0;
 
-                foreach (GridVoxelSet covered in GridTracer.TraceLine(world, startPos, endPos))
+                foreach (GridVoxelSet covered in TraceLine(world, startPos, endPos))
                 {
+                    LastTracedGridCount++;
                     foreach (Voxel voxel in covered.Voxels)
                     {
-                        Vector3 drawPos = voxel.WorldPosition.ToVector3();
-
-                        Gizmos.DrawCube(drawPos, Vector3.one);
-                        Gizmos.color = Color.black;
-                        Gizmos.DrawWireCube(drawPos, WireSize);
-                        Gizmos.color = Color.red;
+                        GridDiagnosticCell cell = GridDiagnosticGizmoDrawer.CreatePhysicalCell(world, covered.Grid, voxel);
+                        GridDiagnosticGizmoDrawer.DrawWireCell(in cell, _traceCellColor);
+                        LastTracedVoxelCount++;
                     }
                 }
             }
 
             if (_showLine)
             {
-                Gizmos.color = Color.white;
-                float adjustedY = (float)(_lineHeight + Fixed64.Half);
+                Gizmos.color = _traceLineColor;
+                float adjustedY = (float)(ResolveLineLayerY(startPos, endPos) + _lineHeight + Fixed64.Half);
 
-                Gizmos.DrawLine(startPos.ToVector3(adjustedY), endPos.ToVector3(adjustedY));
+                Gizmos.DrawLine(
+                    ResolveLineStart(startPos).ToVector3(adjustedY),
+                    ResolveLineEnd(endPos).ToVector3(adjustedY));
             }
         }
 
@@ -93,6 +114,91 @@ namespace GridForge.Utility
         }
 
         #endregion
+
+        public void ConfigureTraceMode(GridTraceMode mode, Fixed64 layerY = default)
+        {
+            _traceMode = mode;
+            _layerY = layerY;
+        }
+
+        public int GetTraceVoxelsInto(
+            GridWorld world,
+            Vector3d start,
+            Vector3d end,
+            List<Voxel> results)
+        {
+            if (results == null)
+                return 0;
+
+            results.Clear();
+            if (world == null || !world.IsActive)
+                return 0;
+
+            foreach (GridVoxelSet covered in TraceLine(world, start, end))
+            {
+                foreach (Voxel voxel in covered.Voxels)
+                    results.Add(voxel);
+            }
+
+            return results.Count;
+        }
+
+        public bool TryGetFirstTraceDiagnosticCell(
+            GridWorld world,
+            Vector3d start,
+            Vector3d end,
+            out GridDiagnosticCell cell)
+        {
+            cell = default;
+            if (world == null || !world.IsActive)
+                return false;
+
+            foreach (GridVoxelSet covered in TraceLine(world, start, end))
+            {
+                foreach (Voxel voxel in covered.Voxels)
+                {
+                    cell = GridDiagnosticGizmoDrawer.CreatePhysicalCell(world, covered.Grid, voxel);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private IEnumerable<GridVoxelSet> TraceLine(
+            GridWorld world,
+            Vector3d start,
+            Vector3d end)
+        {
+            Fixed64? padding = _padding > Fixed64.Zero ? _padding : null;
+            if (_traceMode == GridTraceMode.XzLayer)
+            {
+                return GridTracer.TraceLine(
+                    world,
+                    new Vector2d(start.X, start.Z),
+                    new Vector2d(end.X, end.Z),
+                    padding,
+                    _includeEnd,
+                    layerY: _layerY);
+            }
+
+            return GridTracer.TraceLine(world, start, end, padding, _includeEnd);
+        }
+
+        private Vector3d ResolveLineStart(Vector3d start) =>
+            _traceMode == GridTraceMode.XzLayer
+                ? new Vector3d(start.X, _layerY, start.Z)
+                : start;
+
+        private Vector3d ResolveLineEnd(Vector3d end) =>
+            _traceMode == GridTraceMode.XzLayer
+                ? new Vector3d(end.X, _layerY, end.Z)
+                : end;
+
+        private Fixed64 ResolveLineLayerY(Vector3d start, Vector3d end) =>
+            _traceMode == GridTraceMode.XzLayer
+                ? _layerY
+                : FixedMath.Min(start.Y, end.Y);
     }
 }
 #endif
