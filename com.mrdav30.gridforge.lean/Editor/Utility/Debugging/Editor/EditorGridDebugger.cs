@@ -9,7 +9,6 @@ namespace GridForge.Utility.Debugging.Editor
 {
     /// <summary>
     /// Custom Unity Editor inspector for <see cref="GridDebugger"/>.
-    /// Displays detailed voxel metadata in the Inspector when a voxel is selected.
     /// </summary>
     [CustomEditor(typeof(GridDebugger))]
     public class EditorGridDebugger : UnityEditor.Editor
@@ -21,6 +20,133 @@ namespace GridForge.Utility.Debugging.Editor
         public void OnEnable()
         {
             _debugger = (GridDebugger)target;
+        }
+
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            EditorGUILayout.LabelField("Grid Debugger", EditorStyles.boldLabel);
+            DrawQuerySettings();
+            DrawSelectionSettings();
+            DrawColorSettings();
+
+            if (EditorApplication.isPlaying)
+            {
+                DrawGridSelection();
+                DrawQueryStatus();
+                DrawSelectedVoxel();
+            }
+            else
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.HelpBox("Play the application before debugging active grids.", MessageType.Info);
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawQuerySettings()
+        {
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_gridWorldComponent"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_showGrid"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_debugAllGrids"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_filterTopologyKind"));
+            if (serializedObject.FindProperty("_filterTopologyKind").boolValue)
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_topologyKind"));
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_filterStorageKind"));
+            if (serializedObject.FindProperty("_filterStorageKind").boolValue)
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_storageKind"));
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_addressMode"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_requiredStates"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_excludedStates"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_limitQueryBounds"));
+            if (serializedObject.FindProperty("_limitQueryBounds").boolValue)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_queryBoundsMin"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_queryBoundsMax"));
+            }
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_maxCells"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_allowFullSparseAddressScan"));
+        }
+
+        private void DrawSelectionSettings()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Selection", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_enableVoxelSelection"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_highlightColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_highlightedVoxelPosition"));
+        }
+
+        private void DrawColorSettings()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Colors", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_emptyCellColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_occupiedCellColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_blockedCellColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_boundaryCellColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_partitionedCellColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_missingSparseAddressColor"));
+        }
+
+        private void DrawGridSelection()
+        {
+            if (_debugger.DebugAllGrids)
+                return;
+
+            UpdateGridIndexes();
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Grid Selection", EditorStyles.boldLabel);
+
+            if (_availableGridIndexes.Length == 0)
+            {
+                EditorGUILayout.HelpBox("No active grids found in the resolved GridWorld.", MessageType.Warning);
+                return;
+            }
+
+            int currentGridIndex = Array.IndexOf(_availableGridIndexes, _debugger.GridIndex);
+            if (currentGridIndex < 0)
+                currentGridIndex = 0;
+
+            int selectedGridIndex = EditorGUILayout.Popup("Active Grid", currentGridIndex, _gridIndexLabels);
+            _debugger.GridIndex = _availableGridIndexes[selectedGridIndex];
+        }
+
+        private void DrawQueryStatus()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Query Status", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Status", _debugger.LastQueryStatus.ToString());
+            EditorGUILayout.IntField("Cells", _debugger.LastQueryCellCount);
+            EditorGUILayout.IntField("Skipped", _debugger.LastQuerySkippedCellCount);
+            EditorGUILayout.IntField("Visited", _debugger.LastVisitedCellCount);
+            EditorGUILayout.IntField("Dirty Changes", _debugger.LastDirtyChangeCount);
+        }
+
+        private void DrawSelectedVoxel()
+        {
+            if (!_debugger.EnableVoxelSelection)
+                return;
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Selected Voxel", EditorStyles.boldLabel);
+            if (_debugger.SelectedVoxel == null)
+            {
+                EditorGUILayout.HelpBox("No physical voxel selected.", MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.Vector3Field("World Position", _debugger.SelectedVoxel.WorldPosition.ToVector3());
+            EditorGUILayout.Toggle("Occupied", _debugger.SelectedVoxel.IsOccupied);
+            EditorGUILayout.Toggle("Blocked", _debugger.SelectedVoxel.IsBlocked);
+            EditorGUILayout.Toggle("Boundary", _debugger.SelectedVoxel.IsBoundaryVoxel);
+            EditorGUILayout.LabelField("Spawn Token", _debugger.SelectedVoxel.SpawnToken.ToString());
         }
 
         private void UpdateGridIndexes()
@@ -38,73 +164,6 @@ namespace GridForge.Utility.Debugging.Editor
                 .Select(grid => grid.GridIndex)
                 .ToArray();
             _gridIndexLabels = _availableGridIndexes.Select(index => $"Grid {index}").ToArray();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            serializedObject.Update();
-
-            EditorGUILayout.LabelField("Grid Debugger Settings", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_gridWorldComponent"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_showGrid"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_voxelFilter"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_enableVoxelSelection"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_highlightColor"));
-
-            if (!EditorApplication.isPlaying)
-            {
-                serializedObject.ApplyModifiedProperties();
-                EditorGUILayout.LabelField("Play the application before debugging.", EditorStyles.boldLabel);
-                return;
-            }
-
-            UpdateGridIndexes();
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Grid Selection", EditorStyles.boldLabel);
-
-            if (_availableGridIndexes.Length > 0)
-            {
-                int currentGridIndex = Array.IndexOf(_availableGridIndexes, _debugger.GridIndex);
-                if (currentGridIndex < 0)
-                {
-                    currentGridIndex = 0;
-                }
-
-                int selectedGridIndex = EditorGUILayout.Popup("Active Grid", currentGridIndex, _gridIndexLabels);
-                _debugger.GridIndex = _availableGridIndexes[selectedGridIndex];
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("No active grids found in the resolved GridWorld.", MessageType.Warning);
-                serializedObject.ApplyModifiedProperties();
-                return;
-            }
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Select Voxel", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_highlightedVoxelPosition"));
-
-            if (_debugger.EnableVoxelSelection)
-            {
-                if (_debugger.SelectedVoxel != null)
-                {
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("Selected Voxel Information", EditorStyles.boldLabel);
-                    EditorGUILayout.Vector3Field("World Position", _debugger.SelectedVoxel.WorldPosition.ToVector3());
-                    EditorGUILayout.Toggle("Occupied", _debugger.SelectedVoxel.IsOccupied);
-                    EditorGUILayout.Toggle("Blocked", _debugger.SelectedVoxel.IsBlocked);
-                    EditorGUILayout.LabelField("Spawn Token", _debugger.SelectedVoxel.SpawnToken.ToString());
-                }
-                else
-                {
-                    EditorGUILayout.HelpBox(
-                        "No voxel selected. Click on a voxel in the Scene View while in Play Mode, or enter a position.",
-                        MessageType.Info);
-                }
-            }
-
-            serializedObject.ApplyModifiedProperties();
         }
     }
 }

@@ -67,6 +67,29 @@
 - Local Unity EditMode execution is now verified through the dedicated script. Do not add `-quit` to Unity Test Framework runs; let the Test Framework exit Unity after writing results.
 - Next phase target: Phase 3, rebuild grid debugging around `GridForge.Diagnostics`.
 
+### 2026-06-15 - Phase 3 Diagnostics Debugger Redesign
+
+- Rebuilt `GridDebugger` around `GridDiagnostics.VisitCells(...)`, `GridDiagnosticQuery`, `GridDiagnosticSession`, and a reusable `GridDiagnosticScratch`.
+- Added `GridDiagnosticUnityVisitor` as the Unity adapter visitor that counts physical and missing sparse diagnostic cells, tracks last-cell metadata, and optionally draws cells.
+- Added `GridDiagnosticGizmoDrawer` so rectangular and hex-prism gizmo geometry comes from `GridDiagnosticGeometry` fixed-point vertices/edges and converts to Unity `Vector3` only at the draw boundary.
+- Replaced the debugger inspector with diagnostics-first controls for all-grids versus single-grid queries, topology/storage filters, address mode, bounded queries, max cell count, state filters, selection, colors, and query status.
+- Kept selected-cell resolution physical-only through `GridDiagnostics.TryResolvePhysicalCell(...)`; missing sparse address descriptors intentionally do not resolve to live `Voxel` instances.
+- Did not preserve or migrate old `VoxelFilterType` values. This remains a breaking v7 debugger redesign with no legacy compatibility patches.
+- Synced shared managed source from `Build/Base` into both standard and lean package variants; `.assets/scripts/sync-gridforge-unity-packages.ps1` reported 0 copied, 0 deleted, and 0 removed files after sync.
+- `.meta` files are Unity-owned. Do not manually create or edit them; let Unity import/regenerate metadata as needed.
+- Verification completed:
+  - Initial RED Unity compile run failed on missing diagnostic debugger adapter types/methods after adding `GridDebuggerDiagnosticsEditModeTests.cs`.
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 16 total, 16 passed, 0 failed, result XML written.
+  - Unity package sync: pass, 0 copied, 0 deleted, 0 removed files.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
+  - debugger-only stale scan for `VoxelFilterType`, `_voxelFilter`, dense `Width`/`Height`/`Length` loops, `TryGetVoxel`, and `Gizmos.DrawCube`: clean except the intentional edge-list loop in `GridDiagnosticGizmoDrawer`.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Next phase target: Phase 4, modernize tracing, blockers, and scene tools.
+
 ## Source Material
 
 - Core v7 docs:
@@ -128,6 +151,7 @@
 - Dependency version config targets FixedMathSharp Unity v5.0.0 and SwiftCollections Unity v5.0.0.
 - PowerShell wrappers exist for version sync, package sync, and `.unitypackage` export.
 - Unity CI scaffolding exists for standard and lean package EditMode test matrices.
+- Phase 3 rebuilt `GridDebugger` on `GridForge.Diagnostics`, including topology-aware rectangular/hex drawing, sparse missing-address descriptors, query bounds, max-cell status, and physical-only selected-cell resolution.
 
 ### High-Priority Gaps
 
@@ -135,7 +159,7 @@
 - The package readmes do not cover hex-prism grids, sparse storage, `GridDiagnostics`, or `GridForgeLogger`.
 - Phase 2 resolved grid configuration authoring for topology kind, topology metrics, storage kind, and sparse configured cells.
 - Phase 2 removed `_voxelSize` authoring and compatibility storage; v7 cell geometry is explicitly per-grid topology metrics.
-- `GridDebugger` loops `Width`, `Height`, and `Length`, calls `TryGetVoxel(x, y, z)`, and draws unit cubes. It cannot correctly visualize sparse holes, sparse physical-only grids, hex geometry, or topology-specific cell metrics.
+- Phase 3 replaced `GridDebugger` dense rectangular loops with `GridDiagnostics.VisitCells(...)`, topology-aware diagnostic geometry, sparse missing-address visualization, and physical-only cell resolution.
 - `GridTracerTests` is still a rectangular/cube trail tool and should become a topology-aware trace visualizer.
 - `Build/Base` and both package copies have drifted in `GridDebugger.cs` and `GridTracerTests.cs`. Package copies of `GridTracerTests.cs` introduce `FillSize` without assigning it, which makes the drawn cubes zero-sized.
 - `Tests/EditMode` contains only an asmdef. The CI workflow currently copies `Tests/EditMode/*.cs`; without test files this will fail before Unity runs tests.
@@ -146,6 +170,8 @@
 ### Design Constraint
 
 `Build/Base` is the shared managed-code source of truth. Most implementation should happen there first, then be copied to both package variants through the package sync path. Package-specific source should remain limited to package metadata, plugin assets, asmdefs, installers, samples, and serialized Unity assets that need separate GUIDs.
+
+Unity `.meta` files are Unity-owned. Do not manually create or edit them during implementation; allow Unity import/package sync runs to generate or update metadata.
 
 ## Non-Goals
 
@@ -336,6 +362,8 @@ git diff --check
 
 **Goal:** Replace dense rectangular cube loops with one topology-aware diagnostic adapter path.
 
+**Execution Status:** Implemented locally as of 2026-06-15; verified through Unity EditMode tests, generated project build, package sync validation, and package maintenance scripts.
+
 **Files:**
 
 - Modify: `Build/Base/Runtime/Utility/Debugging/GridDebugger.cs`
@@ -366,33 +394,33 @@ git diff --check
 
 **Work:**
 
-- [ ] Replace `Width`/`Height`/`Length` nested loops with `GridDiagnostics.VisitCells(...)`.
-- [ ] Keep one reusable `GridDiagnosticScratch` per debugger component.
-- [ ] Draw physical cells using `GridDiagnosticGeometry.WriteVertices(...)` and `GridDiagnosticGeometry.GetEdges(...)`.
-- [ ] Convert `Vector3d` to Unity `Vector3` only in the drawing layer.
-- [ ] Draw missing sparse address cells with a distinct color and alpha.
-- [ ] Respect `GridDiagnosticQuery.MaxCells` and show query status in the inspector.
-- [ ] Avoid per-cell managed allocations in the draw loop.
-- [ ] Keep selected-cell resolution physical-only through `GridDiagnostics.TryResolvePhysicalCell(...)`.
-- [ ] Add editor controls for topology, storage, address mode, bounds, max cells, and state filters.
-- [ ] Keep old `VoxelFilterType` serialized values migrating into the new state filter model.
+- [x] Replace `Width`/`Height`/`Length` nested loops with `GridDiagnostics.VisitCells(...)`.
+- [x] Keep one reusable `GridDiagnosticScratch` per debugger component.
+- [x] Draw physical cells using `GridDiagnosticGeometry.WriteVertices(...)` and `GridDiagnosticGeometry.GetEdges(...)`.
+- [x] Convert `Vector3d` to Unity `Vector3` only in the drawing layer.
+- [x] Draw missing sparse address cells with a distinct color and alpha.
+- [x] Respect `GridDiagnosticQuery.MaxCells` and show query status in the inspector.
+- [x] Avoid per-cell managed allocations in the draw loop.
+- [x] Keep selected-cell resolution physical-only through `GridDiagnostics.TryResolvePhysicalCell(...)`.
+- [x] Add editor controls for topology, storage, address mode, bounds, max cells, and state filters.
+- [x] Remove old `VoxelFilterType` compatibility instead of migrating it; this is a breaking v7 debugger surface.
 
 **Tests:**
 
-- [ ] Dense rectangular diagnostic query draws eight-vertex cells.
-- [ ] Dense hex diagnostic query draws twelve-vertex cells.
-- [ ] Sparse physical-only mode skips missing address cells.
-- [ ] Sparse missing-only mode emits missing descriptors without resolving to `Voxel`.
-- [ ] Query max-cell overflow surfaces a non-completed status instead of freezing the editor.
-- [ ] Selected physical cells resolve to live `Voxel` values.
-- [ ] Missing sparse descriptors do not resolve to live `Voxel` values.
+- [x] Dense rectangular diagnostic query draws eight-vertex cells.
+- [x] Dense hex diagnostic query draws twelve-vertex cells.
+- [x] Sparse physical-only mode skips missing address cells.
+- [x] Sparse missing-only mode emits missing descriptors without resolving to `Voxel`.
+- [x] Query max-cell overflow surfaces a non-completed status instead of freezing the editor.
+- [x] Selected physical cells resolve to live `Voxel` values.
+- [x] Missing sparse descriptors do not resolve to live `Voxel` values.
 
 **Exit Criteria:**
 
-- The debugger correctly visualizes rectangular and hex grids.
-- The debugger can inspect dense and sparse grids without storage-specific loops.
-- The debugger cannot accidentally materialize missing sparse cells.
-- Large sparse address spaces require explicit bounded queries or max-cell opt-in.
+- [x] The debugger correctly visualizes rectangular and hex grids.
+- [x] The debugger can inspect dense and sparse grids without storage-specific loops.
+- [x] The debugger cannot accidentally materialize missing sparse cells.
+- [x] Large sparse address spaces require explicit bounded queries or max-cell opt-in.
 
 ## Phase 4: Modernize Tracing, Blockers, And Scene Tools
 

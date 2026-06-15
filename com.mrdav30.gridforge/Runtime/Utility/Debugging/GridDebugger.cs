@@ -1,38 +1,50 @@
 #if UNITY_EDITOR
 using FixedMathSharp;
+using GridForge.Diagnostics;
 using GridForge.Grids;
+using GridForge.Grids.Storage;
+using GridForge.Grids.Topology;
 using GridForge.Unity;
+using SwiftCollections;
 using UnityEngine;
 
 namespace GridForge.Utility
 {
     /// <summary>
-    /// Defines types of voxels that can be visualized in the debugger.
-    /// </summary>
-    public enum VoxelFilterType
-    {
-        All,
-        Empty,
-        Occupied,
-        Blocked
-    }
-
-    /// <summary>
-    /// Unity tool for visualizing grids and their voxels in the Scene View.
-    /// This debugger highlights grid voxels, occupied spaces, and obstacles.
+    /// Unity Scene View debugger backed by GridForge diagnostic descriptors.
     /// </summary>
     [ExecuteAlways]
     public class GridDebugger : MonoBehaviour
     {
         #region Inspector Fields
 
-        [Tooltip("Enable to visualize grid voxels.")]
+        [SerializeField] private GridWorldComponent _gridWorldComponent;
+
+        [Tooltip("Enable to visualize diagnostic grid cells.")]
         [SerializeField] private bool _showGrid;
 
-        [Tooltip("Filter voxels based on their occupancy state.")]
-        [SerializeField] private VoxelFilterType _voxelFilter = VoxelFilterType.All;
+        [SerializeField] private bool _debugAllGrids = true;
 
-        [Tooltip("Enable to click on voxels to inspect them in Play Mode.")]
+        [Tooltip("Grid index to debug when all grids are disabled.")]
+        [SerializeField] private ushort _gridIndex;
+
+        [SerializeField] private bool _filterTopologyKind;
+        [SerializeField] private GridTopologyKind _topologyKind = GridTopologyKind.RectangularPrism;
+
+        [SerializeField] private bool _filterStorageKind;
+        [SerializeField] private GridStorageKind _storageKind = GridStorageKind.Dense;
+
+        [SerializeField] private GridDiagnosticAddressMode _addressMode = GridDiagnosticAddressMode.PhysicalOnly;
+        [SerializeField] private GridDiagnosticCellState _requiredStates = GridDiagnosticCellState.None;
+        [SerializeField] private GridDiagnosticCellState _excludedStates = GridDiagnosticCellState.None;
+
+        [SerializeField] private bool _limitQueryBounds;
+        [SerializeField] private Vector3 _queryBoundsMin;
+        [SerializeField] private Vector3 _queryBoundsMax = Vector3.one;
+        [SerializeField] private int _maxCells = GridDiagnosticQuery.DefaultMaxCells;
+        [SerializeField] private bool _allowFullSparseAddressScan;
+
+        [Tooltip("Enable to click on physical cells to inspect them in Play Mode.")]
         [SerializeField] private bool _enableVoxelSelection;
 
         [Tooltip("Color for the highlighted voxel.")]
@@ -41,10 +53,20 @@ namespace GridForge.Utility
         [Tooltip("The world position of the voxel to highlight.")]
         [SerializeField] private Vector3 _highlightedVoxelPosition;
 
-        [Tooltip("Grid index to debug.")]
-        [SerializeField] private ushort _gridIndex;
+        [SerializeField] private Color _emptyCellColor = new(0.78f, 0.16f, 1f, 0.75f);
+        [SerializeField] private Color _occupiedCellColor = new(1f, 0.86f, 0.18f, 0.85f);
+        [SerializeField] private Color _blockedCellColor = new(1f, 0.18f, 0.14f, 0.9f);
+        [SerializeField] private Color _boundaryCellColor = new(0.25f, 0.65f, 1f, 0.85f);
+        [SerializeField] private Color _partitionedCellColor = new(0.28f, 1f, 0.48f, 0.85f);
+        [SerializeField] private Color _missingSparseAddressColor = new(1f, 0.56f, 0.1f, 0.42f);
 
-        [SerializeField] private GridWorldComponent _gridWorldComponent;
+        #endregion
+
+        private readonly GridDiagnosticScratch _scratch = new();
+        private readonly SwiftList<GridDiagnosticChange> _dirtyChanges = new();
+        private GridDiagnosticSession _diagnosticSession;
+        private GridWorld _sessionWorld;
+        private bool _missingWorldWarningLogged;
 
         public ushort GridIndex
         {
@@ -52,9 +74,26 @@ namespace GridForge.Utility
             set => _gridIndex = value;
         }
 
+        public bool DebugAllGrids
+        {
+            get => _debugAllGrids;
+            set => _debugAllGrids = value;
+        }
+
         public bool EnableVoxelSelection => _enableVoxelSelection;
 
         public Voxel SelectedVoxel { get; private set; }
+
+        public GridDiagnosticQueryStatus LastQueryStatus { get; private set; } =
+            GridDiagnosticQueryStatus.InactiveWorld;
+
+        public int LastQueryCellCount { get; private set; }
+
+        public int LastQuerySkippedCellCount { get; private set; }
+
+        public int LastVisitedCellCount { get; private set; }
+
+        public int LastDirtyChangeCount { get; private set; }
 
         public GridWorldComponent GridWorldComponent => ResolveGridWorldComponent();
 
@@ -62,15 +101,10 @@ namespace GridForge.Utility
         {
             get
             {
-                var worldComp = ResolveGridWorldComponent();
+                GridWorldComponent worldComp = ResolveGridWorldComponent();
                 return worldComp != null ? worldComp.World : null;
             }
         }
-
-        private VoxelGrid _targetGrid;
-        private int _warnedMissingGridIndex = -1;
-        private bool _missingWorldWarningLogged;
-        #endregion
 
         #region Unity Lifecycle
 
@@ -85,15 +119,113 @@ namespace GridForge.Utility
             if (!_showGrid || !Application.isPlaying)
                 return;
 
-            if (!TryResolveGrid(out _targetGrid))
+            GridWorld world = World;
+            if (world == null || !world.IsActive)
+            {
+                ResetQueryStatus(GridDiagnosticQueryStatus.InactiveWorld);
+                WarnMissingWorld();
                 return;
+            }
 
-            DrawGrid();
+            _missingWorldWarningLogged = false;
+            EnsureDiagnosticSession(world);
+            DrainDirtyChanges();
+
+            GridDiagnosticQuery query = BuildDiagnosticQuery();
+            GridDiagnosticUnityVisitor visitor = new(
+                drawGizmos: true,
+                _emptyCellColor,
+                _occupiedCellColor,
+                _blockedCellColor,
+                _boundaryCellColor,
+                _partitionedCellColor,
+                _missingSparseAddressColor);
+
+            GridDiagnosticQueryResult result = GridDiagnostics.VisitCells(
+                world,
+                in query,
+                ref visitor,
+                _scratch);
+
+            LastQueryStatus = result.Status;
+            LastQueryCellCount = result.CellCount;
+            LastQuerySkippedCellCount = result.SkippedCellCount;
+            LastVisitedCellCount = visitor.VisitedCellCount;
+
+            if (_enableVoxelSelection && SelectedVoxel != null)
+            {
+                Gizmos.color = _highlightColor;
+                Gizmos.DrawWireSphere(_highlightedVoxelPosition, 0.2f);
+            }
+        }
+
+        private void OnDisable()
+        {
+            DisposeDiagnosticSession();
+        }
+
+        private void OnDestroy()
+        {
+            DisposeDiagnosticSession();
+        }
+
+        private void OnValidate()
+        {
+            if (_maxCells < 1)
+                _maxCells = GridDiagnosticQuery.DefaultMaxCells;
         }
 
         #endregion
 
-        #region Voxel Selection Logic
+        #region Query
+
+        public GridDiagnosticQuery BuildDiagnosticQuery()
+        {
+            ushort? gridIndex = _debugAllGrids ? null : _gridIndex;
+            GridTopologyKind? topologyKind = _filterTopologyKind ? _topologyKind : null;
+            GridStorageKind? storageKind = _filterStorageKind ? _storageKind : null;
+            Vector3d? boundsMin = _limitQueryBounds ? _queryBoundsMin.ToVector3d() : null;
+            Vector3d? boundsMax = _limitQueryBounds ? _queryBoundsMax.ToVector3d() : null;
+
+            return new GridDiagnosticQuery(
+                gridIndex,
+                topologyKind,
+                storageKind,
+                _addressMode,
+                _requiredStates,
+                _excludedStates,
+                boundsMin,
+                boundsMax,
+                _maxCells,
+                _allowFullSparseAddressScan);
+        }
+
+        public bool TryResolveDiagnosticPhysicalCell(in GridDiagnosticCell cell, out Voxel voxel)
+        {
+            voxel = null;
+            GridWorld world = World;
+            if (world == null || !world.IsActive)
+                return false;
+
+            if (!GridDiagnostics.TryResolvePhysicalCell(world, in cell, out _, out Voxel resolvedVoxel))
+                return false;
+
+            voxel = resolvedVoxel;
+            return voxel != null;
+        }
+
+        private void ResetQueryStatus(GridDiagnosticQueryStatus status)
+        {
+            LastQueryStatus = status;
+            LastQueryCellCount = 0;
+            LastQuerySkippedCellCount = 0;
+            LastVisitedCellCount = 0;
+            LastDirtyChangeCount = 0;
+        }
+
+        #endregion
+
+        #region Voxel Selection
 
         private void HandleVoxelSelection()
         {
@@ -105,46 +237,101 @@ namespace GridForge.Utility
                 return;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f)
+                && TryResolveDiagnosticPhysicalCellAt(hit.point.ToVector3d(), out Voxel voxel))
             {
-                Vector3d hitPos = Vector3d.FromDouble(hit.point.x, hit.point.y, hit.point.z);
-                if (world.TryGetGridAndVoxel(hitPos, out _, out Voxel voxel))
-                {
-                    _highlightedVoxelPosition = voxel.WorldPosition.ToVector3();
-
-                    SelectedVoxel = voxel;
-                    Debug.Log($"Voxel Selected: {voxel}");
-                }
+                _highlightedVoxelPosition = voxel.WorldPosition.ToVector3();
+                SelectedVoxel = voxel;
+                Debug.Log($"Voxel Selected: {voxel}");
             }
         }
 
-        private bool TryResolveGrid(out VoxelGrid targetGrid)
+        private bool TryResolveDiagnosticPhysicalCellAt(Vector3d worldPosition, out Voxel voxel)
         {
-            targetGrid = null;
+            voxel = null;
 
             GridWorld world = World;
             if (world == null || !world.IsActive)
-            {
-                WarnMissingWorld();
                 return false;
-            }
 
-            _missingWorldWarningLogged = false;
+            GridDiagnosticQuery query = new(
+                gridIndex: _debugAllGrids ? null : _gridIndex,
+                topologyKind: _filterTopologyKind ? _topologyKind : null,
+                storageKind: _filterStorageKind ? _storageKind : null,
+                addressMode: GridDiagnosticAddressMode.PhysicalOnly,
+                boundsMin: worldPosition,
+                boundsMax: worldPosition,
+                maxCells: 1);
 
-            if (!world.TryGetGrid(_gridIndex, out targetGrid))
-            {
-                if (_warnedMissingGridIndex != _gridIndex)
-                {
-                    Debug.LogWarning($"Grid index {_gridIndex} is not available in the active {nameof(GridWorld)}.", this);
-                    _warnedMissingGridIndex = _gridIndex;
-                }
+            ResolvingVisitor visitor = new(world);
+            GridDiagnostics.VisitCells(world, in query, ref visitor, _scratch);
 
+            if (!visitor.HasVoxel)
                 return false;
-            }
 
-            _warnedMissingGridIndex = -1;
-            return true;
+            voxel = visitor.Voxel;
+            return voxel != null;
         }
+
+        private struct ResolvingVisitor : IGridDiagnosticCellVisitor
+        {
+            private readonly GridWorld _world;
+
+            public bool HasVoxel;
+            public Voxel Voxel;
+
+            public ResolvingVisitor(GridWorld world)
+            {
+                _world = world;
+                HasVoxel = false;
+                Voxel = null;
+            }
+
+            public bool Visit(in GridDiagnosticCell cell)
+            {
+                if (!GridDiagnostics.TryResolvePhysicalCell(_world, in cell, out _, out Voxel voxel))
+                    return true;
+
+                HasVoxel = voxel != null;
+                Voxel = voxel;
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Diagnostic Session
+
+        private void EnsureDiagnosticSession(GridWorld world)
+        {
+            if (_diagnosticSession != null && ReferenceEquals(_sessionWorld, world))
+                return;
+
+            DisposeDiagnosticSession();
+            _sessionWorld = world;
+            _diagnosticSession = new GridDiagnosticSession(world);
+        }
+
+        private void DrainDirtyChanges()
+        {
+            if (_diagnosticSession == null)
+            {
+                LastDirtyChangeCount = 0;
+                return;
+            }
+
+            LastDirtyChangeCount = _diagnosticSession.GetDirtyChangesInto(_dirtyChanges);
+        }
+
+        private void DisposeDiagnosticSession()
+        {
+            _diagnosticSession?.Dispose();
+            _diagnosticSession = null;
+            _sessionWorld = null;
+            LastDirtyChangeCount = 0;
+        }
+
+        #endregion
 
         private GridWorldComponent ResolveGridWorldComponent()
         {
@@ -155,9 +342,7 @@ namespace GridForge.Utility
         private void WarnMissingWorld()
         {
             if (_missingWorldWarningLogged)
-            {
                 return;
-            }
 
             Debug.LogWarning(
                 $"{nameof(GridDebugger)} on {name} could not resolve an active {nameof(GridWorldComponent)}. " +
@@ -165,67 +350,6 @@ namespace GridForge.Utility
                 this);
             _missingWorldWarningLogged = true;
         }
-
-        #endregion
-
-        #region Grid Visualization
-
-        private void DrawGrid()
-        {
-            if (_targetGrid == null)
-                return;
-
-            int width = _targetGrid.Width;
-            int height = _targetGrid.Height;
-            int length = _targetGrid.Length;
-
-            Gizmos.color = Color.magenta;
-
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    for (int z = 0; z < length; z++)
-                    {
-                        if (!_targetGrid.TryGetVoxel(x, y, z, out Voxel voxel) || !ShouldRenderVoxel(voxel))
-                            continue;
-
-                        DrawVoxelGizmo(voxel);
-                    }
-                }
-            }
-
-            if (_enableVoxelSelection)
-            {
-                Gizmos.color = _highlightColor;
-                Gizmos.DrawCube(_highlightedVoxelPosition, Vector3.one);
-            }
-        }
-
-        private bool ShouldRenderVoxel(Voxel voxel)
-        {
-            return _voxelFilter switch
-            {
-                VoxelFilterType.All => true,
-                VoxelFilterType.Empty => !voxel.IsOccupied && !voxel.IsBlocked,
-                VoxelFilterType.Occupied => voxel.IsOccupied,
-                VoxelFilterType.Blocked => voxel.IsBlocked,
-                _ => true
-            };
-        }
-
-        private void DrawVoxelGizmo(Voxel voxel)
-        {
-            Vector3 voxelPos = voxel.WorldPosition.ToVector3();
-            Color renderColor = voxel.IsBlocked ? Color.red : voxel.IsOccupied ? Color.yellow : Color.magenta;
-            Gizmos.color = renderColor;
-            Gizmos.DrawCube(voxelPos, Vector3.one);
-            Gizmos.color = Color.black;
-            Gizmos.DrawWireCube(voxelPos, Vector3.one * 1.02f);
-            Gizmos.color = renderColor;
-        }
-
-        #endregion
     }
 }
 #endif
