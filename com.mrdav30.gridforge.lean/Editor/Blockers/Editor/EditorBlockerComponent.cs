@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using FixedMathSharp;
+using FixedMathSharp.Bounds;
 using UnityEditor;
 using UnityEngine;
 
@@ -78,7 +79,7 @@ namespace GridForge.Blockers.Editor
             if (target is not BlockerComponent blocker)
                 return;
 
-            BoundingArea blockArea = blocker.CalculateBlockArea(
+            FixedBoundArea blockArea = blocker.CalculateBlockArea(
                 out BlockAreaSource resolvedSource,
                 out string fallbackReason);
 

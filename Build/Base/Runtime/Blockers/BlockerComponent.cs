@@ -1,4 +1,5 @@
 using FixedMathSharp;
+using FixedMathSharp.Bounds;
 using GridForge.Grids;
 using GridForge.Unity;
 using UnityEngine;
@@ -43,7 +44,7 @@ namespace GridForge.Blockers
 
         [SerializeField] private bool _includeChildrenInBlockArea;
 
-        [SerializeField] private BoundingArea _manualBlockArea;
+        [SerializeField] private FixedBoundArea _manualBlockArea;
 
         [SerializeField] private GridWorldComponent _gridWorldComponent;
 
@@ -135,7 +136,7 @@ namespace GridForge.Blockers
             return _gridWorldComponent;
         }
 
-        public BoundingArea CalculateBlockArea(
+        public FixedBoundArea CalculateBlockArea(
             out BlockAreaSource resolvedSource,
             out string fallbackReason)
         {
@@ -184,14 +185,14 @@ namespace GridForge.Blockers
             }
         }
 
-        private BoundingArea ResolveBlockArea()
+        private FixedBoundArea ResolveBlockArea()
         {
-            BoundingArea blockArea = CalculateBlockArea(out _, out string fallbackReason);
+            FixedBoundArea blockArea = CalculateBlockArea(out _, out string fallbackReason);
             WarnBlockAreaFallback(fallbackReason);
             return blockArea;
         }
 
-        private BoundingArea CreateTransformBlockArea()
+        private FixedBoundArea CreateTransformBlockArea()
         {
             Vector3 center = transform.position;
             Vector3 size = transform.lossyScale;
@@ -203,16 +204,16 @@ namespace GridForge.Blockers
             return CreateBlockArea(center - extents, center + extents);
         }
 
-        private static BoundingArea CreateBoundsBlockArea(Bounds bounds)
+        private static FixedBoundArea CreateBoundsBlockArea(Bounds bounds)
         {
             return CreateBlockArea(bounds.min, bounds.max);
         }
 
-        private static BoundingArea CreateBlockArea(Vector3 min, Vector3 max)
+        private static FixedBoundArea CreateBlockArea(Vector3 min, Vector3 max)
         {
-            return new BoundingArea(
-                new Vector3d(min.x, min.y, min.z),
-                new Vector3d(max.x, max.y, max.z));
+            return new FixedBoundArea(
+                Vector3d.FromDouble(min.x, min.y, min.z),
+                Vector3d.FromDouble(max.x, max.y, max.z));
         }
 
         private bool TryGetColliderBounds(out Bounds bounds)
@@ -343,8 +344,8 @@ namespace GridForge.Blockers
         public bool CacheCoveredVoxels => _cacheCoveredVoxels;
         public BlockAreaSource BlockAreaSource => _blockAreaSource;
         public bool IncludeChildrenInBlockArea => _includeChildrenInBlockArea;
-        public BoundingArea ManualBlockArea => _manualBlockArea;
-        public BoundingArea BlockArea => ResolveBlockArea();
+        public FixedBoundArea ManualBlockArea => _manualBlockArea;
+        public FixedBoundArea BlockArea => ResolveBlockArea();
     }
 
     public static class BlockerFactory

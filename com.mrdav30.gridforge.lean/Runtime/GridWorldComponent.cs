@@ -21,8 +21,6 @@ namespace GridForge.Unity
 
         public GridWorld World { get; private set; }
 
-        public Fixed64 VoxelSize => World?.VoxelSize ?? _voxelSize;
-
         public int SpatialGridCellSize => World?.SpatialGridCellSize ?? _spatialGridCellSize;
 
         public bool IsWorldActive => World?.IsActive ?? false;
@@ -41,9 +39,6 @@ namespace GridForge.Unity
 
         private void OnValidate()
         {
-            if (_voxelSize <= Fixed64.Zero)
-                _voxelSize = GridWorld.DefaultVoxelSize;
-
             if (_spatialGridCellSize < 1)
                 _spatialGridCellSize = 1;
         }
@@ -57,20 +52,19 @@ namespace GridForge.Unity
                 return World;
 
             DisposeWorld();
-            World = new GridWorld(_voxelSize, _spatialGridCellSize);
+            World = new GridWorld(_spatialGridCellSize);
             return World;
         }
 
         /// <summary>
         /// Recreates the runtime world with a new configuration.
         /// </summary>
-        public GridWorld RebuildWorld(Fixed64 voxelSize, int spatialGridCellSize)
+        public GridWorld RebuildWorld(int spatialGridCellSize)
         {
-            _voxelSize = voxelSize > Fixed64.Zero ? voxelSize : GridWorld.DefaultVoxelSize;
             _spatialGridCellSize = Mathf.Max(1, spatialGridCellSize);
 
             DisposeWorld();
-            World = new GridWorld(_voxelSize, _spatialGridCellSize);
+            World = new GridWorld(_spatialGridCellSize);
             return World;
         }
 

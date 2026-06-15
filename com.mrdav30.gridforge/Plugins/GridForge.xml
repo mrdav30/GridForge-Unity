@@ -167,12 +167,23 @@
             A manually placed blocker that obstructs a defined bounding area.
             </summary>
         </member>
-        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.BoundingArea,System.Boolean,System.Boolean)">
+        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,System.Boolean,System.Boolean)">
             <summary>
             Initializes a new bounds blocker bound to the supplied world.
             </summary>
             <param name="world">The world whose grids this blocker should affect.</param>
             <param name="blockArea">The bounding area to block.</param>
+            <param name="isActive">Flag whether or not blocker is active.</param>
+            <param name="cacheCoveredVoxels">Flag whether or not to cache covered voxels.</param>
+        </member>
+        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new bounds blocker from XZ-plane bounds on the supplied world Y layer.
+            </summary>
+            <param name="world">The world whose grids this blocker should affect.</param>
+            <param name="boundsMin">The 2D minimum bound whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="boundsMax">The 2D maximum bound whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to block. Defaults to zero.</param>
             <param name="isActive">Flag whether or not blocker is active.</param>
             <param name="cacheCoveredVoxels">Flag whether or not to cache covered voxels.</param>
         </member>
@@ -199,7 +210,7 @@
         </member>
         <member name="T:GridForge.Configuration.GridConfiguration">
             <summary>
-            Defines the configuration parameters for a grid, including boundaries and scan cell size.
+            Defines the configuration parameters for a grid, including boundaries, topology, storage, and scan cell size.
             Used to describe grid properties before a world normalizes and registers the grid.
             </summary>
             <remarks>
@@ -208,6 +219,9 @@
             <b>FixedMathSharp.Vector3d</b> BoundsMin<br/>
             <b>FixedMathSharp.Vector3d</b> BoundsMax<br/>
             <b>int</b> ScanCellSize<br/>
+            <b>GridForge.Grids.Topology.GridTopologyKind</b> TopologyKind<br/>
+            <b>GridForge.Grids.Topology.GridTopologyMetrics</b> TopologyMetrics<br/>
+            <b>GridForge.Grids.Storage.GridStorageKind</b> StorageKind<br/>
             </code>
             </remarks>
         </member>
@@ -232,12 +246,32 @@
             Customizable based on grid density and expected entity distribution.
             </summary>
         </member>
+        <member name="F:GridForge.Configuration.GridConfiguration.TopologyKind">
+            <summary>
+            The cell topology used by this grid. Rectangular-prism grids interpret
+            <see cref="T:GridForge.Spatial.VoxelIndex"/> as local X/Y/Z coordinates; hex-prism grids
+            interpret it as axial Q, vertical layer, and axial R.
+            </summary>
+        </member>
+        <member name="F:GridForge.Configuration.GridConfiguration.TopologyMetrics">
+            <summary>
+            The deterministic cell geometry used by this grid's topology.
+            Rectangular-prism metrics define cell width, layer height, and length.
+            Hex-prism metrics define horizontal radius, layer height, and orientation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Configuration.GridConfiguration.StorageKind">
+            <summary>
+            The physical voxel storage used by this grid. Dense storage materializes every in-bounds voxel;
+            sparse storage materializes only explicitly configured voxels.
+            </summary>
+        </member>
         <member name="P:GridForge.Configuration.GridConfiguration.GridCenter">
             <summary>
             The center point of the grid's bounding volume.
             </summary>
         </member>
-        <member name="M:GridForge.Configuration.GridConfiguration.#ctor(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Int32)">
+        <member name="M:GridForge.Configuration.GridConfiguration.#ctor(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Int32,GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Grids.Storage.GridStorageKind)">
             <summary>
             Initializes a new instance of <see cref="T:GridForge.Configuration.GridConfiguration"/> with specified bounds and scan cell size.
             Ensures that <see cref="F:GridForge.Configuration.GridConfiguration.BoundsMin"/> is always less than or equal to <see cref="F:GridForge.Configuration.GridConfiguration.BoundsMax"/>.
@@ -245,36 +279,612 @@
             <param name="boundsMin">The minimum boundary of the grid.</param>
             <param name="boundsMax">The maximum boundary of the grid.</param>
             <param name="scanCellSize">The size of scan cells within the grid. Default is 8.</param>
+            <param name="topologyKind">The topology kind used by the grid. Defaults to rectangular-prism.</param>
+            <param name="topologyMetrics">Deterministic topology metrics. Defaults to 1x1x1 rectangular-prism cells.</param>
+            <param name="storageKind">The physical voxel storage kind. Defaults to dense storage.</param>
         </member>
         <member name="M:GridForge.Configuration.GridConfiguration.ToBoundsKey">
             <summary>
             Creates an exact identity key for this configuration's snapped bounds.
             </summary>
         </member>
+        <member name="M:GridForge.Configuration.GridConfiguration.ToGridKey">
+            <summary>
+            Creates an exact identity key for this configuration's snapped bounds and topology.
+            </summary>
+        </member>
         <member name="M:GridForge.Configuration.GridConfiguration.GetHashCode">
             <inheritdoc/>
         </member>
-        <member name="T:GridForge.Grids.GridScanScratch">
+        <member name="T:GridForge.Configuration.GridConfigurationKey">
             <summary>
-            Reusable temporary storage for allocation-sensitive grid scan operations.
+            Exact identity key for a grid's snapped bounds and topology.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridScanScratch.Clear">
+        <member name="F:GridForge.Configuration.GridConfigurationKey.BoundsMin">
             <summary>
-            Clears all temporary scan state while retaining allocated backing storage.
+            The minimum snapped bounds of the grid.
             </summary>
         </member>
-        <member name="T:GridForge.Grids.GridDirectionUtility">
+        <member name="F:GridForge.Configuration.GridConfigurationKey.BoundsMax">
             <summary>
-            Provides stateless helpers for translating relative grid offsets into directions.
+            The maximum snapped bounds of the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridDirectionUtility.GetNeighborDirectionFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32})">
+        <member name="F:GridForge.Configuration.GridConfigurationKey.TopologyKind">
             <summary>
-            Converts a 3D offset into a corresponding <see cref="T:GridForge.Spatial.SpatialDirection"/> in a 3x3x3 grid.
+            The grid topology used by these bounds.
             </summary>
-            <param name="gridOffset">The (x, y, z) offset from the center voxel.</param>
-            <returns>The corresponding <see cref="T:GridForge.Spatial.SpatialDirection"/>, or <see cref="F:GridForge.Spatial.SpatialDirection.None"/> if invalid.</returns>
+        </member>
+        <member name="F:GridForge.Configuration.GridConfigurationKey.TopologyMetrics">
+            <summary>
+            The topology metrics used by these bounds.
+            </summary>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.#ctor(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Topology.GridTopologyMetrics)">
+            <summary>
+            Initializes a new grid configuration key.
+            </summary>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.Equals(GridForge.Configuration.GridConfigurationKey)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.op_Equality(GridForge.Configuration.GridConfigurationKey,GridForge.Configuration.GridConfigurationKey)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfigurationKey.op_Inequality(GridForge.Configuration.GridConfigurationKey,GridForge.Configuration.GridConfigurationKey)">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticAddressMode">
+            <summary>
+            Selects which parts of a grid's physical or sparse address space should be
+            exposed through diagnostic queries.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticAddressMode.PhysicalOnly">
+            <summary>
+            Return only configured physical voxels.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticAddressMode.PhysicalAndMissing">
+            <summary>
+            Return configured physical voxels and missing sparse address-space cells.
+            Dense grids return physical cells only.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticAddressMode.MissingOnly">
+            <summary>
+            Return only missing sparse address-space cells.
+            Dense grids return no cells.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticCell">
+            <summary>
+            Immutable descriptor for a physical voxel or sparse address-space cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.Kind">
+            <summary>
+            Identifies whether this descriptor represents a physical voxel or a
+            missing sparse address-space cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.WorldSpawnToken">
+            <summary>
+            Runtime token of the owning world when the descriptor was created.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.GridIndex">
+            <summary>
+            World-local grid slot that owns this cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.GridSpawnToken">
+            <summary>
+            Runtime token of the grid instance when the descriptor was created.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.Index">
+            <summary>
+            Topology-local cell index.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.WorldPosition">
+            <summary>
+            Topology-projected world-space center for the cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.TopologyKind">
+            <summary>
+            Topology kind used to interpret the local index and geometry.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.StorageKind">
+            <summary>
+            Storage kind of the grid that owns this descriptor.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.TopologyMetrics">
+            <summary>
+            Topology metrics used to derive diagnostic geometry.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.State">
+            <summary>
+            Diagnostic state flags for filtering and adapter overlays.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCell.WorldIndex">
+            <summary>
+            World-scoped identity for the cell. Missing sparse address cells use a
+            potential identity and do not resolve to a physical voxel.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticCell.#ctor(GridForge.Diagnostics.GridDiagnosticCellKind,System.Int32,System.UInt16,System.Int32,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Storage.GridStorageKind,GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Diagnostics.GridDiagnosticCellState,GridForge.Spatial.WorldVoxelIndex)">
+            <summary>
+            Initializes a diagnostic cell descriptor.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticCellKind">
+            <summary>
+            Identifies whether a diagnostic cell describes a physical voxel or a sparse
+            address-space location where a voxel could exist.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellKind.Physical">
+            <summary>
+            The descriptor represents a configured physical voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellKind.MissingSparseAddress">
+            <summary>
+            The descriptor represents an unconfigured sparse address-space cell.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticCellState">
+            <summary>
+            Compact state flags exposed for diagnostic cell filtering and adapters.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.None">
+            <summary>
+            No diagnostic state flags are set.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.Empty">
+            <summary>
+            The physical voxel has no occupants and no blockers.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.Occupied">
+            <summary>
+            The physical voxel has one or more occupants.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.Blocked">
+            <summary>
+            The physical voxel has one or more blockers.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.Boundary">
+            <summary>
+            The physical voxel lies on the boundary of its grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.Partitioned">
+            <summary>
+            The physical voxel has one or more partitions.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticCellState.MissingSparseAddress">
+            <summary>
+            The descriptor represents a missing sparse address-space cell.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticChange">
+            <summary>
+            Immutable descriptor for one diagnostic dirty change captured by a session.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.Kind">
+            <summary>
+            Kind flags coalesced for this dirty change.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.WorldSpawnToken">
+            <summary>
+            Runtime token of the world that produced the change.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.GridIndex">
+            <summary>
+            World-local grid slot affected by the change, or
+            <see cref="F:System.UInt16.MaxValue"/> for world-scoped changes.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.GridSpawnToken">
+            <summary>
+            Runtime token of the grid instance affected by the change.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.WorldIndex">
+            <summary>
+            World-scoped voxel identity for cell-scoped changes.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.VoxelIndex">
+            <summary>
+            Topology-local voxel index for cell or sparse address-range changes.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.BoundsMin">
+            <summary>
+            Minimum world-space bounds affected by grid or range-scoped changes.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChange.BoundsMax">
+            <summary>
+            Maximum world-space bounds affected by grid or range-scoped changes.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.#ctor(GridForge.Diagnostics.GridDiagnosticChangeKind,System.Int32,System.UInt16,System.Int32,GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Initializes a diagnostic dirty-change descriptor.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.CompareTo(GridForge.Diagnostics.GridDiagnosticChange)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.Equals(GridForge.Diagnostics.GridDiagnosticChange)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticChangeKind">
+            <summary>
+            Describes the kind of runtime change captured by a diagnostic session.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.None">
+            <summary>
+            No diagnostic change kind is set.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.GridAdded">
+            <summary>
+            A grid was added to the observed world.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.GridRemoved">
+            <summary>
+            A grid was removed from the observed world.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.GridChanged">
+            <summary>
+            A grid raised a broad change notification.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.WorldReset">
+            <summary>
+            The observed world was reset.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.SparseVoxelAdded">
+            <summary>
+            A sparse physical voxel was configured.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.SparseVoxelRemoved">
+            <summary>
+            A sparse physical voxel was removed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.SparseAddressChanged">
+            <summary>
+            A sparse address-space range changed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.ObstacleChanged">
+            <summary>
+            Obstacle state changed on a physical voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticChangeKind.OccupantChanged">
+            <summary>
+            Occupant state changed on a physical voxel.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticEdge">
+            <summary>
+            Identifies a diagnostic prism edge by vertex indices.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticEdge.Start">
+            <summary>
+            Start vertex index.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticEdge.End">
+            <summary>
+            End vertex index.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticEdge.#ctor(System.Byte,System.Byte)">
+            <summary>
+            Initializes a diagnostic edge descriptor.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticGeometry">
+            <summary>
+            Topology-aware diagnostic geometry helpers for cell descriptors.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticGeometry.RectangularPrismVertexCount">
+            <summary>
+            Number of vertices in a rectangular-prism diagnostic cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticGeometry.HexPrismVertexCount">
+            <summary>
+            Number of vertices in a hex-prism diagnostic cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticGeometry.RectangularPrismEdgeCount">
+            <summary>
+            Number of wireframe edges in a rectangular-prism diagnostic cell.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticGeometry.HexPrismEdgeCount">
+            <summary>
+            Number of wireframe edges in a hex-prism diagnostic cell.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticGeometry.GetVertexCount(GridForge.Grids.Topology.GridTopologyKind)">
+            <summary>
+            Gets the number of vertices written for the supplied topology kind.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticGeometry.GetEdgeCount(GridForge.Grids.Topology.GridTopologyKind)">
+            <summary>
+            Gets the number of edges exposed for the supplied topology kind.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticGeometry.WriteVertices(GridForge.Diagnostics.GridDiagnosticCell@,System.Span{FixedMathSharp.Vector3d})">
+            <summary>
+            Writes topology-aware world-space cell vertices into caller-owned
+            storage.
+            </summary>
+            <returns>The number of vertices written, or <c>0</c> when the span is too small.</returns>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticGeometry.GetEdges(GridForge.Grids.Topology.GridTopologyKind)">
+            <summary>
+            Gets immutable edge topology for the supplied cell topology kind.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticQuery">
+            <summary>
+            Immutable filter and budget settings for a diagnostic cell query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.DefaultMaxCells">
+            <summary>
+            Default maximum number of diagnostic cells returned by a single query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.GridIndex">
+            <summary>
+            Optional world-local grid slot filter.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.TopologyKind">
+            <summary>
+            Optional topology filter.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.StorageKind">
+            <summary>
+            Optional storage-kind filter.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.AddressMode">
+            <summary>
+            Selects whether the query should return physical cells, missing sparse
+            address cells, or both.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.RequiredStates">
+            <summary>
+            State flags that a returned cell must contain.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.ExcludedStates">
+            <summary>
+            State flags that exclude a cell from the result.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.BoundsMin">
+            <summary>
+            Optional world-space minimum bounds for the query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.BoundsMax">
+            <summary>
+            Optional world-space maximum bounds for the query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.MaxCells">
+            <summary>
+            Maximum number of cells this query may return before it is stopped.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQuery.AllowFullAddressSpaceScan">
+            <summary>
+            Allows missing sparse address-space queries to scan the whole grid
+            address space when no bounds are supplied.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticQuery.#ctor(System.Nullable{System.UInt16},System.Nullable{GridForge.Grids.Topology.GridTopologyKind},System.Nullable{GridForge.Grids.Storage.GridStorageKind},GridForge.Diagnostics.GridDiagnosticAddressMode,GridForge.Diagnostics.GridDiagnosticCellState,GridForge.Diagnostics.GridDiagnosticCellState,System.Nullable{FixedMathSharp.Vector3d},System.Nullable{FixedMathSharp.Vector3d},System.Int32,System.Boolean)">
+            <summary>
+            Initializes a diagnostic query.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticQuery.AllPhysical">
+            <summary>
+            Creates a query that returns physical cells from all active grids.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticQuery.ForGrid(System.UInt16)">
+            <summary>
+            Creates a physical-cell query for one world-local grid slot.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticQuery.ForBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+            <summary>
+            Creates a physical-cell query clipped to world-space bounds.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticQueryResult">
+            <summary>
+            Summary information returned from a diagnostic query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryResult.Status">
+            <summary>
+            Status of the completed query pass.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryResult.CellCount">
+            <summary>
+            Number of cells written or visited.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryResult.SkippedCellCount">
+            <summary>
+            Number of cells skipped because the query stopped before traversal
+            completed.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticQueryResult.#ctor(GridForge.Diagnostics.GridDiagnosticQueryStatus,System.Int32,System.Int32)">
+            <summary>
+            Initializes a query result.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticQueryStatus">
+            <summary>
+            Describes the result of a diagnostic query pass.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.Completed">
+            <summary>
+            The query completed without truncation or validation failure.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.InactiveWorld">
+            <summary>
+            The supplied world was null or inactive.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.InvalidGrid">
+            <summary>
+            The query requested a grid that could not be resolved.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.MissingAddressSpaceRequiresBounds">
+            <summary>
+            The query requested missing sparse address cells without bounds or an
+            explicit full-address-space scan opt-in.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.MaxCellsExceeded">
+            <summary>
+            The query reached its maximum cell budget before traversal completed.
+            </summary>
+        </member>
+        <member name="F:GridForge.Diagnostics.GridDiagnosticQueryStatus.Truncated">
+            <summary>
+            Traversal stopped because the visitor requested early termination.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnostics">
+            <summary>
+            Engine-agnostic diagnostic query helpers for GridForge worlds and grids.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnostics.GetCellsInto(GridForge.Grids.GridWorld,GridForge.Diagnostics.GridDiagnosticQuery@,SwiftCollections.SwiftList{GridForge.Diagnostics.GridDiagnosticCell},GridForge.Diagnostics.GridDiagnosticScratch)">
+            <summary>
+            Clears and fills caller-owned storage with diagnostic cells.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnostics.VisitCells``1(GridForge.Grids.GridWorld,GridForge.Diagnostics.GridDiagnosticQuery@,``0@,GridForge.Diagnostics.GridDiagnosticScratch)">
+            <summary>
+            Visits diagnostic cells without requiring an intermediate result list.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnostics.TryResolvePhysicalCell(GridForge.Grids.GridWorld,GridForge.Diagnostics.GridDiagnosticCell@,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
+            <summary>
+            Resolves a physical diagnostic cell descriptor back to its active grid
+            and voxel.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticScratch">
+            <summary>
+            Reusable scratch storage for allocation-conscious diagnostic queries.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticScratch.Clear">
+            <summary>
+            Clears reusable scratch state. Phase 1 does not allocate scratch
+            collections yet.
+            </summary>
+        </member>
+        <member name="T:GridForge.Diagnostics.GridDiagnosticSession">
+            <summary>
+            Captures dirty diagnostic grid, cell, and sparse address changes for one
+            active <see cref="T:GridForge.Grids.GridWorld"/>.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticSession.#ctor(GridForge.Grids.GridWorld)">
+            <summary>
+            Creates a diagnostic dirty-tracking session for the supplied active
+            world.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticSession.GetDirtyChangesInto(SwiftCollections.SwiftList{GridForge.Diagnostics.GridDiagnosticChange})">
+            <summary>
+            Clears and fills caller-owned storage with coalesced dirty changes.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticSession.ClearDirtyChanges">
+            <summary>
+            Clears all dirty changes captured so far.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.GridDiagnosticSession.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Diagnostics.IGridDiagnosticCellVisitor">
+            <summary>
+            Visitor contract for diagnostic queries that stream cells directly into
+            caller-owned buffers.
+            </summary>
+        </member>
+        <member name="M:GridForge.Diagnostics.IGridDiagnosticCellVisitor.Visit(GridForge.Diagnostics.GridDiagnosticCell@)">
+            <summary>
+            Handles one diagnostic cell.
+            </summary>
+            <param name="cell">The current diagnostic cell descriptor.</param>
+            <returns>True to continue traversal; false to stop.</returns>
         </member>
         <member name="T:GridForge.Grids.GridObstacleManager">
             <summary>
@@ -321,6 +931,25 @@
             Attempts to add an obstacle at the given world position.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.BoundsKey)">
+            <summary>
+            Attempts to add an obstacle at the given XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="grid">The grid to mutate.</param>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="obstacleSpawnToken">The obstacle token to attach to the resolved voxel.</param>
+            <returns>True if an obstacle was added to the resolved voxel; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.BoundsKey)">
+            <summary>
+            Attempts to add an obstacle at the given XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="grid">The grid to mutate.</param>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve.</param>
+            <param name="obstacleSpawnToken">The obstacle token to attach to the resolved voxel.</param>
+            <returns>True if an obstacle was added to the resolved voxel; otherwise false.</returns>
+        </member>
         <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey)">
             <summary>
             Adds an obstacle to this voxel.
@@ -339,6 +968,25 @@
             <summary>
             Attempts to remove an obstacle from the specified world position.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.BoundsKey)">
+            <summary>
+            Attempts to remove an obstacle from the given XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="grid">The grid to mutate.</param>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="obstacleSpawnToken">The obstacle token to remove from the resolved voxel.</param>
+            <returns>True if the obstacle was removed from the resolved voxel; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.BoundsKey)">
+            <summary>
+            Attempts to remove an obstacle from the given XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="grid">The grid to mutate.</param>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve.</param>
+            <param name="obstacleSpawnToken">The obstacle token to remove from the resolved voxel.</param>
+            <returns>True if the obstacle was removed from the resolved voxel; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey)">
             <summary>
@@ -503,9 +1151,19 @@
             Scans for occupants within a given radius from a specified position in the supplied world.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadius(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Scans for occupants within a 2D XZ radius on the supplied world Y layer.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.GridScanManager.ScanRadius``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Scans for occupants of a specific type within a given radius in the supplied world.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadius``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Scans for occupants of a specific type within a 2D XZ radius on the supplied world Y layer.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
@@ -513,9 +1171,19 @@
             Clears and fills caller-owned storage with occupants within the supplied radius.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned storage with occupants within a 2D XZ radius on the supplied world Y layer.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},GridForge.Grids.GridScanScratch,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Clears and fills caller-owned storage using caller-owned scratch collections.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},GridForge.Grids.GridScanScratch,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections for a 2D XZ radius.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
@@ -523,9 +1191,19 @@
             Clears and fills caller-owned storage with typed occupants within the supplied radius.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned typed storage with occupants within a 2D XZ radius on the supplied world Y layer.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},GridForge.Grids.GridScanScratch,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Clears and fills caller-owned typed storage using caller-owned scratch collections.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanManager.ScanRadiusInto``1(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{``0},GridForge.Grids.GridScanScratch,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Clears and fills caller-owned typed storage using caller-owned scratch collections for a 2D XZ radius.
             </summary>
         </member>
         <member name="M:GridForge.Grids.GridScanManager.GetVoxelOccupantsByType``1(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex)">
@@ -618,9 +1296,9 @@
             Maximum number of grids that can be managed within a world.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.GridWorld.DefaultVoxelSize">
+        <member name="F:GridForge.Grids.GridWorld.DefaultRectangularCellSize">
             <summary>
-            The default size of each grid voxel in world units.
+            The default rectangular cell edge in world units.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridWorld.DefaultSpatialGridCellSize">
@@ -628,19 +1306,9 @@
             The default size of a spatial hash cell used for grid lookup.
             </summary>
         </member>
-        <member name="P:GridForge.Grids.GridWorld.VoxelSize">
-            <summary>
-            The size of each grid voxel in world units for this world.
-            </summary>
-        </member>
         <member name="P:GridForge.Grids.GridWorld.SpatialGridCellSize">
             <summary>
             The size of a spatial hash cell used for grid lookup in this world.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.GridWorld.VoxelResolution">
-            <summary>
-            Resolution for snapping or searching within the grid.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GridWorld.ActiveGrids">
@@ -650,7 +1318,7 @@
         </member>
         <member name="P:GridForge.Grids.GridWorld.BoundsTracker">
             <summary>
-            Dictionary mapping exact bounds keys to grid indices to prevent duplicate grids.
+            Dictionary mapping exact grid configuration keys to grid indices to prevent duplicate grids.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GridWorld.SpatialGridHash">
@@ -693,11 +1361,10 @@
             Event triggered when this world is reset.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridWorld.#ctor(System.Nullable{FixedMathSharp.Fixed64},System.Int32)">
+        <member name="M:GridForge.Grids.GridWorld.#ctor(System.Int32)">
             <summary>
-            Initializes a new world with the supplied voxel and spatial-hash settings.
+            Initializes a new world with the supplied spatial-hash settings.
             </summary>
-            <param name="voxelSize">Optional voxel size for this world.</param>
             <param name="spatialGridCellSize">Optional spatial hash cell size for this world.</param>
         </member>
         <member name="M:GridForge.Grids.GridWorld.Reset(System.Boolean)">
@@ -714,6 +1381,26 @@
             Adds a new grid to this world and registers it in the spatial hash.
             </summary>
             <param name="configuration">The grid configuration to normalize and register.</param>
+            <param name="allocatedIndex">The allocated world-local grid slot on success.</param>
+            <returns>True if the grid was added; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryAddGrid(GridForge.Configuration.GridConfiguration,System.Collections.Generic.IEnumerable{GridForge.Spatial.VoxelIndex},System.UInt16@)">
+            <summary>
+            Adds a new grid to this world and materializes the supplied sparse voxel indices when sparse storage is configured.
+            Dense grids ignore the configured voxel input and materialize every in-bounds voxel.
+            </summary>
+            <param name="configuration">The grid configuration to normalize and register.</param>
+            <param name="configuredVoxels">Grid-local voxel indices to materialize for sparse storage.</param>
+            <param name="allocatedIndex">The allocated world-local grid slot on success.</param>
+            <returns>True if the grid was added; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryAddGrid(GridForge.Configuration.GridConfiguration,System.Boolean[0:,0:,0:],System.UInt16@)">
+            <summary>
+            Adds a new grid to this world and materializes true cells from the supplied sparse voxel mask when sparse storage is configured.
+            Dense grids ignore the configured voxel input and materialize every in-bounds voxel.
+            </summary>
+            <param name="configuration">The grid configuration to normalize and register.</param>
+            <param name="configuredVoxels">A [x, y, z] mask whose true values identify sparse voxels to materialize. Sparse masks must match the normalized grid dimensions.</param>
             <param name="allocatedIndex">The allocated world-local grid slot on success.</param>
             <returns>True if the grid was added; otherwise false.</returns>
         </member>
@@ -740,6 +1427,51 @@
             <param name="outGrid">The resolved grid, if found.</param>
             <returns>True if a containing grid was found; otherwise false.</returns>
         </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetGrid(FixedMathSharp.Vector2d,GridForge.Grids.VoxelGrid@)">
+            <summary>
+            Retrieves the grid containing a 2D XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="outGrid">The resolved grid, if found.</param>
+            <returns>True if a containing grid was found; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetGrid(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.VoxelGrid@)">
+            <summary>
+            Retrieves the grid containing a 2D XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="outGrid">The resolved grid, if found.</param>
+            <returns>True if a containing grid was found; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGrid(FixedMathSharp.Vector3d,GridForge.Grids.VoxelGrid@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the active grid whose bounds are nearest to the supplied world position.
+            </summary>
+            <param name="position">The world position to resolve.</param>
+            <param name="outGrid">The closest grid, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a closest active grid was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGrid(FixedMathSharp.Vector2d,GridForge.Grids.VoxelGrid@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the active grid whose bounds are nearest to a 2D XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="outGrid">The closest grid, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a closest active grid was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGrid(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.VoxelGrid@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the active grid whose bounds are nearest to a 2D XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="outGrid">The closest grid, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a closest active grid was resolved; otherwise false.</returns>
+        </member>
         <member name="M:GridForge.Grids.GridWorld.TryGetGrid(GridForge.Spatial.WorldVoxelIndex,GridForge.Grids.VoxelGrid@)">
             <summary>
             Retrieves a grid by a world-scoped voxel identity.
@@ -757,6 +1489,59 @@
             <param name="outVoxel">The resolved voxel, if found.</param>
             <returns>True if both the grid and voxel were resolved; otherwise false.</returns>
         </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetGridAndVoxel(FixedMathSharp.Vector2d,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the grid and voxel containing a 2D XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="outGrid">The resolved grid, if found.</param>
+            <param name="outVoxel">The resolved voxel, if found.</param>
+            <returns>True if both the grid and voxel were resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetGridAndVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the grid and voxel containing a 2D XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="outGrid">The resolved grid, if found.</param>
+            <param name="outVoxel">The resolved voxel, if found.</param>
+            <returns>True if both the grid and voxel were resolved; otherwise false.</returns>  
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGridAndVoxel(FixedMathSharp.Vector3d,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to the supplied world position and the grid that owns it.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The world position to resolve.</param>
+            <param name="outGrid">The grid that owns the closest physical voxel, if found.</param>
+            <param name="outVoxel">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGridAndVoxel(FixedMathSharp.Vector2d,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the default world Y layer and the grid that owns it.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="outGrid">The grid that owns the closest physical voxel, if found.</param>
+            <param name="outVoxel">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestGridAndVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the supplied world Y layer and the grid that owns it.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="outGrid">The grid that owns the closest physical voxel, if found.</param>
+            <param name="outVoxel">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
         <member name="M:GridForge.Grids.GridWorld.TryGetGridAndVoxel(GridForge.Spatial.WorldVoxelIndex,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@)">
             <summary>
             Retrieves the grid and voxel for a given voxel identity.
@@ -773,6 +1558,54 @@
             <param name="position">The world position to resolve.</param>
             <param name="result">The resolved voxel, if found.</param>
             <returns>True if the voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetVoxel(FixedMathSharp.Vector2d,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a voxel from a 2D XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="result">The resolved voxel, if found.</param>
+            <returns>True if the voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a voxel from a 2D XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="result">The resolved voxel, if found.</param>
+            <returns>True if the voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestVoxel(FixedMathSharp.Vector3d,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to the supplied world position.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The world position to resolve.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestVoxel(FixedMathSharp.Vector2d,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the default world Y layer.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryGetClosestVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the supplied world Y layer.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <param name="topologyKind">Optional topology filter. When supplied, only grids using the requested topology are considered.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.GridWorld.TryGetVoxel(GridForge.Spatial.WorldVoxelIndex,GridForge.Grids.Voxel@)">
             <summary>
@@ -805,21 +1638,6 @@
         <member name="M:GridForge.Grids.GridWorld.GetSpatialGridKey(FixedMathSharp.Vector3d)">
             <summary>
             Computes the spatial-hash key for the supplied world-space position.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.GridWorld.CeilToVoxelSize(FixedMathSharp.Vector3d)">
-            <summary>
-            Ceil-snaps a world-space position to this world's voxel size.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.GridWorld.FloorToVoxelSize(FixedMathSharp.Vector3d)">
-            <summary>
-            Floor-snaps a world-space position to this world's voxel size.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.GridWorld.SnapBoundsToVoxelSize(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
-            <summary>
-            Snaps the supplied bounds to this world's voxel size.
             </summary>
         </member>
         <member name="T:GridForge.Grids.ScanCell">
@@ -912,9 +1730,19 @@
             Appends occupants within the squared radius to caller-owned storage without allocating an iterator.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.ScanCell.AddOccupantsWithinRadius2dTo(SwiftCollections.SwiftList{GridForge.Spatial.IVoxelOccupant},FixedMathSharp.Vector3d,System.Int32,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Appends occupants within the XZ squared radius on the selected local Y voxel layer.
+            </summary>
+        </member>
         <member name="M:GridForge.Grids.ScanCell.AddOccupantsWithinRadiusTo``1(SwiftCollections.SwiftList{``0},FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
             <summary>
             Appends typed occupants within the squared radius to caller-owned storage without LINQ.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.ScanCell.AddOccupantsWithinRadius2dTo``1(SwiftCollections.SwiftList{``0},FixedMathSharp.Vector3d,System.Int32,FixedMathSharp.Fixed64,System.Func{GridForge.Spatial.IVoxelOccupant,System.Boolean},System.Func{System.Byte,System.Boolean})">
+            <summary>
+            Appends typed occupants within the XZ squared radius on the selected local Y voxel layer.
             </summary>
         </member>
         <member name="M:GridForge.Grids.ScanCell.GetOccupantsFor(GridForge.Spatial.WorldVoxelIndex)">
@@ -970,19 +1798,6 @@
             <summary>
             The world-space position of this voxel.
             </summary>
-        </member>
-        <member name="F:GridForge.Grids.Voxel._isNeighborCacheValid">
-            <summary>
-            Indicates whether the neighbor cache is valid.
-            </summary>
-        </member>
-        <member name="F:GridForge.Grids.Voxel._cachedNeighbors">
-            <summary>
-            Cached array of neighboring voxels for fast lookup representing a 3x3x3 linear direction grid
-            </summary>
-            <remarks>
-            Unlike Grid adjacency (which is 1:many), voxels can only have 1 neighbor in any one direction (1:1).
-            </remarks>
         </member>
         <member name="P:GridForge.Grids.Voxel.ObstacleTracker">
             <summary>
@@ -1119,30 +1934,56 @@
             Retrieves a partition from the voxel by type and returns null if it doesn't exist.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.Voxel.InvalidateNeighborCache">
+        <member name="M:GridForge.Grids.Voxel.GetNeighborsInto(GridForge.Grids.VoxelGrid,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Spatial.VoxelNeighborScope,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
-            Invalidates the neighbor cache when a boundary relationship changes.
+            Clears and fills caller-owned storage with neighboring voxels whose
+            world-space voxel footprints touch this voxel's footprint.
             </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="results">Caller-owned storage cleared and filled with contact neighbors.</param>
+            <param name="scope">The grid groups included by the contact query.</param>
+            <param name="tolerance">Optional fixed-point tolerance applied to footprint contact checks.</param>
         </member>
-        <member name="M:GridForge.Grids.Voxel.GetNeighbors(GridForge.Grids.VoxelGrid,System.Boolean)">
+        <member name="M:GridForge.Grids.Voxel.HasNeighbor(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelNeighborScope,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
-            Retrieves the neighbors of this voxel, caching results if specified.
+            Determines whether this voxel has at least one footprint-contact neighbor in the requested scope.
             </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="scope">The grid groups included by the contact query.</param>
+            <param name="tolerance">Optional fixed-point tolerance applied to footprint contact checks.</param>
+            <returns>True when at least one contact exists; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.Voxel.TryGetNeighborFromDirection(GridForge.Grids.VoxelGrid,GridForge.Spatial.SpatialDirection,GridForge.Grids.Voxel@,System.Boolean)">
+        <member name="M:GridForge.Grids.Voxel.TryGetNeighbor(GridForge.Grids.VoxelGrid,GridForge.Spatial.RectangularDirection,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves a neighbor voxel in a specific direction.
+            Retrieves the rectangular-prism neighbor voxel in the supplied topology-local direction.
             </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="direction">The rectangular-prism direction to resolve.</param>
+            <param name="neighbor">The resolved same-topology neighbor when found.</param>
+            <returns>True when a same-topology neighbor exists in the supplied direction; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.Voxel.TryGetNeighborFromOffset(GridForge.Grids.VoxelGrid,System.ValueTuple{System.Int32,System.Int32,System.Int32},GridForge.Grids.Voxel@)">
+        <member name="M:GridForge.Grids.Voxel.TryGetNeighbor(GridForge.Grids.VoxelGrid,GridForge.Spatial.HexDirection,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves a neighbor voxel based on a coordinate offset.
+            Retrieves the hex-prism neighbor voxel in the supplied topology-local direction.
             </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="direction">The hex-prism direction to resolve.</param>
+            <param name="neighbor">The resolved same-topology neighbor when found.</param>
+            <returns>True when a same-topology neighbor exists in the supplied direction; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.Voxel.RefreshNeighborCache(GridForge.Grids.VoxelGrid)">
+        <member name="M:GridForge.Grids.Voxel.GetRectangularNeighborsInto(GridForge.Grids.VoxelGrid,SwiftCollections.SwiftList{System.ValueTuple{GridForge.Spatial.RectangularDirection,GridForge.Grids.Voxel}})">
             <summary>
-            Updates and caches the neighboring voxels of this voxel.
+            Clears and fills caller-owned storage with rectangular-prism neighbors in deterministic direction order.
             </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="results">Caller-owned storage cleared and filled with direction-labeled neighbors.</param>
+        </member>
+        <member name="M:GridForge.Grids.Voxel.GetHexNeighborsInto(GridForge.Grids.VoxelGrid,SwiftCollections.SwiftList{System.ValueTuple{GridForge.Spatial.HexDirection,GridForge.Grids.Voxel}})">
+            <summary>
+            Clears and fills caller-owned storage with hex-prism neighbors in deterministic direction order.
+            </summary>
+            <param name="ownerGrid">The active grid that owns this voxel.</param>
+            <param name="results">Caller-owned storage cleared and filled with direction-labeled neighbors.</param>
         </member>
         <member name="M:GridForge.Grids.Voxel.GetHashCode">
             <inheritdoc/>
@@ -1155,6 +1996,21 @@
         </member>
         <member name="M:GridForge.Grids.Voxel.Equals(System.Object)">
             <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Grids.Storage.GridStorageKind">
+            <summary>
+            Identifies how a grid stores its physical voxels.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Storage.GridStorageKind.Dense">
+            <summary>
+            Every topology-local voxel index within the grid address space is physically allocated.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Storage.GridStorageKind.Sparse">
+            <summary>
+            Only explicitly configured topology-local voxel indices are physically allocated.
+            </summary>
         </member>
         <member name="T:GridForge.Grids.GridEventInfo">
             <summary>
@@ -1186,6 +2042,26 @@
             The per-grid version recorded when the notification was raised.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.GridEventInfo.ChangeKind">
+            <summary>
+            The reason this grid event was raised.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.VoxelIndex">
+            <summary>
+            The changed voxel index for voxel-scoped grid events.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.AffectedBoundsMin">
+            <summary>
+            The minimum world-space bounds affected by this event.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.AffectedBoundsMax">
+            <summary>
+            The maximum world-space bounds affected by this event.
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.GridEventInfo.BoundsMin">
             <summary>
             The minimum snapped bounds of the grid.
@@ -1196,7 +2072,7 @@
             The maximum snapped bounds of the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int32,System.UInt16,System.Int32,GridForge.Configuration.GridConfiguration,System.UInt32)">
+        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int32,System.UInt16,System.Int32,GridForge.Configuration.GridConfiguration,System.UInt32,GridForge.Grids.GridEventKind,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
             <summary>
             Initializes a new immutable grid event snapshot.
             </summary>
@@ -1204,6 +2080,51 @@
         <member name="M:GridForge.Grids.GridEventInfo.ToBoundsKey">
             <summary>
             Creates an exact bounds key from the stored grid configuration.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridEventKind">
+            <summary>
+            Describes the reason a grid event was raised.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.Unspecified">
+            <summary>
+            The event source did not provide a more specific reason.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.GridAdded">
+            <summary>
+            A grid was added to a world.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.GridRemoved">
+            <summary>
+            A grid was removed from a world.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.GridChanged">
+            <summary>
+            A grid changed without a more specific classified mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.SparseVoxelAdded">
+            <summary>
+            A sparse voxel was configured at runtime.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.SparseVoxelRemoved">
+            <summary>
+            A sparse voxel was removed at runtime.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridScanScratch">
+            <summary>
+            Reusable temporary storage for allocation-sensitive grid scan operations.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridScanScratch.Clear">
+            <summary>
+            Clears all temporary scan state while retaining allocated backing storage.
             </summary>
         </member>
         <member name="T:GridForge.Grids.ObstacleClearEventInfo">
@@ -1321,9 +2242,110 @@
             Object pool for reusing <see cref="T:GridForge.Grids.ScanCell"/> instances.
             </summary>
         </member>
-        <member name="F:GridForge.Grids.Pools.VoxelNeighborPool">
+        <member name="T:GridForge.Grids.Topology.GridTopologyKind">
             <summary>
-            Object pool for caching neighbor voxel arrays.
+            Identifies the cell topology used by a grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyKind.RectangularPrism">
+            <summary>
+            Rectangular-prism cells addressed by local X, Y, and Z coordinates.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyKind.HexPrism">
+            <summary>
+            Hexagonal-prism cells addressed by axial X/Z coordinates and vertical Y layers.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridTopologyMetrics">
+            <summary>
+            Stores deterministic cell geometry for a grid topology.
+            </summary>
+            <remarks>
+            MemoryPack GenerateType: unmanaged<br/>
+            <code>
+            <b>FixedMathSharp.Fixed64</b> CellRadius<br/>
+            <b>FixedMathSharp.Fixed64</b> CellWidth<br/>
+            <b>FixedMathSharp.Fixed64</b> LayerHeight<br/>
+            <b>FixedMathSharp.Fixed64</b> CellLength<br/>
+            <b>GridForge.Grids.Topology.HexOrientation</b> HexOrientation<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyMetrics.CellRadius">
+            <summary>
+            Horizontal center-to-corner radius for hex-prism cells. Rectangular-prism grids leave this as zero.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyMetrics.CellWidth">
+            <summary>
+            Rectangular-prism cell width along world X.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyMetrics.LayerHeight">
+            <summary>
+            Vertical layer height along world Y for rectangular-prism and hex-prism grids.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyMetrics.CellLength">
+            <summary>
+            Rectangular-prism cell length along world Z.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridTopologyMetrics.HexOrientation">
+            <summary>
+            Hex-prism horizontal projection orientation. Rectangular-prism grids ignore this value.
+            The orientation affects fixed-point world XZ projection only; it is not an engine rendering setting.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.#ctor(FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,GridForge.Grids.Topology.HexOrientation)">
+            <summary>
+            Initializes deterministic topology metrics.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.Rectangular(FixedMathSharp.Fixed64)">
+            <summary>
+            Creates cubic rectangular-prism metrics.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.Rectangular(FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64)">
+            <summary>
+            Creates rectangular-prism metrics with independent X, Y, and Z cell edges.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.Hex(FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,GridForge.Grids.Topology.HexOrientation)">
+            <summary>
+            Creates hex-prism metrics with the supplied horizontal radius, vertical layer height, and orientation.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.Equals(GridForge.Grids.Topology.GridTopologyMetrics)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.op_Equality(GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Grids.Topology.GridTopologyMetrics)">
+            <inheritdoc/>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.op_Inequality(GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Grids.Topology.GridTopologyMetrics)">
+            <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Grids.Topology.HexOrientation">
+            <summary>
+            Describes how a hex-prism grid projects axial coordinates into world XZ space.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.HexOrientation.FlatTop">
+            <summary>
+            Hexes have flat horizontal tops in the projected XZ footprint.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.HexOrientation.PointyTop">
+            <summary>
+            Hexes have pointed horizontal tops in the projected XZ footprint.
             </summary>
         </member>
         <member name="T:GridForge.Grids.VoxelGrid">
@@ -1392,17 +2414,28 @@
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.Size">
             <summary>
-            Total number of voxels within the grid.
+            Total addressable voxel count within the grid bounds.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.ConfiguredVoxelCount">
+            <summary>
+            The number of physical voxels configured in the grid storage.
+            Dense grids report <see cref="P:GridForge.Grids.VoxelGrid.Size"/>; sparse grids report configured voxels only.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.StorageKind">
+            <summary>
+            The physical voxel storage strategy used by this grid.
             </summary>
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.Voxels">
             <summary>
-            The primary 3D collection of voxels managed by this grid.
+            The dense 3D collection of voxels managed by this grid when dense storage is active.
             </summary>
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.Neighbors">
             <summary>
-            Stores <see cref="T:GridForge.Spatial.SpatialDirection"/> as indices of neighboring grids based on their relative positions.
+            Stores topology-local neighbor slots for neighboring grids based on their relative positions.
             </summary>
             <remarks>
             Unlike voxel adjacency (which is always 1:1), grids can share multiple neighbors in the same direction.
@@ -1411,6 +2444,16 @@
         <member name="P:GridForge.Grids.VoxelGrid.NeighborCount">
             <summary>
             Count of currently linked neighboring grids.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.NeighborSlotCount">
+            <summary>
+            Count of topology-local neighbor slots supported by this grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.VoxelGrid.TopologyKind">
+            <summary>
+            The active topology kind for this grid.
             </summary>
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.IsConjoined">
@@ -1453,36 +2496,36 @@
             Tracks the version of the grid, incremented when a <see cref="T:GridForge.Grids.Voxel"/> is modified.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.Initialize(GridForge.Grids.GridWorld,System.UInt16,GridForge.Configuration.GridConfiguration)">
+        <member name="M:GridForge.Grids.VoxelGrid.Initialize(GridForge.Grids.GridWorld,System.UInt16,GridForge.Configuration.GridConfiguration,GridForge.Grids.Topology.IGridTopology,GridForge.Spatial.VoxelIndex[])">
             <summary>
-            Initializes the grid with an explicit owning world.
+            Initializes the grid with an explicit owning world and configured sparse voxel set.
             </summary>
             <param name="world">The world that will own this grid.</param>
             <param name="gridIndex">The unique index of this grid in the world.</param>
             <param name="configuration">The normalized configuration settings for the grid.</param>
+            <param name="topology">The validated topology instance for this grid.</param>
+            <param name="configuredVoxels">The validated sparse voxel indices to materialize.</param>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.Reset">
             <summary>
             Resets the grid, clearing all voxels and scan cells.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.GenerateScanCells">
+        <member name="M:GridForge.Grids.VoxelGrid.GetRectangularNeighborDirection(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid)">
             <summary>
-            Generates the scan cell overlay for the grid.
+            Determines the rectangular-prism direction from grid <paramref name="a"/> to neighboring grid <paramref name="b"/>.
             </summary>
+            <param name="a">The source rectangular-prism grid.</param>
+            <param name="b">The neighboring rectangular-prism grid.</param>
+            <returns>The rectangular direction from <paramref name="a"/> to <paramref name="b"/>, or <see cref="F:GridForge.Spatial.RectangularDirection.None"/> when the grids are not rectangular neighbors.</returns>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.GenerateVoxels">
+        <member name="M:GridForge.Grids.VoxelGrid.GetHexNeighborDirection(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid)">
             <summary>
-            Generates the 3D grid structure based on the configured settings.
+            Determines the hex-prism direction from grid <paramref name="a"/> to neighboring grid <paramref name="b"/>.
             </summary>
-        </member>
-        <member name="M:GridForge.Grids.VoxelGrid.GetNeighborDirection(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid)">
-            <summary>
-            Determines the relative direction of a neighboring grid based on its center offset.
-            </summary>
-            <param name="a">The first grid.</param>
-            <param name="b">The second grid.</param>
-            <returns>The direction from grid 'a' to grid 'b'.</returns>
+            <param name="a">The source hex-prism grid.</param>
+            <param name="b">The neighboring hex-prism grid.</param>
+            <returns>The hex direction from <paramref name="a"/> to <paramref name="b"/>, or <see cref="F:GridForge.Spatial.HexDirection.None"/> when the grids are not hex-prism neighbors.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.TryAddGridNeighbor(GridForge.Grids.VoxelGrid)">
             <summary>
@@ -1496,13 +2539,6 @@
             </summary>
             <param name="neighborGrid">The neighboring grid to remove.</param>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.NotifyBoundaryChange(GridForge.Spatial.SpatialDirection)">
-            <summary>
-            Notifies only the relevant boundary voxels when a neighboring grid is added or removed.
-            Instead of looping through all voxels, it targets specific boundary rows or columns.
-            </summary>
-            <param name="direction">The direction of the affected boundary.</param>
-        </member>
         <member name="M:GridForge.Grids.VoxelGrid.IsOnBoundary(GridForge.Spatial.VoxelIndex)">
             <summary>
             Determines if a voxel coordinate is at the boundary of the grid.
@@ -1514,7 +2550,7 @@
             Checks whether a given position falls within the grid bounds.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.IsGridOverlapValid(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid,FixedMathSharp.Fixed64)">
+        <member name="M:GridForge.Grids.VoxelGrid.IsGridOverlapValid(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Checks if two grids are overlapping within a given tolerance threshold.
             This is used to determine if grids should be linked as neighbors.
@@ -1535,30 +2571,82 @@
             Determines whether the given voxel coordinates are within the valid range of the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.IsFacingBoundaryDirection(GridForge.Spatial.VoxelIndex,GridForge.Spatial.SpatialDirection)">
+        <member name="M:GridForge.Grids.VoxelGrid.IsFacingBoundary(GridForge.Spatial.VoxelIndex,GridForge.Spatial.RectangularDirection)">
             <summary>
-            Determines if a voxel is facing the boundary of the grid in a specific direction.
-            Used to notify voxels when adjacent grids are added/removed.
+            Determines if a topology-local voxel index is facing the rectangular-prism boundary in the supplied direction.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.IsFacingBoundary(GridForge.Spatial.VoxelIndex,GridForge.Spatial.HexDirection)">
+            <summary>
+            Determines if a topology-local voxel index is facing the hex-prism boundary in the supplied direction.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxelIndex(FixedMathSharp.Vector3d,GridForge.Spatial.VoxelIndex@)">
             <summary>
-            Converts a world position to voxel index within the grid.
+            Converts a world position to a topology-local voxel index within the grid.
+            Rectangular-prism grids return X/Y/Z coordinates; hex-prism grids return axial Q, layer, and axial R in X/Y/Z fields.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxelIndex(FixedMathSharp.Vector2d,GridForge.Spatial.VoxelIndex@)">
+            <summary>
+            Converts a 2D XZ-plane world position on the default world Y layer to a voxel index within the grid.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="result">The resolved voxel index, if found.</param>
+            <returns>True if the position resolved to an allocated voxel index; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxelIndex(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Spatial.VoxelIndex@)">
+            <summary>
+            Converts a 2D XZ-plane world position on the supplied world Y layer to a voxel index within the grid.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="result">The resolved voxel index, if found.</param>
+            <returns>True if the position resolved to an allocated voxel index; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.IsVoxelAllocated(System.Int32,System.Int32,System.Int32)">
             <summary>
-            Checks if a voxel at the given coordinates is allocated within the grid.
+            Checks if a voxel at the given topology-local coordinates is allocated within the grid.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.ContainsVoxel(GridForge.Spatial.VoxelIndex)">
+            <summary>
+            Checks whether a physical voxel is configured at the supplied grid-local index.
+            </summary>
+            <param name="voxelIndex">The grid-local voxel index to test.</param>
+            <returns>True when the index resolves to a configured voxel; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryAddVoxel(GridForge.Spatial.VoxelIndex,GridForge.Grids.Voxel@)">
+            <summary>
+            Configures a sparse voxel at runtime. Dense grids, invalid indices, and already-configured
+            sparse voxels return false.
+            </summary>
+            <param name="voxelIndex">The grid-local voxel index to configure.</param>
+            <param name="voxel">The configured voxel when the operation succeeds.</param>
+            <returns>True when a new sparse voxel was configured; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryRemoveVoxel(GridForge.Spatial.VoxelIndex)">
+            <summary>
+            Removes a configured sparse voxel at runtime when it has no unsafe runtime state.
+            Dense grids, missing voxels, occupied voxels, voxels with obstacle tokens, partitioned voxels,
+            and voxels with active event subscribers return false.
+            </summary>
+            <param name="voxelIndex">The grid-local voxel index to remove.</param>
+            <returns>True when the sparse voxel was removed; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(System.Int32,System.Int32,System.Int32,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves the <see cref="T:GridForge.Grids.Voxel"/> at the specified coordinates, if allocated.
+            Retrieves the <see cref="T:GridForge.Grids.Voxel"/> at the specified topology-local coordinates, if allocated.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.EnumerateVoxels">
+            <summary>
+            Enumerates physical voxels configured in this grid in deterministic storage order.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(GridForge.Spatial.VoxelIndex,GridForge.Grids.Voxel@)">
             <summary>
-            Retrieves a grid voxel from a given coordinate.
+            Retrieves a grid voxel from a topology-local coordinate.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(FixedMathSharp.Vector3d,GridForge.Grids.Voxel@)">
@@ -1566,6 +2654,51 @@
             Retrieve <see cref="T:GridForge.Grids.Voxel"/> from world <see cref="T:FixedMathSharp.Vector3d"/> points
             </summary>
             <returns><see cref="T:GridForge.Grids.Voxel"/> at the given position or null if the position is not valid.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetClosestVoxel(FixedMathSharp.Vector3d,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to the supplied world position.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The world position to resolve.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(FixedMathSharp.Vector2d,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a <see cref="T:GridForge.Grids.Voxel"/> from a 2D XZ-plane world position on the default world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="result">The resolved voxel, if found.</param>
+            <returns>True if the voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves a <see cref="T:GridForge.Grids.Voxel"/> from a 2D XZ-plane world position on the supplied world Y layer.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="result">The resolved voxel, if found.</param>
+            <returns>True if the voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetClosestVoxel(FixedMathSharp.Vector2d,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the default world Y layer.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.TryGetClosestVoxel(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.Grids.Voxel@)">
+            <summary>
+            Retrieves the physical voxel whose center is nearest to a 2D XZ-plane world position on the supplied world Y layer.
+            Sparse grids only consider configured physical voxels.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
+            <param name="result">The closest physical voxel, if found.</param>
+            <returns>True if a physical voxel was resolved; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.GetScanCellKey(FixedMathSharp.Vector3d)">
             <summary>
@@ -1604,21 +2737,225 @@
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.CeilToGrid(FixedMathSharp.Vector3d)">
             <summary>
-            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's voxel size, ensuring it stays within grid bounds.
+            Helper function to ceil snap a <see cref="T:FixedMathSharp.Vector3d"/> through this grid's topology, ensuring it stays within grid bounds.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.FloorToGrid(FixedMathSharp.Vector3d)">
             <summary>
-            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> to this grid's voxel size, ensuring it stays within grid bounds.
+            Helper function to floor snap a <see cref="T:FixedMathSharp.Vector3d"/> through this grid's topology, ensuring it stays within grid bounds.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.SnapToScanCell(FixedMathSharp.Vector3d)">
             <summary>
-            Snaps a given position to the closest scan cell in the grid
+            Snaps a given position to the topology-local scan cell in the grid.
             </summary>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.GetHashCode">
             <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Spatial.GridPlane2d">
+            <summary>
+            Provides GridForge's 2D XZ-plane projection helpers.
+            </summary>
+            <remarks>
+            In GridForge 2D query APIs, <see cref="F:FixedMathSharp.Vector2d.X"/> maps to world X,
+            <see cref="F:FixedMathSharp.Vector2d.Y"/> maps to world Z, and the supplied layer maps to world Y.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Spatial.GridPlane2d.ToWorld(FixedMathSharp.Vector2d,FixedMathSharp.Fixed64)">
+            <summary>
+            Converts an XZ-plane 2D position into a world-space 3D position.
+            </summary>
+            <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to apply. Defaults to zero.</param>
+            <returns>The equivalent world-space position.</returns>
+        </member>
+        <member name="M:GridForge.Spatial.GridPlane2d.FromWorld(FixedMathSharp.Vector3d)">
+            <summary>
+            Projects a world-space 3D position into GridForge's 2D XZ plane.
+            </summary>
+            <param name="position">The world-space position to project.</param>
+            <returns>A 2D position containing world X and world Z.</returns>
+        </member>
+        <member name="M:GridForge.Spatial.GridPlane2d.ToWorldBounds(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64)">
+            <summary>
+            Converts XZ-plane 2D bounds into layer-locked world-space 3D bounds.
+            </summary>
+            <param name="min">The 2D minimum bound whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="max">The 2D maximum bound whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to apply to both bounds. Defaults to zero.</param>
+            <returns>The equivalent layer-locked world-space bounds.</returns>
+        </member>
+        <member name="T:GridForge.Spatial.HexDirection">
+            <summary>
+            Represents the 20 possible neighbor directions in a hex-prism grid.
+            Offsets are expressed as axial Q, vertical layer, and axial R.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.None">
+            <summary>
+            No hex direction from source.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.QPositive">
+            <summary>
+            Axial offset (Q + 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.QPositiveRNegative">
+            <summary>
+            Axial offset (Q + 1, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.RNegative">
+            <summary>
+            Axial offset (Q unchanged, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.QNegative">
+            <summary>
+            Axial offset (Q - 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.QNegativeRPositive">
+            <summary>
+            Axial offset (Q - 1, R + 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.RPositive">
+            <summary>
+            Axial offset (Q unchanged, R + 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.Below">
+            <summary>
+            Vertical offset (0, -1, 0).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowQPositive">
+            <summary>
+            Vertical offset (Q + 1, layer - 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowQPositiveRNegative">
+            <summary>
+            Vertical offset (Q + 1, layer - 1, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowRNegative">
+            <summary>
+            Vertical offset (Q unchanged, layer - 1, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowQNegative">
+            <summary>
+            Vertical offset (Q - 1, layer - 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowQNegativeRPositive">
+            <summary>
+            Vertical offset (Q - 1, layer - 1, R + 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.BelowRPositive">
+            <summary>
+            Vertical offset (Q unchanged, layer - 1, R + 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.Above">
+            <summary>
+            Vertical offset (0, +1, 0).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveQPositive">
+            <summary>
+            Vertical offset (Q + 1, layer + 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveQPositiveRNegative">
+            <summary>
+            Vertical offset (Q + 1, layer + 1, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveRNegative">
+            <summary>
+            Vertical offset (Q unchanged, layer + 1, R - 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveQNegative">
+            <summary>
+            Vertical offset (Q - 1, layer + 1, R unchanged).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveQNegativeRPositive">
+            <summary>
+            Vertical offset (Q - 1, layer + 1, R + 1).
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.HexDirection.AboveRPositive">
+            <summary>
+            Vertical offset (Q unchanged, layer + 1, R + 1).
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.HexDirectionUtility">
+            <summary>
+            Provides hex-prism neighbor direction utilities.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.Offsets">
+            <summary>
+            Hex-prism neighbor offsets in deterministic direction order.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.All">
+            <summary>
+            All 20 hex-prism neighbor directions excluding None.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.Primary">
+            <summary>
+            The 8 face-adjacent hex-prism directions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.Planar">
+            <summary>
+            All 6 planar axial hex directions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.Vertical">
+            <summary>
+            All 2 vertical hex-prism directions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.BelowLayer">
+            <summary>
+            All 7 neighbor directions on the layer below.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.AboveLayer">
+            <summary>
+            All 7 neighbor directions on the layer above.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.HexDirectionUtility.VerticalDiagonal">
+            <summary>
+            All 12 non-vertical directions on the layers above and below.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.HexDirectionUtility.GetOffset(GridForge.Spatial.HexDirection)">
+            <summary>
+            Gets the topology-local index offset for a hex direction.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.HexDirectionUtility.IsPlanar(GridForge.Spatial.HexDirection)">
+            <summary>
+            True for planar axial directions.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.HexDirectionUtility.IsVertical(GridForge.Spatial.HexDirection)">
+            <summary>
+            True for vertical layer directions.
+            </summary>
         </member>
         <member name="T:GridForge.Spatial.IVoxelOccupant">
             <summary>
@@ -1738,48 +3075,224 @@
             Removes all partitions from the provider, clearing its internal storage.
             </summary>
         </member>
-        <member name="T:GridForge.Spatial.SpatialAwareness">
+        <member name="T:GridForge.Spatial.RectangularDirection">
             <summary>
-            Provides global spatial awareness utilities to find neighboring grids or voxels
+            Represents the 26 possible neighbor directions in a rectangular-prism 3x3x3 grid.
+            The integer ordering is used for neighbor indexing and deterministic preferences.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.SpatialAwareness.DirectionOffsets">
+        <member name="F:GridForge.Spatial.RectangularDirection.None">
             <summary>
-            Predefined offsets for a 3x3x3 neighbor structure, excluding the center position.
+            No linear direction from source
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.SpatialAwareness.AllDirections">
+        <member name="F:GridForge.Spatial.RectangularDirection.West">
+            <summary>
+            (-1, 0, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.South">
+            <summary>
+             (0, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.East">
+            <summary>
+            (1, 0, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.North">
+            <summary>
+            (0, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.Below">
+            <summary>
+            (0, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.Above">
+            <summary>
+            (0, 1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.SouthWest">
+            <summary>
+            (-1, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.NorthWest">
+            <summary>
+            (-1, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.SouthEast">
+            <summary>
+            (1, 0, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.NorthEast">
+            <summary>
+            (1, 0, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowWest">
+            <summary>
+            (-1, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowSouth">
+            <summary>
+            (0, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowEast">
+            <summary>
+            (1, -1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowNorth">
+            <summary>
+            (0, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveWest">
+            <summary>
+            (-1, 1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveSouth">
+            <summary>
+            (0, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveEast">
+            <summary>
+            (1, 1, 0)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveNorth">
+            <summary>
+            (0, 1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowSouthWest">
+            <summary>
+            (-1, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowNorthWest">
+            <summary>
+            (-1, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowSouthEast">
+            <summary>
+            (1, -1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.BelowNorthEast">
+            <summary>
+            (1, -1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveSouthWest">
+            <summary>
+            (-1, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveNorthWest">
+            <summary>
+            (-1, 1, 1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveSouthEast">
+            <summary>
+            (1, 1, -1)
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.RectangularDirection.AboveNorthEast">
+            <summary>
+            (1, 1, 1)
+            </summary>
+        </member>
+        <member name="T:GridForge.Spatial.RectangularDirectionUtility">
+            <summary>
+            Provides rectangular-prism neighbor direction utilities.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Offsets">
+            <summary>
+            Predefined offsets for a rectangular-prism 3x3x3 neighbor structure, excluding the center position.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.All">
             <summary>
             All 26 neighbor directions excluding None.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.SpatialAwareness.PerpendicularDirections">
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Primary">
+            <summary>
+            The 6 face-adjacent rectangular-prism directions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Perpendicular">
             <summary>
             All 6 perpendicular neighbor directions excluding None.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.SpatialAwareness.DiagonalDirections">
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Planar">
             <summary>
-            All 20 perpendicular neighbor directions excluding None.
+            All 8 same-layer XZ-plane directions excluding None.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.SpatialAwareness.IsPerpendicularNeighbor(GridForge.Spatial.SpatialDirection)">
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Vertical">
+            <summary>
+            All 2 vertical directions.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.BelowLayer">
+            <summary>
+            All 9 neighbor directions on the layer below.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.AboveLayer">
+            <summary>
+            All 9 neighbor directions on the layer above.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.VerticalDiagonal">
+            <summary>
+            All 16 non-vertical directions on the layers above and below.
+            </summary>
+        </member>
+        <member name="P:GridForge.Spatial.RectangularDirectionUtility.Diagonal">
+            <summary>
+            All 20 diagonal neighbor directions excluding None.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.RectangularDirectionUtility.IsPerpendicularNeighbor(GridForge.Spatial.RectangularDirection)">
             <summary>True for pure axis-aligned directions.</summary>
         </member>
-        <member name="M:GridForge.Spatial.SpatialAwareness.IsDiagonalNeighbor(GridForge.Spatial.SpatialDirection)">
+        <member name="M:GridForge.Spatial.RectangularDirectionUtility.IsDiagonalNeighbor(GridForge.Spatial.RectangularDirection)">
             <summary>True for any diagonal step (multiple axes).</summary>
         </member>
-        <member name="M:GridForge.Spatial.SpatialAwareness.GetBoundaryRange(System.Int32,System.Int32)">
+        <member name="M:GridForge.Spatial.RectangularDirectionUtility.GetDirectionFromOffset(System.ValueTuple{System.Int32,System.Int32,System.Int32})">
             <summary>
-            Gets the boundary range for a given offset and size, 
-            returning (0, 0) for negative offsets, (size-1, size-1) for positive offsets, 
+            Converts a rectangular local offset in the range [-1, 1] on each axis into a direction.
+            </summary>
+        </member>
+        <member name="M:GridForge.Spatial.RectangularDirectionUtility.GetBoundaryRange(System.Int32,System.Int32)">
+            <summary>
+            Gets the boundary range for a given offset and size,
+            returning (0, 0) for negative offsets, (size-1, size-1) for positive offsets,
             and (0, size-1) for zero offsets.
             </summary>
             <param name="offset">The offset value.</param>
             <param name="size">The size of the dimension.</param>
             <returns>A tuple representing the start and end of the boundary range.</returns>
         </member>
-        <member name="M:GridForge.Spatial.SpatialAwareness.IsAxisFacingBoundary(System.Int32,System.Int32,System.Int32)">
+        <member name="M:GridForge.Spatial.RectangularDirectionUtility.IsAxisFacingBoundary(System.Int32,System.Int32,System.Int32)">
             <summary>
             Determines if a coordinate is facing the boundary of an axis given an offset and size.
             </summary>
@@ -1788,166 +3301,26 @@
             <param name="size">The size of the dimension.</param>
             <returns>True if the coordinate is facing the boundary, otherwise false.</returns>
         </member>
-        <member name="T:GridForge.Spatial.SpatialDirection">
-            <summary>
-            Represents the 26 possible neighbor directions in a 3x3x3 grid.
-            The integer ordering is used for neighbor indexing and deterministic preferences.
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.None">
-            <summary>
-            No linear direction from source
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.West">
-            <summary>
-            (-1, 0, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.South">
-            <summary>
-             (0, 0, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.East">
-            <summary>
-            (1, 0, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.North">
-            <summary>
-            (0, 0, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.Below">
-            <summary>
-            (0, -1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.Above">
-            <summary>
-            (0, 1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.SouthWest">
-            <summary>
-            (-1, 0, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.NorthWest">
-            <summary>
-            (-1, 0, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.SouthEast">
-            <summary>
-            (1, 0, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.NorthEast">
-            <summary>
-            (1, 0, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowWest">
-            <summary>
-            (-1, -1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowSouth">
-            <summary>
-            (0, -1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowEast">
-            <summary>
-            (1, -1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowNorth">
-            <summary>
-            (0, -1, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveWest">
-            <summary>
-            (-1, 1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveSouth">
-            <summary>
-            (0, 1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveEast">
-            <summary>
-            (1, 1, 0)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveNorth">
-            <summary>
-            (0, 1, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowSouthWest">
-            <summary>
-            (-1, -1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowNorthWest">
-            <summary>
-            (-1, -1, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowSouthEast">
-            <summary>
-            (1, -1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.BelowNorthEast">
-            <summary>
-            (1, -1, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveSouthWest">
-            <summary>
-            (-1, 1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveNorthWest">
-            <summary>
-            (-1, 1, 1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveSouthEast">
-            <summary>
-            (1, 1, -1)
-            </summary>
-        </member>
-        <member name="F:GridForge.Spatial.SpatialDirection.AboveNorthEast">
-            <summary>
-            (1, 1, 1)
-            </summary>
-        </member>
         <member name="T:GridForge.Spatial.VoxelIndex">
             <summary>
-            Represents the local coordinates of a voxel within a single grid.
-            Used to index voxels within a grid's spatial structure.
+            Represents the topology-local coordinates of a voxel within a single grid.
+            Rectangular-prism grids interpret the fields as X, Y, and Z. Hex-prism
+            grids interpret them as axial Q, vertical layer, and axial R.
             </summary>
         </member>
         <member name="F:GridForge.Spatial.VoxelIndex.x">
             <summary>
-            The X position of the voxel in the local grid.
+            The local X coordinate for rectangular-prism grids, or axial Q coordinate for hex-prism grids.
             </summary>
         </member>
         <member name="F:GridForge.Spatial.VoxelIndex.y">
             <summary>
-            The Y position of the voxel in the local grid.
+            The local Y coordinate for rectangular-prism grids, or vertical layer for hex-prism grids.
             </summary>
         </member>
         <member name="F:GridForge.Spatial.VoxelIndex.z">
             <summary>
-            The Z position of the voxel in the local grid.
+            The local Z coordinate for rectangular-prism grids, or axial R coordinate for hex-prism grids.
             </summary>
         </member>
         <member name="P:GridForge.Spatial.VoxelIndex.IsAllocated">
@@ -1980,14 +3353,47 @@
         <member name="M:GridForge.Spatial.VoxelIndex.GetHashCode">
             <summary>
             Computes a hash code for the coordinates, ensuring uniqueness in hashing collections.
-            Uses <see cref="T:SwiftCollections.SwiftHashTools"/> to generate a stable and consistent hash.
+            Uses <see cref="T:SwiftCollections.Utility.SwiftHashTools"/> to generate a stable and consistent hash.
             </summary>
         </member>
         <member name="M:GridForge.Spatial.VoxelIndex.Equals(GridForge.Spatial.VoxelIndex)">
             <inheritdoc/>
         </member>
+        <member name="M:GridForge.Spatial.VoxelIndex.CompareTo(GridForge.Spatial.VoxelIndex)">
+            <inheritdoc/>
+        </member>
         <member name="M:GridForge.Spatial.VoxelIndex.Equals(System.Object)">
             <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Spatial.VoxelNeighborScope">
+            <summary>
+            Selects which grid groups are included by voxel contact-neighbor queries.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelNeighborScope.None">
+            <summary>
+            No neighbor groups are included.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelNeighborScope.SourceGrid">
+            <summary>
+            Include touching voxels from only the source voxel's owning grid.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelNeighborScope.SameTopologyGrids">
+            <summary>
+            Include touching voxels from other grids with the same topology kind.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelNeighborScope.MixedTopologyGrids">
+            <summary>
+            Include touching voxels from grids with a different topology kind.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.VoxelNeighborScope.All">
+            <summary>
+            Include touching voxels from the source grid, same-topology grids, and mixed-topology grids.
+            </summary>
         </member>
         <member name="T:GridForge.Spatial.WorldVoxelIndex">
             <summary>
@@ -2189,18 +3595,37 @@
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.TraceLine(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
+        <member name="M:GridForge.Utility.GridTracer.TraceLine(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean,FixedMathSharp.Fixed64)">
             <summary>
-            Traces a 2D line between two points in the supplied world, snapping them to grid coordinates.
+            Traces a 2D XZ-plane line between two points in the supplied world, snapping them to grid coordinates.
             </summary>
             <remarks>
-            This method projects the 2D line onto the X-Y plane and follows the closest grid-aligned path.
+            This method maps <see cref="F:FixedMathSharp.Vector2d.X"/> to world X, <see cref="F:FixedMathSharp.Vector2d.Y"/> to world Z,
+            and <paramref name="layerY"/> to world Y. The default layer is world Y = 0.
             </remarks>
+            <param name="world">The world whose grids should be traced.</param>
+            <param name="start">Starting XZ-plane position in world space.</param>
+            <param name="end">Ending XZ-plane position in world space.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+            <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
+            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all grid voxels covered by the given bounding area in the supplied world.
             </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Retrieves all grid voxels covered by the given XZ-plane bounding area on the supplied world Y layer.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The 2D minimum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
+            <param name="padding">Value applied to the min/max bounds before snapping.</param>
+            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the covered voxels.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
@@ -2212,14 +3637,35 @@
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
         </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Retrieves all scan cells within the given XZ-plane bounding area on the supplied world Y layer.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The 2D minimum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
+            <param name="padding">Value applied to the min/max bounds before snapping.</param>
+            <returns>An enumerable of covered scan cells grouped by grid.</returns>
+        </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage with scan cells covered by the supplied bounding area.
             </summary>
         </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage with scan cells covered by the supplied XZ-plane bounding area.
+            </summary>
+        </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage using caller-owned scratch collections.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections for an XZ-plane bounding area.
             </summary>
         </member>
         <member name="M:GridForge.Utility.GridTracer.AddCoveredScanCellsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},System.Nullable{FixedMathSharp.Fixed64})">

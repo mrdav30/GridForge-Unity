@@ -70,7 +70,7 @@ namespace GridForge.Utility
         private VoxelGrid _targetGrid;
         private int _warnedMissingGridIndex = -1;
         private bool _missingWorldWarningLogged;
-        private Vector3 Scale => Vector3.one * (float)(World?.VoxelSize ?? Fixed64.One);
+        //private Vector3 Scale => Vector3.one * (float)(World?.VoxelSize ?? Fixed64.One);
 
         #endregion
 
@@ -109,7 +109,7 @@ namespace GridForge.Utility
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f))
             {
-                Vector3d hitPos = new(hit.point.x, hit.point.y, hit.point.z);
+                Vector3d hitPos = Vector3d.FromDouble(hit.point.x, hit.point.y, hit.point.z);
                 if (world.TryGetGridAndVoxel(hitPos, out _, out Voxel voxel))
                 {
                     _highlightedVoxelPosition = voxel.WorldPosition.ToVector3();
@@ -200,7 +200,7 @@ namespace GridForge.Utility
             if (_enableVoxelSelection)
             {
                 Gizmos.color = _highlightColor;
-                Gizmos.DrawCube(_highlightedVoxelPosition, Scale);
+                Gizmos.DrawCube(_highlightedVoxelPosition, Vector3.one);
             }
         }
 
@@ -221,9 +221,9 @@ namespace GridForge.Utility
             Vector3 voxelPos = voxel.WorldPosition.ToVector3();
             Color renderColor = voxel.IsBlocked ? Color.red : voxel.IsOccupied ? Color.yellow : Color.magenta;
             Gizmos.color = renderColor;
-            Gizmos.DrawCube(voxelPos, Scale);
+            Gizmos.DrawCube(voxelPos, Vector3.one);
             Gizmos.color = Color.black;
-            Gizmos.DrawWireCube(voxelPos, Scale * 1.02f);
+            Gizmos.DrawWireCube(voxelPos, Vector3.one * 1.02f);
             Gizmos.color = renderColor;
         }
 

@@ -20,7 +20,6 @@ public class SceneGridManager : MonoBehaviour
 
         _configurationSaver.EarlyApply(
             _gridWorldComponent.RebuildWorld(
-                _configurationSaver.VoxelSize,
                 _configurationSaver.SpatialGridCellSize));
     }
 }

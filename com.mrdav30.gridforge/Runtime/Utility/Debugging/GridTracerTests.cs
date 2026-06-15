@@ -36,8 +36,7 @@ namespace GridForge.Utility
 
         #region Visualization Parameters
 
-        private Vector3 FillSize;
-        private Vector3 WireSize;
+        private Vector3 WireSize = Vector3.one * 1.02f;
 
         #endregion
 
@@ -57,9 +56,6 @@ namespace GridForge.Utility
                 return;
             }
 
-            FillSize = Vector3.one * (float)world.VoxelSize;
-            WireSize = FillSize * 1.02f;
-
             Vector3d startPos = startTransform.position.ToVector3d();
             Vector3d endPos = endTransform.position.ToVector3d();
 
@@ -73,7 +69,7 @@ namespace GridForge.Utility
                     {
                         Vector3 drawPos = voxel.WorldPosition.ToVector3();
 
-                        Gizmos.DrawCube(drawPos, FillSize);
+                        Gizmos.DrawCube(drawPos, Vector3.one);
                         Gizmos.color = Color.black;
                         Gizmos.DrawWireCube(drawPos, WireSize);
                         Gizmos.color = Color.red;

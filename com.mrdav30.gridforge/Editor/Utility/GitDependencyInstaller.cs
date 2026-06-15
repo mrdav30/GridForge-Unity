@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -46,12 +46,17 @@ namespace GridForge.Editor
             new(
                 "com.mrdav30.fixedmathsharp",
                 "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
-                "v4.0.0"
+                "v5.0.0"
             ),
             new(
                 "com.mrdav30.swiftcollections",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
-                "v4.0.6"
+                "v5.0.0"
+            ),
+            new(
+                "com.mrdav30.swiftcollections.fixedmathsharp",
+                "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp",
+                "v5.0.0"
             )
         };
 
@@ -121,7 +126,7 @@ namespace GridForge.Editor
 
             deps[dep.Name] = dep.Value;
 
-            Debug.Log($"Dependency installed/updated: {dep.Name} → {dep.Value}");
+            Debug.Log($"Dependency installed/updated: {dep.Name} â†’ {dep.Value}");
 
             return true;
         }

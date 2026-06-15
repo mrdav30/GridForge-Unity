@@ -113,11 +113,11 @@ namespace GridForge.Configuration
 
             foreach (SerializableGridConfiguration serializedConfig in SavedGridConfigurations)
             {
-                for (Fixed64 x = serializedConfig.BoundsMin.x; x <= serializedConfig.BoundsMax.x; x++)
+                for (Fixed64 x = serializedConfig.BoundsMin.X; x <= serializedConfig.BoundsMax.X; x++)
                 {
-                    for (Fixed64 y = serializedConfig.BoundsMin.y; y <= serializedConfig.BoundsMax.y; y++)
+                    for (Fixed64 y = serializedConfig.BoundsMin.Y; y <= serializedConfig.BoundsMax.Y; y++)
                     {
-                        for (Fixed64 z = serializedConfig.BoundsMin.z; z <= serializedConfig.BoundsMax.z; z++)
+                        for (Fixed64 z = serializedConfig.BoundsMin.Z; z <= serializedConfig.BoundsMax.Z; z++)
                         {
                             Vector3d drawPos = new(x, y, z);
                             Gizmos.DrawCube(drawPos.ToVector3(), scale);

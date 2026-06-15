@@ -1,0 +1,54 @@
+{
+  "packageRoot": ".",
+  "packageVersion": "7.0.0",
+  "dependencyVersions": {
+    "FixedMathSharpUnity": "v5.0.0",
+    "SwiftCollectionsUnity": "v5.0.0"
+  },
+  "packages": [
+    {
+      "path": "com.mrdav30.gridforge",
+      "updatePackageVersion": true,
+      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "dependencies": [
+        {
+          "name": "com.mrdav30.fixedmathsharp",
+          "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
+          "versionKey": "FixedMathSharpUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
+          "versionKey": "SwiftCollectionsUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections.fixedmathsharp",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp",
+          "versionKey": "SwiftCollectionsUnity"
+        }
+      ]
+    },
+    {
+      "path": "com.mrdav30.gridforge.lean",
+      "updatePackageVersion": true,
+      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "dependencies": [
+        {
+          "name": "com.mrdav30.fixedmathsharp.lean",
+          "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean",
+          "versionKey": "FixedMathSharpUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections.lean",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
+          "versionKey": "SwiftCollectionsUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections.fixedmathsharp.lean",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean",
+          "versionKey": "SwiftCollectionsUnity"
+        }
+      ]
+    }
+  ]
+}
