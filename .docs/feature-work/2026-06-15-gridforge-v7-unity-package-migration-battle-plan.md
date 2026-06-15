@@ -15,7 +15,7 @@
 - Date: 2026-06-15.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
-- Current Unity package `HEAD`: `affacd2` (`task: migrate to GridForge v7`).
+- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phase 5 is currently local worktree implementation.
 - Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop` at `866c91f`.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
@@ -112,8 +112,31 @@
   - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
   - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
   - stale scan for `FillSize`, `WireSize`, cube gizmos, `BoundingArea`, and old direct trace call patterns in Phase 4 files: clean.
-  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- `git diff --check`: no whitespace errors; line-ending normalization warnings only.
 - Next phase target: Phase 5, add Unity logging and diagnostics UX.
+
+### 2026-06-15 - Phase 5 Unity Logging UX
+
+- Added `GridForgeUnityLogger`, an optional `ExecuteAlways` Unity adapter that forwards `GridForgeLogger` messages into Unity `Debug.Log`, `Debug.LogWarning`, and `Debug.LogError`.
+- Kept logging opt-in explicit: adding the component does not install a global handler unless the user enables logging or opts into enable-on-component-enable.
+- Exposed `SwiftCollections.Diagnostics.DiagnosticLevel` as the Unity minimum level and preserved GridForge level/source information in Unity log messages.
+- Captured and restored the previous `GridForgeLogger.LogHandler` and `GridForgeLogger.MinimumLevel` on explicit disable and component destruction.
+- Used reference-identity ownership checks for the static active logger so Unity destroyed-object equality cannot skip logger restoration.
+- Added `EditorGridForgeUnityLogger` with enable/disable/apply controls and an inspector note that `GridForgeLogger` messages are separate from `GridDiagnostics` cell descriptors.
+- Reviewed `GridForgePackageSync`; no code change was needed because existing managed directory entries already cover `Runtime/Utility/Debugging` and `Editor/Utility/Debugging`.
+- Synced shared managed source from `Build/Base` into both standard and lean package variants; `.assets/scripts/sync-gridforge-unity-packages.ps1` reported 0 copied, 0 deleted, and 0 removed files after sync.
+- Unity generated `.meta` files for the new scripts during import. Do not manually create or edit them.
+- Verification completed:
+  - Initial RED Unity compile run failed on missing `GridForgeUnityLogger` after adding `GridForgeUnityLoggerEditModeTests.cs`.
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 29 total, 29 passed, 0 failed, result XML written.
+  - Unity package sync: pass, 0 copied, 0 deleted, 0 removed files.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
+  - `git diff --check`: no whitespace errors.
+- Next phase target: Phase 6, rebuild samples around v7 workflows.
 
 ## Source Material
 
@@ -495,27 +518,29 @@ git diff --check
 
 **Goal:** Surface GridForge v7 diagnostics in a Unity-friendly way without adding Unity dependencies to core.
 
+**Execution Status:** Implemented locally as of 2026-06-15; verified through Unity EditMode tests, generated project build, package sync validation, and package maintenance scripts.
+
 **Files:**
 
 - Create: `Build/Base/Runtime/Utility/Debugging/GridForgeUnityLogger.cs`
 - Create: `Build/Base/Editor/Utility/Debugging/Editor/EditorGridForgeUnityLogger.cs`
-- Modify: `Build/Editor/GridForgePackageSync.cs`
+- Review: `Build/Editor/GridForgePackageSync.cs` (no code change needed; managed directories already cover the new files)
 - Test: `Tests/EditMode/GridForgeUnityLoggerEditModeTests.cs`
 
 **Work:**
 
-- [ ] Add an optional component or static adapter that routes `GridForgeLogger.LogHandler` to Unity logging.
-- [ ] Provide an explicit enable/disable toggle rather than silently taking over global logging.
-- [ ] Expose minimum level using SwiftCollections `DiagnosticLevel`.
-- [ ] Restore previous logger settings on disable/destroy.
-- [ ] Document the difference between `GridForgeLogger` messages and `GridDiagnostics` cell descriptors.
-- [ ] Ensure tests reset logger settings after each test.
+- [x] Add an optional component or static adapter that routes `GridForgeLogger.LogHandler` to Unity logging.
+- [x] Provide an explicit enable/disable toggle rather than silently taking over global logging.
+- [x] Expose minimum level using SwiftCollections `DiagnosticLevel`.
+- [x] Restore previous logger settings on disable/destroy.
+- [x] Document the difference between `GridForgeLogger` messages and `GridDiagnostics` cell descriptors.
+- [x] Ensure tests reset logger settings after each test.
 
 **Exit Criteria:**
 
-- Users can turn on GridForge logging from a scene or editor utility.
-- Unity logs preserve level and source information.
-- Tests prove logger settings do not leak across scenarios.
+- [x] Users can turn on GridForge logging from a scene or editor utility.
+- [x] Unity logs preserve level and source information.
+- [x] Tests prove logger settings do not leak across scenarios.
 
 ## Phase 6: Rebuild Samples Around v7 Workflows
 
