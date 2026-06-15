@@ -1,6 +1,6 @@
 # GridForge for Unity
 
-Default Unity package host for GridForge v6.
+Default Unity package host for GridForge v7.
 
 Install:
 `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge`
@@ -9,22 +9,23 @@ This package depends on:
 
 - [FixedMathSharp-Unity](https://github.com/mrdav30/FixedMathSharp-Unity)
 - [SwiftCollections-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
+- [SwiftCollections.FixedMathSharp-Unity](https://github.com/mrdav30/SwiftCollections-Unity)
 
 The included editor repair tool will attempt to add those dependencies for you.
 If Unity does not resolve them automatically, install:
 
 - `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp`
 - `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections`
+- `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp`
 
 ## GridWorld Setup
 
-GridForge v6 removed the process-wide `GlobalGridManager`. Unity scenes should
-now own an explicit `GridWorld` through `GridWorldComponent`.
+GridForge scenes should own an explicit `GridWorld` through `GridWorldComponent`.
 
 Typical scene setup:
 
 1. Add `GridWorldComponent` to the scene object that should own the world.
-2. Add `GridConfigurationSaver` to author grid bounds and voxel size data.
+2. Add `GridConfigurationSaver` to author grid configuration data.
 3. Call `GridConfigurationSaver.EarlyApply(world)` after creating the world, or
    use the sample `SceneGridManager` component which does that bootstrap for
    you.
@@ -35,11 +36,12 @@ Typical scene setup:
 
 ```csharp
 using FixedMathSharp;
+using FixedMathSharp.Bounds;
 using GridForge.Blockers;
 using GridForge.Configuration;
 using GridForge.Grids;
 
-GridWorld world = new GridWorld(Fixed64.One, 50);
+GridWorld world = new GridWorld(spatialGridCellSize: 50);
 
 GridConfiguration config = new GridConfiguration(
     new Vector3d(-10, 0, -10),
@@ -53,10 +55,15 @@ if (world.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel)
     UnityEngine.Debug.Log($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
 }
 
-BoundingArea blockArea = new BoundingArea(new Vector3d(3, 0, 3), new Vector3d(5, 0, 5));
+FixedBoundArea blockArea = new FixedBoundArea(new Vector3d(3, 0, 3), new Vector3d(5, 0, 5));
 BoundsBlocker blocker = new BoundsBlocker(world, blockArea, true, false);
 blocker.ApplyBlockage();
 ```
+
+GridForge v7 core also supports hex-prism grids, sparse storage, and the
+`GridForge.Diagnostics` namespace. Unity authoring and debugging components are
+being updated to expose those v7 surfaces without adding Unity dependencies to
+the core library.
 
 ## Query Helpers
 

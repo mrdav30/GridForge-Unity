@@ -47,6 +47,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Validate package maintenance state
+        shell: pwsh
+        run: |
+          ./.assets/scripts/test-update-unity-package-versions.ps1
+          ./.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly
+          ./.assets/scripts/test-gridforge-package-sync.ps1
+
       - name: Prepare Unity test project
         shell: bash
         run: |
@@ -58,7 +65,14 @@ jobs:
           mkdir -p "$project_path/Packages"
           mkdir -p "$project_path/ProjectSettings"
 
-          cp Tests/EditMode/*.cs "$project_path/Assets/Tests/EditMode/"
+          shopt -s nullglob
+          editmode_tests=(Tests/EditMode/*.cs)
+          if [ ${#editmode_tests[@]} -eq 0 ]; then
+            echo "::error::No EditMode test sources found under Tests/EditMode."
+            exit 1
+          fi
+
+          cp "${editmode_tests[@]}" "$project_path/Assets/Tests/EditMode/"
 
           cat > "$project_path/Assets/Tests/EditMode/GridForge.Unity.Tests.EditMode.asmdef" <<JSON
           {

@@ -47,8 +47,45 @@ function New-TestRepo {
   "packageRoot": ".",
   "packageVersion": "4.0.6",
   "dependencyVersions": {
-    "GridForgeUnity": "v4.0.0"
-  }
+    "FixedMathSharpUnity": "v5.0.0",
+    "SwiftCollectionsUnity": "v5.0.0"
+  },
+  "packages": [
+    {
+      "path": "com.mrdav30.gridforge",
+      "updatePackageVersion": true,
+      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "dependencies": [
+        {
+          "name": "com.mrdav30.fixedmathsharp",
+          "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
+          "versionKey": "FixedMathSharpUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
+          "versionKey": "SwiftCollectionsUnity"
+        }
+      ]
+    },
+    {
+      "path": "com.mrdav30.gridforge.lean",
+      "updatePackageVersion": true,
+      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "dependencies": [
+        {
+          "name": "com.mrdav30.fixedmathsharp.lean",
+          "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean",
+          "versionKey": "FixedMathSharpUnity"
+        },
+        {
+          "name": "com.mrdav30.swiftcollections.lean",
+          "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
+          "versionKey": "SwiftCollectionsUnity"
+        }
+      ]
+    }
+  ]
 }
 '@
 
@@ -58,6 +95,46 @@ function New-TestRepo {
     "version": "4.0.5",
     "displayName": "gridforge"
 }
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/package.json") -Content @'
+{
+    "name": "com.mrdav30.gridforge.lean",
+    "version": "4.0.5",
+    "displayName": "gridforge lean"
+}
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/GitDependencyInstaller.cs") -Content @'
+private static readonly Dependency[] RequiredDependencies =
+{
+    new(
+        "com.mrdav30.fixedmathsharp",
+        "https://example.invalid/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
+        "v4.0.0"
+    ),
+    new(
+        "com.mrdav30.swiftcollections",
+        "https://example.invalid/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
+        "v4.0.0"
+    )
+};
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/GitDependencyInstaller.cs") -Content @'
+private static readonly Dependency[] RequiredDependencies =
+{
+    new(
+        "com.mrdav30.fixedmathsharp.lean",
+        "https://example.invalid/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean",
+        "v4.0.0"
+    ),
+    new(
+        "com.mrdav30.swiftcollections.lean",
+        "https://example.invalid/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
+        "v4.0.0"
+    )
+};
 '@
 
     return $repoRoot
@@ -92,6 +169,12 @@ function Get-PackageVersion {
     return $manifest.version
 }
 
+function Get-FileText {
+    param([string]$Path)
+
+    return Get-Content -Raw -Path $Path
+}
+
 function Test-DryRunReportsChangesWithoutMutatingFiles {
     $repoRoot = New-TestRepo
     $output = Invoke-Updater -RepoRoot $repoRoot
@@ -109,6 +192,16 @@ function Test-ApplyUpdatesPackageAndInstallerVersions {
     Assert-Contains -Text $output -Expected "APPLY" -Message "Apply output should identify the mode."
     Assert-Equal -Expected "4.0.6" -Actual (Get-PackageVersion (Join-Path $repoRoot "com.mrdav30.gridforge/package.json")) -Message "Apply should update package.json."
     Assert-Equal -Expected "4.0.6" -Actual (Get-PackageVersion (Join-Path $repoRoot "com.mrdav30.gridforge.lean/package.json")) -Message "Apply should update every configured package.json."
+
+    $standardInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/GitDependencyInstaller.cs")
+    Assert-Contains -Text $standardInstaller -Expected "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp" -Message "Apply should update standard FixedMathSharp git URL."
+    Assert-Contains -Text $standardInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections" -Message "Apply should update standard SwiftCollections git URL."
+    Assert-Contains -Text $standardInstaller -Expected '"v5.0.0"' -Message "Apply should update standard dependency versions."
+
+    $leanInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/GitDependencyInstaller.cs")
+    Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean" -Message "Apply should update lean FixedMathSharp git URL."
+    Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean" -Message "Apply should update lean SwiftCollections git URL."
+    Assert-Contains -Text $leanInstaller -Expected '"v5.0.0"' -Message "Apply should update lean dependency versions."
 }
 
 function Test-ValidateOnlyFailsWhenFilesDrift {

@@ -23,10 +23,13 @@ together.
 
 Shared behavior:
 
-- Both packages target GridForge v6 and use explicit `GridWorld` ownership.
+- Both packages target GridForge v7 and use explicit `GridWorld` ownership.
 - Both packages include the same Unity-facing helpers such as
   `GridWorldComponent`, `GridConfigurationSaver`, `BlockerComponent`,
   `GridDebugger`, and `GridTracerTests`.
+- GridForge v7 adds core support for rectangular-prism and hex-prism topologies,
+  dense and sparse storage, and engine-agnostic diagnostics that this Unity
+  package will adapt through its authoring and debugging tools.
 - If you use multiple worlds in one scene, assign the intended
   `GridWorldComponent` explicitly on blockers and debugging helpers instead of
   relying on auto-resolution.
@@ -44,16 +47,24 @@ URLs below or run the package repair menu item under `Tools > GridForge*`.
   `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp`
   and
   `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections`
+  and
+  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp`
 - Lean dependencies:
   `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean`
   and
   `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean`
+  and
+  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean`
 
 ## Notes
 
 - All packages in this repo target Unity `2022.3+`.
 - The underlying .NET library lives here:
   [GridForge](https://github.com/mrdav30/GridForge)
+- Until GridForge v7 is released, the embedded `Plugins/GridForge.dll` files are
+  sourced from local GridForge `Release` and `ReleaseLean` builds. The current
+  source commit and DLL hashes are tracked in
+  `.assets/gridforge-core-source.json`.
 - Each package folder keeps a short, package-specific install README with
   `GridWorld` usage examples.
 - Repo maintenance note:

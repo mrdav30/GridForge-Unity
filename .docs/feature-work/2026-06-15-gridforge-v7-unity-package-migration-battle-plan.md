@@ -1,6 +1,6 @@
 # GridForge v7 Unity Package Migration Battle Plan
 
-> **For agentic workers:** Use this as the strategic migration brief. Before implementing any phase, create a focused task plan for that phase and work through `Build/Base` first, then sync both package variants.
+> **For agentic workers:** Use this as the strategic migration brief and living implementation ledger. Before implementing any phase, create a focused task plan for that phase, update this file when scope or status changes, and work through `Build/Base` first, then sync both package variants.
 
 **Goal:** Bring `GridForge-Unity` up to the GridForge v7 public model and harden the Unity package experience around topology-aware grids, sparse storage, diagnostics, samples, docs, and release validation.
 
@@ -15,11 +15,33 @@
 - Date: 2026-06-15.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
-- Current `HEAD` reviewed: `420a93e` (`task: migrate to GridForge v7`).
+- Current Unity package `HEAD`: `affacd2` (`task: migrate to GridForge v7`).
 - Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop` at `866c91f`.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
-- This is a planning document only. It intentionally does not change runtime code.
+- This file is the migration progress ledger. Keep it current as phases land or as new release risks are discovered.
+
+## Implementation Log
+
+### 2026-06-15 - Phase 0 And Phase 1 Baseline Hardening
+
+- Completed the first hardening slice in the package working tree.
+- Added `.assets/gridforge-core-source.json` to record the local pre-release GridForge v7 source commit and SHA-256 hashes for both standard and lean `GridForge.dll` and `GridForge.xml` artifacts.
+- Fixed `.assets/scripts/test-update-unity-package-versions.ps1` so its generated fixture exercises standard and lean package manifests, dependency versions, and installer URLs.
+- Added `.assets/scripts/test-gridforge-package-sync.ps1` to compare managed, non-meta shared source from `Build/Base` against both package variants.
+- Added `Tests/EditMode/GridWorldComponentEditModeTests.cs` as a real EditMode smoke test source for CI.
+- Updated `.github/workflows/build-and-test.yml` to run package maintenance validation and fail clearly if no EditMode test sources are present.
+- Updated root and package READMEs from stale v6 language to the current v7 baseline, including temporary local-DLL sourcing notes.
+- Verification completed:
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - `sync-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project path.
+  - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project path.
+  - stale `v6`, `GridWorld(Fixed64`, and `BoundingArea` grep across package READMEs: clean.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Local Unity EditMode caveat: a direct local Unity `-runTests` attempt exited without a result XML or TestRunner execution lines, so local Unity test execution is not counted as verified yet. CI's fresh test project remains the intended Unity validation surface for this slice.
+- Next phase target: Phase 2, redesign Unity grid authoring around v7 topology, metrics, storage, and sparse configuration.
 
 ## Source Material
 
@@ -123,18 +145,20 @@
 - Review: `com.mrdav30.gridforge/Plugins/GridForge.xml`
 - Review: `com.mrdav30.gridforge.lean/Plugins/GridForge.xml`
 - Review: `.assets/unity-package-versions.json`
+- Create: `.assets/gridforge-core-source.json`
 - Modify: `.assets/scripts/test-update-unity-package-versions.ps1`
 - Modify: `.github/workflows/build-and-test.yml`
 - Create: `Tests/EditMode/GridWorldComponentEditModeTests.cs`
 
 **Work:**
 
-- [ ] Confirm both standard and lean DLL/XML files were built from the intended GridForge v7 core commit.
-- [ ] Add a small manifest file or doc note that records the core commit used for the embedded DLLs.
-- [ ] Fix `.assets/scripts/test-update-unity-package-versions.ps1` so its generated fixture includes a `packages` array for standard and lean package manifests.
-- [ ] Add at least one real EditMode test file so CI does not fail on `cp Tests/EditMode/*.cs`.
-- [ ] Update CI setup to fail with a clear message if the package test source glob is empty.
-- [ ] Run:
+- [x] Confirm both standard and lean DLL/XML files were built from the intended GridForge v7 core commit.
+  - 2026-06-15: recorded local core commit `866c91f6900c710d0cac561a7a01d08711f8e2ab` and standard/lean DLL/XML SHA-256 hashes in `.assets/gridforge-core-source.json`.
+- [x] Add a small manifest file or doc note that records the core commit used for the embedded DLLs.
+- [x] Fix `.assets/scripts/test-update-unity-package-versions.ps1` so its generated fixture includes a `packages` array for standard and lean package manifests.
+- [x] Add at least one real EditMode test file so CI does not fail on `cp Tests/EditMode/*.cs`.
+- [x] Update CI setup to fail with a clear message if the package test source glob is empty.
+- [x] Run:
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\test-update-unity-package-versions.ps1
@@ -146,11 +170,11 @@ git diff --check
 
 **Exit Criteria:**
 
-- Version self-tests pass.
-- Version validation passes.
-- Unity batch wrappers resolve the intended Unity project and editor.
-- CI has at least one actual EditMode test source file per package matrix.
-- No package docs claim v6 after this phase.
+- [x] Version self-tests pass.
+- [x] Version validation passes.
+- [x] Unity batch wrappers resolve the intended Unity project and editor.
+- [x] CI has at least one actual EditMode test source file per package matrix.
+- [x] No package docs claim v6 after this phase.
 
 ## Phase 1: Repair Shared Source Ownership And Package Sync
 
@@ -165,20 +189,24 @@ git diff --check
 - Modify: `com.mrdav30.gridforge.lean/Runtime/Utility/Debugging/GridDebugger.cs`
 - Modify: `com.mrdav30.gridforge.lean/Runtime/Utility/Debugging/GridTracerTests.cs`
 - Modify: `Build/Editor/GridForgePackageSync.cs`
+- Create: `.assets/scripts/test-gridforge-package-sync.ps1`
 
 **Work:**
 
-- [ ] Decide whether the package-copy drift in `GridDebugger.cs` and `GridTracerTests.cs` should be kept. Current evidence says it should not be kept.
-- [ ] Re-sync package copies from `Build/Base` so the shared source is byte-equivalent except for `.meta` files.
-- [ ] Add a package-sync validation command or test that compares non-meta managed files from `Build/Base` to both packages.
-- [ ] Keep package-specific `.meta` GUIDs intact so existing samples and scenes do not lose script references.
+- [x] Decide whether the package-copy drift in `GridDebugger.cs` and `GridTracerTests.cs` should be kept. Current evidence says it should not be kept.
+  - 2026-06-15: user-side package sync fix removed the drift before implementation; validation now confirms `Build/Base` matches both package variants for managed non-meta source.
+- [x] Re-sync package copies from `Build/Base` so the shared source is byte-equivalent except for `.meta` files.
+  - 2026-06-15: no additional source copy was needed after the sync fix; `.assets/scripts/test-gridforge-package-sync.ps1` confirms byte-equivalence.
+- [x] Add a package-sync validation command or test that compares non-meta managed files from `Build/Base` to both packages.
+- [x] Keep package-specific `.meta` GUIDs intact so existing samples and scenes do not lose script references.
 - [ ] Add any new managed-code directories from later phases to `GridForgePackageSync.ManagedEntries`.
+  - Ongoing reminder for Phases 2-6 when new shared managed directories are introduced.
 
 **Exit Criteria:**
 
-- `Build/Base` is the only place future shared managed-code edits are made.
-- Package copies are synchronized by tool rather than by manual edits.
-- Sync validation catches source drift before release.
+- [x] `Build/Base` is the only place future shared managed-code edits are made.
+- [x] Package copies are synchronized by tool rather than by manual edits.
+- [x] Sync validation catches source drift before release.
 
 ## Phase 2: Redesign Unity Grid Authoring For v7 Configuration
 
@@ -570,4 +598,3 @@ Start with a narrow hardening PR before the bigger feature work:
 - Add sync validation so future phases cannot drift silently.
 
 That slice gives the rest of the migration a cleaner floor without forcing the diagnostics and authoring redesign to land all at once.
-

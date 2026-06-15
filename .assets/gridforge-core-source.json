@@ -1,0 +1,35 @@
+{
+  "gridForgeCore": {
+    "source": "local pre-release GridForge v7 build",
+    "repository": "https://github.com/mrdav30/GridForge",
+    "commit": "866c91f6900c710d0cac561a7a01d08711f8e2ab",
+    "standardBuildCommand": "dotnet build GridForge.slnx --configuration Release",
+    "leanBuildCommand": "dotnet build GridForge.slnx --configuration ReleaseLean",
+    "plugins": [
+      {
+        "package": "com.mrdav30.gridforge",
+        "path": "Plugins/GridForge.dll",
+        "assemblyName": "GridForge, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "sha256": "B5D6E13957620B4353C345EDB20C9BA27921642C5E8699E4EF632D1304A178B8"
+      },
+      {
+        "package": "com.mrdav30.gridforge.lean",
+        "path": "Plugins/GridForge.dll",
+        "assemblyName": "GridForge, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "sha256": "F63BFC2EA2B651D3D6416BE9B0EC5D9E4500E3E6CF6EC1E29D7EB28E7A295E0D"
+      }
+    ],
+    "xmlDocumentation": [
+      {
+        "package": "com.mrdav30.gridforge",
+        "path": "Plugins/GridForge.xml",
+        "sha256": "D314226CB0F36E25354AC1F50AA6ACC50A9760ABADCF3276D29E1F49D35DDFED"
+      },
+      {
+        "package": "com.mrdav30.gridforge.lean",
+        "path": "Plugins/GridForge.xml",
+        "sha256": "2D0644597F55DFB105AA07755CC32DB8F0B15D548591A74A69ADE547AD248F55"
+      }
+    ]
+  }
+}
