@@ -10,7 +10,7 @@ using GridForge.Grids;
 using GridForge.Grids.Storage;
 using GridForge.Spatial;
 using GridForge.Unity;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 namespace GridForge.Configuration
@@ -33,11 +33,11 @@ namespace GridForge.Configuration
         public int SpatialGridCellSize => _spatialGridCellSize;
 
         /// <summary>
-        /// List of saved grid configurations.
+        /// Saved grid configurations.
         /// </summary>
-        [SerializeField] private List<SerializableGridConfiguration> _savedGridConfigurations = new();
+        [SerializeField] private SerializableGridConfiguration[] _savedGridConfigurations = Array.Empty<SerializableGridConfiguration>();
 
-        public IReadOnlyList<SerializableGridConfiguration> SavedGridConfigurations => _savedGridConfigurations;
+        public SerializableGridConfiguration[] SavedGridConfigurations => _savedGridConfigurations ?? Array.Empty<SerializableGridConfiguration>();
 
         /// <summary>
         /// Enables visualization of grid bounds in the editor.
@@ -67,7 +67,10 @@ namespace GridForge.Configuration
         /// </summary>
         public void Save(SerializableGridConfiguration configuration)
         {
-            _savedGridConfigurations.Add(configuration);
+            _savedGridConfigurations ??= Array.Empty<SerializableGridConfiguration>();
+            int index = _savedGridConfigurations.Length;
+            Array.Resize(ref _savedGridConfigurations, index + 1);
+            _savedGridConfigurations[index] = configuration;
         }
 
         /// <summary>

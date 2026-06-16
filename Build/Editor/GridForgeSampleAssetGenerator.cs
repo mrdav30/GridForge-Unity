@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -334,11 +333,12 @@ namespace GridForge.Build.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             FieldInfo savedConfigurationsField = RequireField(saver.GetType(), "_savedGridConfigurations");
-            Type configurationType = savedConfigurationsField.FieldType.GetGenericArguments()[0];
-            IList savedConfigurations = (IList)Activator.CreateInstance(savedConfigurationsField.FieldType);
+            Type configurationType = savedConfigurationsField.FieldType.GetElementType()
+                ?? throw new InvalidOperationException("_savedGridConfigurations must be an array.");
+            Array savedConfigurations = Array.CreateInstance(configurationType, configurations.Length);
 
-            foreach (GridAuthoringDefinition configuration in configurations)
-                savedConfigurations.Add(CreateSerializableGridConfiguration(configurationType, configuration));
+            for (int i = 0; i < configurations.Length; i++)
+                savedConfigurations.SetValue(CreateSerializableGridConfiguration(configurationType, configurations[i]), i);
 
             savedConfigurationsField.SetValue(saver, savedConfigurations);
             EditorUtility.SetDirty(saver);

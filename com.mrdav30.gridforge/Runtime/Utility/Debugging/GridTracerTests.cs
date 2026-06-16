@@ -10,7 +10,7 @@ using FixedMathSharp;
 using GridForge.Diagnostics;
 using GridForge.Grids;
 using GridForge.Unity;
-using System.Collections.Generic;
+using SwiftCollections;
 using UnityEngine;
 
 namespace GridForge.Utility
@@ -132,7 +132,7 @@ namespace GridForge.Utility
             GridWorld world,
             Vector3d start,
             Vector3d end,
-            List<Voxel> results)
+            SwiftList<Voxel> results)
         {
             if (results == null)
                 return 0;
@@ -172,7 +172,7 @@ namespace GridForge.Utility
             return false;
         }
 
-        private IEnumerable<GridVoxelSet> TraceLine(
+        private System.Collections.Generic.IEnumerable<GridVoxelSet> TraceLine(
             GridWorld world,
             Vector3d start,
             Vector3d end)

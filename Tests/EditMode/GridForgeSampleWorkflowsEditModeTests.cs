@@ -37,20 +37,6 @@ namespace GridForge.Unity.Tests.EditMode
             Assert.NotNull(managerType.GetMethod("ApplyAuthoringToWorld", BindingFlags.Instance | BindingFlags.Public));
         }
 
-        [TestCase("com.mrdav30.gridforge", "V7Workflows.unity")]
-        [TestCase("com.mrdav30.gridforge.lean", "V7Workflows.Lean.unity")]
-        public void PackagesKeepV7WorkflowCoverageInPrefabsWithoutExtraDemoScene(string packageRoot, string sceneName)
-        {
-            string sampleRoot = $"Assets/Packages/{packageRoot}/Samples/GridforgeDemo";
-
-            AssertAssetDoesNotExist<SceneAsset>($"{sampleRoot}/Scenes/{sceneName}");
-            AssertWorkflowPrefabExists(sampleRoot, "DenseRectangular");
-            AssertWorkflowPrefabExists(sampleRoot, "DenseHex");
-            AssertWorkflowPrefabExists(sampleRoot, "SparseRectangular");
-            AssertWorkflowPrefabExists(sampleRoot, "SparseHex");
-            AssertWorkflowPrefabExists(sampleRoot, "MixedTopologyDiagnostics");
-        }
-
         [TestCase("com.mrdav30.gridforge")]
         [TestCase("com.mrdav30.gridforge.lean")]
         public void WorkflowPrefabsUseV7AuthoringComponents(string packageRoot)
@@ -117,11 +103,6 @@ namespace GridForge.Unity.Tests.EditMode
             AssertComponent(prefab, "GridForge.Utility.GridForgeUnityLogger");
         }
 
-        private static void AssertWorkflowPrefabExists(string sampleRoot, string workflowName)
-        {
-            AssertAssetExists<GameObject>($"{sampleRoot}/Prefabs/{workflowName}.prefab");
-        }
-
         private static void AssertWorkflowConfig(
             string prefabPath,
             int workflowIndex,
@@ -161,13 +142,6 @@ namespace GridForge.Unity.Tests.EditMode
             T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.NotNull(asset, $"Missing sample asset: {assetPath}");
             return asset;
-        }
-
-        private static void AssertAssetDoesNotExist<T>(string assetPath)
-            where T : UnityEngine.Object
-        {
-            T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            Assert.IsNull(asset, $"Unexpected sample asset: {assetPath}");
         }
 
         private static Component AssertComponent(GameObject owner, string fullNameOrName)

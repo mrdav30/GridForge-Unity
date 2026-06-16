@@ -1,6 +1,6 @@
 #if UNITY_EDITOR
+using SwiftCollections;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -120,10 +120,10 @@ namespace GridForge.Build.Editor
 
             var sourceFiles = Directory.Exists(sourceDirectory)
                 ? CollectManagedFiles(sourceDirectory)
-                : new Dictionary<string, string>(StringComparer.Ordinal);
+                : new SwiftDictionary<string, string>();
             var destinationFiles = Directory.Exists(destinationDirectory)
                 ? CollectManagedFiles(destinationDirectory)
-                : new Dictionary<string, string>(StringComparer.Ordinal);
+                : new SwiftDictionary<string, string>();
 
             foreach (var destinationRelativePath in destinationFiles.Keys)
             {
@@ -172,9 +172,9 @@ namespace GridForge.Build.Editor
             return summary;
         }
 
-        private static Dictionary<string, string> CollectManagedFiles(string rootPath)
+        private static SwiftDictionary<string, string> CollectManagedFiles(string rootPath)
         {
-            var files = new Dictionary<string, string>(StringComparer.Ordinal);
+            var files = new SwiftDictionary<string, string>();
 
             foreach (var filePath in Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories))
             {
@@ -223,7 +223,7 @@ namespace GridForge.Build.Editor
             summary.DeletedDirectories++;
         }
 
-        private static IEnumerable<string> EnumerateDirectoriesDeepestFirst(string rootPath)
+        private static System.Collections.Generic.IEnumerable<string> EnumerateDirectoriesDeepestFirst(string rootPath)
         {
             var directories = Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories);
             Array.Sort(directories, (left, right) => string.CompareOrdinal(right, left));

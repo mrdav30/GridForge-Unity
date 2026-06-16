@@ -1,9 +1,9 @@
 using GridForge;
 using GridForge.Utility;
 using NUnit.Framework;
+using SwiftCollections;
 using SwiftCollections.Diagnostics;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -43,7 +43,7 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void ComponentDoesNotInstallLoggingUntilExplicitlyEnabled()
         {
-            List<string> capturedLogs = new();
+            SwiftList<string> capturedLogs = new();
             Action<DiagnosticLevel, string, string> previousHandler =
                 (level, message, source) => capturedLogs.Add($"{level}|{source}|{message}");
             GridForgeLogger.LogHandler = previousHandler;
@@ -60,9 +60,8 @@ namespace GridForge.Unity.Tests.EditMode
 
                 GridForgeLogger.Channel.Write(DiagnosticLevel.Warning, "not forwarded", "ExplicitOptIn");
 
-                CollectionAssert.AreEqual(
-                    new[] { "Warning|ExplicitOptIn|not forwarded" },
-                    capturedLogs);
+                Assert.AreEqual(1, capturedLogs.Count);
+                Assert.AreEqual("Warning|ExplicitOptIn|not forwarded", capturedLogs[0]);
             }
             finally
             {
@@ -119,7 +118,7 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void DisableLoggingRestoresPreviousHandlerAndMinimumLevel()
         {
-            List<string> capturedLogs = new();
+            SwiftList<string> capturedLogs = new();
             Action<DiagnosticLevel, string, string> previousHandler =
                 (level, message, source) => capturedLogs.Add($"{level}|{source}|{message}");
             GridForgeLogger.LogHandler = previousHandler;
@@ -142,9 +141,8 @@ namespace GridForge.Unity.Tests.EditMode
 
                 GridForgeLogger.Channel.Write(DiagnosticLevel.Warning, "restored", "PreviousHandler");
 
-                CollectionAssert.AreEqual(
-                    new[] { "Warning|PreviousHandler|restored" },
-                    capturedLogs);
+                Assert.AreEqual(1, capturedLogs.Count);
+                Assert.AreEqual("Warning|PreviousHandler|restored", capturedLogs[0]);
             }
             finally
             {

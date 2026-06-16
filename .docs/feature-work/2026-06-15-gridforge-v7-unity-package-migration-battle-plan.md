@@ -218,6 +218,34 @@
   - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
   - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
 
+### 2026-06-16 - Collection Policy And Test Hygiene Hardening
+
+- Removed remaining `System.Collections.Generic.List<T>` and `Dictionary<TKey,TValue>` usage from GridForge-owned package/runtime/test code, except for allowed `IEnumerable<T>` API signatures and generated XML documentation.
+- Changed Unity-persisted authoring collections to arrays:
+  - `GridConfigurationSaver._savedGridConfigurations` is now `SerializableGridConfiguration[]`.
+  - `SerializableSparseVoxelSet._indices` is now `SerializableVoxelIndex[]`.
+  - The FixedMathSharp serialization probe now uses an array for nested values.
+- Used SwiftCollections where the collections are working buffers or maps:
+  - `GridTracerTests.GetTraceVoxelsInto(...)` now accepts `SwiftList<Voxel>`.
+  - Trace visualizer and logger tests use `SwiftList<T>` instead of `List<T>`.
+  - `SerializableSparseVoxelSet` uses `SwiftList<SerializableVoxelIndex>` for temporary conversion buffers.
+  - `GridForgePackageSync` uses `SwiftDictionary<string, string>` for managed-file maps.
+- Reworked package `GitDependencyInstaller` JSON handling from nested `Dictionary` deserialization to `JsonObject`, and replaced the mojibake dependency log arrow with ASCII `->`.
+- Added `Chronicler.dll` to the EditMode test asmdef precompiled references because direct `SwiftList<T>` usage exposes SwiftCollections' `IStateBacked<>` interface to the compiler.
+- Removed hollow tests that only guarded legacy or absence behavior:
+  - `PackagesKeepV7WorkflowCoverageInPrefabsWithoutExtraDemoScene(...)`
+  - `AuthoringComponentsDoNotRetainLegacyVoxelSizeCompatibilityFields()`
+- Kept behaviorful coverage for prefab workflow authoring, FixedMathSharp serialization, authoring persistence, debugger inspector policy, tracing, blockers, and logging.
+- Source review note: SwiftCollections core types are `[Serializable]` and expose JSON/MemoryPack/Chronicler state, but the current `SwiftCollections-Unity` package does not appear to provide Unity property drawers, Unity-visible serialized backing fields, or Unity serialization callbacks for direct persisted `SwiftList<T>`/`SwiftDictionary<TKey,TValue>` fields. GridForge persisted authoring therefore uses arrays for this pass; direct SwiftCollections Unity persistence remains an upstream SwiftCollections-Unity hardening question if that is a desired public guarantee.
+- Debugging note: NUnit `CollectionAssert` can trip `SwiftList<T>`'s non-generic enumerator after enumeration completes, so the logger tests now assert `Count` plus indexed values instead of routing `SwiftList<T>` through NUnit's collection adapter.
+- Synced shared managed source from `Build/Base` into both standard and lean package variants. No `.meta` files were manually created or edited.
+- Verification completed:
+  - `.assets/scripts/sync-gridforge-unity-packages.ps1`: pass after a targeted mechanical source sync let Unity compile the changed shared signatures; final sync reported 0 copied, 0 deleted, 0 removed files.
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 42 total, 42 passed, 0 failed, 0 skipped.
+  - `.assets/scripts/test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+
 ## Source Material
 
 - Core v7 docs:
@@ -293,7 +321,7 @@
 - Phase 4 resolved `GridTracerTests` `FillSize`/`WireSize` drift and package sync validation now catches managed-source drift across both variants.
 - `Tests/EditMode` now contains lifecycle, authoring, diagnostics, blocker, and trace visualizer coverage.
 - `.assets/scripts/test-update-unity-package-versions.ps1` currently fails because its test config does not define a `packages` array.
-- `GitDependencyInstaller.cs` logs a mojibake arrow (`â†’`) and should be checked against Unity profile support for `System.Text.Json`.
+- `GitDependencyInstaller.cs` now uses ASCII log output and compiles with `System.Text.Json.Nodes` in Unity 6000.3.9f1; broader fresh-import behavior still needs Phase 8 validation.
 - Package manifests declare no UPM dependencies and rely on editor-time manifest mutation. That path needs explicit validation and friendlier failure behavior.
 
 ### Design Constraint
@@ -720,8 +748,8 @@ git diff --check
 
 **Work:**
 
-- [ ] Replace the mojibake log arrow with ASCII `->`.
-- [ ] Verify `System.Text.Json` is available in the supported Unity editor profile. If not, replace it with a small manifest parser/writer or Unity-compatible JSON path.
+- [x] Replace the mojibake log arrow with ASCII `->`.
+- [x] Verify `System.Text.Json` is available in the supported Unity editor profile. If not, replace it with a small manifest parser/writer or Unity-compatible JSON path.
 - [ ] Make dependency installation idempotent and explicit in logs.
 - [ ] Keep standard dependencies:
   - `com.mrdav30.fixedmathsharp`

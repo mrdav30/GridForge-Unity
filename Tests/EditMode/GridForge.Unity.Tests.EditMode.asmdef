@@ -16,6 +16,7 @@
         "nunit.framework.dll",
         "GridForge.dll",
         "FixedMathSharp.dll",
+        "Chronicler.dll",
         "SwiftCollections.dll"
     ],
     "autoReferenced": false,

@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -89,9 +89,9 @@ namespace GridForge.Editor
             }
 
             var json = File.ReadAllText(ManifestPath);
-            var manifest = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, object>>>(json);
+            JsonNode manifest = JsonNode.Parse(json);
 
-            if (!manifest.ContainsKey("dependencies") || manifest["dependencies"] is not Dictionary<string, object> dependencies)
+            if (manifest?["dependencies"] is not JsonObject dependencies)
             {
                 Debug.LogWarning("manifest.json dependencies block missing.");
                 return;
@@ -104,7 +104,7 @@ namespace GridForge.Editor
 
             if (modified)
             {
-                var updated = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
+                string updated = manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
 
                 File.WriteAllText(ManifestPath, updated);
 
@@ -119,14 +119,14 @@ namespace GridForge.Editor
                 Debug.Log("All required dependencies are already installed.");
         }
 
-        private static bool AddDependency(Dictionary<string, object> deps, Dependency dep)
+        private static bool AddDependency(JsonObject deps, Dependency dep)
         {
-            if (deps.ContainsKey(dep.Name) && deps[dep.Name]?.ToString() == dep.Value)
+            if (deps.TryGetPropertyValue(dep.Name, out JsonNode existing) && existing?.GetValue<string>() == dep.Value)
                 return false;
 
             deps[dep.Name] = dep.Value;
 
-            Debug.Log($"Dependency installed/updated: {dep.Name} â†’ {dep.Value}");
+            Debug.Log($"Dependency installed/updated: {dep.Name} -> {dep.Value}");
 
             return true;
         }

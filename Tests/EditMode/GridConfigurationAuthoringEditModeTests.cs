@@ -6,7 +6,6 @@ using GridForge.Grids.Topology;
 using GridForge.Spatial;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -302,13 +301,6 @@ namespace GridForge.Unity.Tests.EditMode
         }
 
         [Test]
-        public void AuthoringComponentsDoNotRetainLegacyVoxelSizeCompatibilityFields()
-        {
-            AssertNoLegacyVoxelSizeFields(typeof(GridConfigurationSaver));
-            AssertNoLegacyVoxelSizeFields(typeof(GridWorldComponent));
-        }
-
-        [Test]
         public void InvalidMetricsAreRejectedBeforeWorldRegistration()
         {
             using GridWorld world = new();
@@ -373,26 +365,6 @@ namespace GridForge.Unity.Tests.EditMode
             }
         }
 
-        private static void AssertNoLegacyVoxelSizeFields(System.Type type)
-        {
-            FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-            foreach (FieldInfo field in fields)
-            {
-                Assert.IsFalse(
-                    field.Name.ToLowerInvariant().Contains("legacy"),
-                    $"{type.Name}.{field.Name} should not preserve legacy serialized compatibility state.");
-
-                foreach (object attribute in field.GetCustomAttributes(inherit: false))
-                {
-                    Assert.AreNotEqual(
-                        "FormerlySerializedAsAttribute",
-                        attribute.GetType().Name,
-                        $"{type.Name}.{field.Name} should not migrate old serialized field names.");
-                }
-            }
-        }
-
     }
 
     public sealed class FixedMathSharpSerializationProbe : ScriptableObject
@@ -400,12 +372,12 @@ namespace GridForge.Unity.Tests.EditMode
         [SerializeField] private Fixed64 _scalar;
         [SerializeField] private Vector2d _plane;
         [SerializeField] private Vector3d _space;
-        [SerializeField] private List<FixedMathSharpNestedSerializationProbe> _nested = new();
+        [SerializeField] private FixedMathSharpNestedSerializationProbe[] _nested = Array.Empty<FixedMathSharpNestedSerializationProbe>();
 
         public Fixed64 Scalar => _scalar;
         public Vector2d Plane => _plane;
         public Vector3d Space => _space;
-        public IReadOnlyList<FixedMathSharpNestedSerializationProbe> Nested => _nested;
+        public FixedMathSharpNestedSerializationProbe[] Nested => _nested ?? Array.Empty<FixedMathSharpNestedSerializationProbe>();
 
         public void Configure(
             Fixed64 scalar,
@@ -416,8 +388,7 @@ namespace GridForge.Unity.Tests.EditMode
             _scalar = scalar;
             _plane = plane;
             _space = space;
-            _nested.Clear();
-            _nested.Add(nested);
+            _nested = new[] { nested };
         }
     }
 

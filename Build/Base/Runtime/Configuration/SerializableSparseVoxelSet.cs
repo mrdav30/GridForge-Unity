@@ -6,8 +6,8 @@
 //=======================================================================
 
 using GridForge.Spatial;
+using SwiftCollections;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GridForge.Configuration
@@ -50,43 +50,33 @@ namespace GridForge.Configuration
     [Serializable]
     public struct SerializableSparseVoxelSet
     {
-        [SerializeField] private List<SerializableVoxelIndex> _indices;
+        [SerializeField] private SerializableVoxelIndex[] _indices;
 
-        public readonly int Count => _indices?.Count ?? 0;
+        public readonly int Count => Indices.Length;
         public readonly bool HasConfiguredVoxels => Count > 0;
-        public readonly IReadOnlyList<SerializableVoxelIndex> Indices
-        {
-            get
-            {
-                if (_indices != null)
-                    return _indices;
-
-                return Array.Empty<SerializableVoxelIndex>();
-            }
-        }
+        public readonly SerializableVoxelIndex[] Indices => _indices ?? Array.Empty<SerializableVoxelIndex>();
 
         public static SerializableSparseVoxelSet Empty => new(Array.Empty<SerializableVoxelIndex>());
 
-        public SerializableSparseVoxelSet(IEnumerable<SerializableVoxelIndex> indices)
+        public SerializableSparseVoxelSet(System.Collections.Generic.IEnumerable<SerializableVoxelIndex> indices)
         {
-            _indices = indices == null
-                ? new List<SerializableVoxelIndex>()
-                : new List<SerializableVoxelIndex>(indices);
+            _indices = ToArray(indices);
         }
 
         public readonly bool TryToVoxelIndices(out VoxelIndex[] indices, out string failureReason)
         {
             failureReason = string.Empty;
-            if (_indices == null || _indices.Count == 0)
+            SerializableVoxelIndex[] serializedIndices = Indices;
+            if (serializedIndices.Length == 0)
             {
                 indices = Array.Empty<VoxelIndex>();
                 return true;
             }
 
-            indices = new VoxelIndex[_indices.Count];
-            for (int i = 0; i < _indices.Count; i++)
+            indices = new VoxelIndex[serializedIndices.Length];
+            for (int i = 0; i < serializedIndices.Length; i++)
             {
-                SerializableVoxelIndex serialized = _indices[i];
+                SerializableVoxelIndex serialized = serializedIndices[i];
                 if (serialized.X < 0 || serialized.Y < 0 || serialized.Z < 0)
                 {
                     failureReason = $"Sparse voxel index ({serialized.X}, {serialized.Y}, {serialized.Z}) must be non-negative.";
@@ -100,16 +90,31 @@ namespace GridForge.Configuration
             return true;
         }
 
-        public static SerializableSparseVoxelSet FromVoxelIndices(IEnumerable<VoxelIndex> indices)
+        public static SerializableSparseVoxelSet FromVoxelIndices(System.Collections.Generic.IEnumerable<VoxelIndex> indices)
         {
             if (indices == null)
                 return Empty;
 
-            List<SerializableVoxelIndex> serialized = new();
+            SwiftList<SerializableVoxelIndex> serialized = new();
             foreach (VoxelIndex index in indices)
                 serialized.Add(SerializableVoxelIndex.FromVoxelIndex(index));
 
             return new SerializableSparseVoxelSet(serialized);
+        }
+
+        private static SerializableVoxelIndex[] ToArray(System.Collections.Generic.IEnumerable<SerializableVoxelIndex> indices)
+        {
+            if (indices == null)
+                return Array.Empty<SerializableVoxelIndex>();
+
+            if (indices is SerializableVoxelIndex[] array)
+                return array;
+
+            SwiftList<SerializableVoxelIndex> serialized = new();
+            foreach (SerializableVoxelIndex index in indices)
+                serialized.Add(index);
+
+            return serialized.ToArray();
         }
     }
 }

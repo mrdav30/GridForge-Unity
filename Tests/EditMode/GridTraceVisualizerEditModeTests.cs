@@ -7,7 +7,7 @@ using GridForge.Grids.Topology;
 using GridForge.Spatial;
 using GridForge.Utility;
 using NUnit.Framework;
-using System.Collections.Generic;
+using SwiftCollections;
 using UnityEngine;
 
 namespace GridForge.Unity.Tests.EditMode
@@ -46,7 +46,7 @@ namespace GridForge.Unity.Tests.EditMode
                 GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer, layerY: Fixed64.One);
 
-                List<Voxel> traced = new();
+                SwiftList<Voxel> traced = new();
                 int count = visualizer.GetTraceVoxelsInto(
                     world,
                     new Vector3d(0, 99, 0),
@@ -55,7 +55,8 @@ namespace GridForge.Unity.Tests.EditMode
 
                 Assert.Greater(count, 0);
                 Assert.AreEqual(count, traced.Count);
-                Assert.IsTrue(traced.TrueForAll(voxel => voxel.Index.y == 1));
+                for (int i = 0; i < traced.Count; i++)
+                    Assert.AreEqual(1, traced[i].Index.y);
             }
             finally
             {
@@ -94,16 +95,16 @@ namespace GridForge.Unity.Tests.EditMode
                 GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
-                List<Voxel> traced = new();
+                SwiftList<Voxel> traced = new();
                 visualizer.GetTraceVoxelsInto(
                     world,
                     new Vector3d(-11, 0, -5),
                     new Vector3d(7, 0, 13),
                     traced);
 
-                Assert.IsTrue(traced.Exists(voxel => voxel.WorldIndex.GridIndex == denseRectangularIndex));
-                Assert.IsFalse(traced.Exists(voxel => voxel.WorldIndex.GridIndex == denseHexIndex));
-                Assert.IsFalse(traced.Exists(voxel => voxel.WorldIndex.GridIndex == sparseRectangularIndex));
+                Assert.IsTrue(ContainsGrid(traced, denseRectangularIndex));
+                Assert.IsFalse(ContainsGrid(traced, denseHexIndex));
+                Assert.IsFalse(ContainsGrid(traced, sparseRectangularIndex));
             }
             finally
             {
@@ -154,11 +155,11 @@ namespace GridForge.Unity.Tests.EditMode
                 GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
-                List<Voxel> traced = new();
+                SwiftList<Voxel> traced = new();
                 visualizer.GetTraceVoxelsInto(world, start, end, traced);
 
-                List<Voxel> tracedHexVoxels = traced.FindAll(voxel => voxel.WorldIndex.GridIndex == hexGridIndex);
-                Assert.IsNotEmpty(tracedHexVoxels);
+                SwiftList<Voxel> tracedHexVoxels = CollectGridVoxels(traced, hexGridIndex);
+                Assert.Greater(tracedHexVoxels.Count, 0);
                 Assert.AreEqual(expectedFirstHexVoxel.Index, tracedHexVoxels[0].Index);
             }
             finally
@@ -196,15 +197,15 @@ namespace GridForge.Unity.Tests.EditMode
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
                 Vector3d end = boundaryVoxel.WorldPosition + (boundaryVoxel.WorldPosition - originVoxel.WorldPosition);
-                List<Voxel> traced = new();
+                SwiftList<Voxel> traced = new();
                 visualizer.GetTraceVoxelsInto(
                     world,
                     originVoxel.WorldPosition,
                     end,
                     traced);
 
-                Assert.IsTrue(traced.Exists(voxel => voxel.Index == originIndex));
-                Assert.IsTrue(traced.Exists(voxel => voxel.Index == boundaryIndex));
+                Assert.IsTrue(ContainsVoxel(traced, originIndex));
+                Assert.IsTrue(ContainsVoxel(traced, boundaryIndex));
             }
             finally
             {
@@ -318,6 +319,41 @@ namespace GridForge.Unity.Tests.EditMode
                 metrics.CellRadius * sqrt3 * (q + r * Fixed64.Half),
                 index.y * metrics.LayerHeight,
                 metrics.CellRadius * Fixed64.Three * Fixed64.Half * r);
+        }
+
+        private static bool ContainsGrid(SwiftList<Voxel> voxels, ushort gridIndex)
+        {
+            for (int i = 0; i < voxels.Count; i++)
+            {
+                if (voxels[i].WorldIndex.GridIndex == gridIndex)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsVoxel(SwiftList<Voxel> voxels, VoxelIndex index)
+        {
+            for (int i = 0; i < voxels.Count; i++)
+            {
+                if (voxels[i].Index == index)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static SwiftList<Voxel> CollectGridVoxels(SwiftList<Voxel> voxels, ushort gridIndex)
+        {
+            SwiftList<Voxel> result = new();
+            for (int i = 0; i < voxels.Count; i++)
+            {
+                Voxel voxel = voxels[i];
+                if (voxel.WorldIndex.GridIndex == gridIndex)
+                    result.Add(voxel);
+            }
+
+            return result;
         }
     }
 }
