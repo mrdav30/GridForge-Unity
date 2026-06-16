@@ -201,6 +201,23 @@
   - Unity EditMode final run: pass, 43 total, 43 passed, 0 failed, 0 skipped.
   - `.assets/scripts/test-gridforge-package-sync.ps1`: pass after normalizing the standard sample `SceneGridManager.cs` copy back to `Build/Base`.
 
+### 2026-06-16 - Phase 6 Inspector UX Hardening
+
+- Added a context-aware `SerializableGridConfiguration` property drawer for the `GridConfigurationSaver` inspector.
+- The drawer shows rectangular metrics only for `GridTopologyKind.RectangularPrism`, hex metrics only for `GridTopologyKind.HexPrism`, and configured sparse voxels only for `GridStorageKind.Sparse`.
+- Hidden metric and sparse fields remain serialized instead of being reset, so toggling topology or storage does not destroy inactive authoring values.
+- The drawer still delegates `Fixed64`, `Vector2d`, and `Vector3d` rendering to FixedMathSharp-Unity editor drawers instead of introducing GridForge-owned serialized variants or fixed-value editors.
+- Rendered `GridDebugger` query status and selected voxel output inside disabled IMGUI scopes, making runtime-derived status fields visually and semantically read-only in the inspector.
+- Added EditMode policy regressions for topology/storage inspector visibility and read-only debugger display policy.
+- Synced the shared editor source from `Build/Base` into both standard and lean package variants; no `.meta` files were created or edited manually.
+- Verification completed:
+  - RED Unity EditMode run after adding policy tests: pass compilation, 43 passed, 2 failed on missing editor policy helper types.
+  - `.assets/scripts/sync-gridforge-unity-packages.ps1`: pass, 4 files copied, 0 deleted, 0 directories removed.
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 45 total, 45 passed, 0 failed, 0 skipped.
+  - `.assets/scripts/test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+
 ## Source Material
 
 - Core v7 docs:

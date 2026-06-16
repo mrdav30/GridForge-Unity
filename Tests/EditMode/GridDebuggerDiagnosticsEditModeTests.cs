@@ -7,7 +7,10 @@ using GridForge.Grids.Topology;
 using GridForge.Spatial;
 using GridForge.Utility;
 using NUnit.Framework;
+using System;
+using System.Reflection;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace GridForge.Unity.Tests.EditMode
 {
@@ -194,6 +197,15 @@ namespace GridForge.Unity.Tests.EditMode
             }
         }
 
+        [Test]
+        public void GridDebuggerInspectorTreatsRuntimeStatusAsReadOnly()
+        {
+            Type displayType = RequireEditorType("GridForge.Utility.Debugging.Editor.GridDebuggerEditorDisplay, GridForge.Editor");
+
+            Assert.IsTrue(GetEditorDisplayPolicy(displayType, "QueryStatusIsReadOnly"));
+            Assert.IsTrue(GetEditorDisplayPolicy(displayType, "SelectedVoxelIsReadOnly"));
+        }
+
         private static GridWorld CreateWorldWithGrid(
             GridConfiguration config,
             VoxelIndex[] configuredVoxels,
@@ -231,5 +243,19 @@ namespace GridForge.Unity.Tests.EditMode
                 GridTopologyKind.HexPrism,
                 GridTopologyMetrics.Hex(Fixed64.One, Fixed64.One, HexOrientation.PointyTop),
                 storageKind);
+
+        private static Type RequireEditorType(string assemblyQualifiedName)
+        {
+            Type type = Type.GetType(assemblyQualifiedName);
+            Assert.IsNotNull(type, $"{assemblyQualifiedName} should exist for editor display policy tests.");
+            return type;
+        }
+
+        private static bool GetEditorDisplayPolicy(Type type, string propertyName)
+        {
+            PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(property, $"{type.Name}.{propertyName} should exist.");
+            return (bool)property.GetValue(null);
+        }
     }
 }

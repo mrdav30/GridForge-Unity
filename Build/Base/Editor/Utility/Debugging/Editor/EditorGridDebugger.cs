@@ -14,6 +14,12 @@ using UnityEditor;
 
 namespace GridForge.Utility.Debugging.Editor
 {
+    internal static class GridDebuggerEditorDisplay
+    {
+        internal static bool QueryStatusIsReadOnly => true;
+        internal static bool SelectedVoxelIsReadOnly => true;
+    }
+
     /// <summary>
     /// Custom Unity Editor inspector for <see cref="GridDebugger"/>.
     /// </summary>
@@ -129,11 +135,14 @@ namespace GridForge.Utility.Debugging.Editor
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Query Status", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Status", _debugger.LastQueryStatus.ToString());
-            EditorGUILayout.IntField("Cells", _debugger.LastQueryCellCount);
-            EditorGUILayout.IntField("Skipped", _debugger.LastQuerySkippedCellCount);
-            EditorGUILayout.IntField("Visited", _debugger.LastVisitedCellCount);
-            EditorGUILayout.IntField("Dirty Changes", _debugger.LastDirtyChangeCount);
+            using (new EditorGUI.DisabledScope(GridDebuggerEditorDisplay.QueryStatusIsReadOnly))
+            {
+                EditorGUILayout.EnumPopup("Status", _debugger.LastQueryStatus);
+                EditorGUILayout.IntField("Cells", _debugger.LastQueryCellCount);
+                EditorGUILayout.IntField("Skipped", _debugger.LastQuerySkippedCellCount);
+                EditorGUILayout.IntField("Visited", _debugger.LastVisitedCellCount);
+                EditorGUILayout.IntField("Dirty Changes", _debugger.LastDirtyChangeCount);
+            }
         }
 
         private void DrawSelectedVoxel()
@@ -149,11 +158,14 @@ namespace GridForge.Utility.Debugging.Editor
                 return;
             }
 
-            EditorGUILayout.Vector3Field("World Position", _debugger.SelectedVoxel.WorldPosition.ToVector3());
-            EditorGUILayout.Toggle("Occupied", _debugger.SelectedVoxel.IsOccupied);
-            EditorGUILayout.Toggle("Blocked", _debugger.SelectedVoxel.IsBlocked);
-            EditorGUILayout.Toggle("Boundary", _debugger.SelectedVoxel.IsBoundaryVoxel);
-            EditorGUILayout.LabelField("Spawn Token", _debugger.SelectedVoxel.SpawnToken.ToString());
+            using (new EditorGUI.DisabledScope(GridDebuggerEditorDisplay.SelectedVoxelIsReadOnly))
+            {
+                EditorGUILayout.Vector3Field("World Position", _debugger.SelectedVoxel.WorldPosition.ToVector3());
+                EditorGUILayout.Toggle("Occupied", _debugger.SelectedVoxel.IsOccupied);
+                EditorGUILayout.Toggle("Blocked", _debugger.SelectedVoxel.IsBlocked);
+                EditorGUILayout.Toggle("Boundary", _debugger.SelectedVoxel.IsBoundaryVoxel);
+                EditorGUILayout.LabelField("Spawn Token", _debugger.SelectedVoxel.SpawnToken.ToString());
+            }
         }
 
         private void UpdateGridIndexes()

@@ -289,6 +289,19 @@ namespace GridForge.Unity.Tests.EditMode
         }
 
         [Test]
+        public void GridConfigurationSaverInspectorShowsOnlyRelevantAuthoringSections()
+        {
+            Type visibilityType = RequireEditorType("GridForge.Configuration.Editor.GridConfigurationEditorVisibility, GridForge.Editor");
+
+            Assert.IsTrue(InvokeEditorPolicy(visibilityType, "ShouldDrawRectangularMetrics", GridTopologyKind.RectangularPrism));
+            Assert.IsFalse(InvokeEditorPolicy(visibilityType, "ShouldDrawHexMetrics", GridTopologyKind.RectangularPrism));
+            Assert.IsTrue(InvokeEditorPolicy(visibilityType, "ShouldDrawHexMetrics", GridTopologyKind.HexPrism));
+            Assert.IsFalse(InvokeEditorPolicy(visibilityType, "ShouldDrawRectangularMetrics", GridTopologyKind.HexPrism));
+            Assert.IsFalse(InvokeEditorPolicy(visibilityType, "ShouldDrawSparseVoxels", GridStorageKind.Dense));
+            Assert.IsTrue(InvokeEditorPolicy(visibilityType, "ShouldDrawSparseVoxels", GridStorageKind.Sparse));
+        }
+
+        [Test]
         public void AuthoringComponentsDoNotRetainLegacyVoxelSizeCompatibilityFields()
         {
             AssertNoLegacyVoxelSizeFields(typeof(GridConfigurationSaver));
@@ -323,6 +336,20 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 Object.DestroyImmediate(owner);
             }
+        }
+
+        private static Type RequireEditorType(string assemblyQualifiedName)
+        {
+            Type type = Type.GetType(assemblyQualifiedName);
+            Assert.IsNotNull(type, $"{assemblyQualifiedName} should exist for editor authoring policy tests.");
+            return type;
+        }
+
+        private static bool InvokeEditorPolicy(Type type, string methodName, object value)
+        {
+            MethodInfo method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(method, $"{type.Name}.{methodName} should exist.");
+            return (bool)method.Invoke(null, new[] { value });
         }
 
         private static void AssertSerializedFieldType(Type type, string fieldName, Type expectedType)
