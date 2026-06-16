@@ -39,11 +39,11 @@ namespace GridForge.Unity.Tests.EditMode
 
         [TestCase("com.mrdav30.gridforge", "V7Workflows.unity")]
         [TestCase("com.mrdav30.gridforge.lean", "V7Workflows.Lean.unity")]
-        public void PackagesContainV7WorkflowSceneAndPrefabs(string packageRoot, string sceneName)
+        public void PackagesKeepV7WorkflowCoverageInPrefabsWithoutExtraDemoScene(string packageRoot, string sceneName)
         {
             string sampleRoot = $"Assets/Packages/{packageRoot}/Samples/GridforgeDemo";
 
-            AssertAssetExists<SceneAsset>($"{sampleRoot}/Scenes/{sceneName}");
+            AssertAssetDoesNotExist<SceneAsset>($"{sampleRoot}/Scenes/{sceneName}");
             AssertWorkflowPrefabExists(sampleRoot, "DenseRectangular");
             AssertWorkflowPrefabExists(sampleRoot, "DenseHex");
             AssertWorkflowPrefabExists(sampleRoot, "SparseRectangular");
@@ -161,6 +161,13 @@ namespace GridForge.Unity.Tests.EditMode
             T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.NotNull(asset, $"Missing sample asset: {assetPath}");
             return asset;
+        }
+
+        private static void AssertAssetDoesNotExist<T>(string assetPath)
+            where T : UnityEngine.Object
+        {
+            T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+            Assert.IsNull(asset, $"Unexpected sample asset: {assetPath}");
         }
 
         private static Component AssertComponent(GameObject owner, string fullNameOrName)

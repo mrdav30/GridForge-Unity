@@ -165,7 +165,7 @@ namespace GridForge.Build.Editor
             CreateGridDebuggerPrefab(variant, types);
             CreateBlockerPrefab(variant, types);
             CreateDemoScene(variant);
-            CreateV7WorkflowsScene(variant);
+            DeleteObsoleteAsset(variant.ScenePath(variant.ObsoleteWorkflowSceneName));
         }
 
         private static void CreateWorkflowPrefab(
@@ -248,23 +248,6 @@ namespace GridForge.Build.Editor
             instance.transform.position = Vector3.zero;
 
             SaveScene(scene, variant.ScenePath(variant.DemoSceneName));
-        }
-
-        private static void CreateV7WorkflowsScene(PackageVariant variant)
-        {
-            Scene scene = CreateEmptySampleScene("GridForge v7 Workflows");
-            GameObject root = new("GridForge v7 Workflows");
-
-            for (int i = 0; i < Workflows.Length; i++)
-            {
-                WorkflowDefinition workflow = Workflows[i];
-                GameObject instance = InstantiatePrefab(variant.PrefabPath(workflow.Name));
-                instance.name = $"{workflow.Name} Workflow";
-                instance.transform.SetParent(root.transform, false);
-                instance.transform.localPosition = new Vector3((i - 2) * 7f, 0f, 0f);
-            }
-
-            SaveScene(scene, variant.ScenePath(variant.WorkflowSceneName));
         }
 
         private static Scene CreateEmptySampleScene(string rootName)
@@ -442,6 +425,15 @@ namespace GridForge.Build.Editor
                 throw new FileNotFoundException($"Sample prefab not found: {prefabAssetPath}");
 
             return (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        }
+
+        private static void DeleteObsoleteAsset(string assetPath)
+        {
+            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath) == null)
+                return;
+
+            if (!AssetDatabase.DeleteAsset(assetPath))
+                throw new InvalidOperationException($"Failed to delete obsolete sample asset: {assetPath}");
         }
 
         private static void SavePrefab(GameObject root, string assetPath)
@@ -679,20 +671,20 @@ namespace GridForge.Build.Editor
             public readonly string RuntimeAssemblyName;
             public readonly string SamplesAssemblyName;
             public readonly string DemoSceneName;
-            public readonly string WorkflowSceneName;
+            public readonly string ObsoleteWorkflowSceneName;
 
             public PackageVariant(
                 string rootAssetPath,
                 string runtimeAssemblyName,
                 string samplesAssemblyName,
                 string demoSceneName,
-                string workflowSceneName)
+                string obsoleteWorkflowSceneName)
             {
                 RootAssetPath = rootAssetPath;
                 RuntimeAssemblyName = runtimeAssemblyName;
                 SamplesAssemblyName = samplesAssemblyName;
                 DemoSceneName = demoSceneName;
-                WorkflowSceneName = workflowSceneName;
+                ObsoleteWorkflowSceneName = obsoleteWorkflowSceneName;
             }
 
             public string PrefabPath(string prefabName)

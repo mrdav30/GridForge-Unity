@@ -2,7 +2,8 @@
   "gridForgeCore": {
     "source": "local pre-release GridForge v7 build",
     "repository": "https://github.com/mrdav30/GridForge",
-    "commit": "866c91f6900c710d0cac561a7a01d08711f8e2ab",
+    "commit": "b5b2f3eb5f78995e1cefc230e14461660e0ce23a",
+    "workingTreeStatus": "Includes local uncommitted GridTracer.TraceLine fixes from src/GridForge/Utility/GridTracer.cs.",
     "standardBuildCommand": "dotnet build GridForge.slnx --configuration Release",
     "leanBuildCommand": "dotnet build GridForge.slnx --configuration ReleaseLean",
     "plugins": [
@@ -10,13 +11,13 @@
         "package": "com.mrdav30.gridforge",
         "path": "Plugins/GridForge.dll",
         "assemblyName": "GridForge, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
-        "sha256": "B5D6E13957620B4353C345EDB20C9BA27921642C5E8699E4EF632D1304A178B8"
+        "sha256": "A69485FE55D8A16E197F86CC96AB74DB678712ECF3B610A4A229E6BCC4F4DD15"
       },
       {
         "package": "com.mrdav30.gridforge.lean",
         "path": "Plugins/GridForge.dll",
         "assemblyName": "GridForge, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
-        "sha256": "F63BFC2EA2B651D3D6416BE9B0EC5D9E4500E3E6CF6EC1E29D7EB28E7A295E0D"
+        "sha256": "E7D529ECA785AD12B161A3339F4542903359DECF93692DDCA2F5E7A6CE503581"
       }
     ],
     "xmlDocumentation": [

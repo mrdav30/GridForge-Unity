@@ -12,11 +12,11 @@
 
 ## Status
 
-- Date: 2026-06-15.
+- Date: 2026-06-16.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
 - Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 and 6 are currently local worktree implementation.
-- Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop` at `866c91f`.
+- Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop`; embedded package DLLs now come from local HEAD `b5b2f3e` plus the uncommitted `GridTracer.TraceLine` fix captured below.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
 - This file is the migration progress ledger. Keep it current as phases land or as new release risks are discovered.
@@ -149,12 +149,12 @@
   - `SparseHex`
   - `MixedTopologyDiagnostics`
 - Regenerated legacy `SceneGridManager`, `GridDebugger`, `Blocker`, and `DemoScene` sample assets so they no longer carry stale debugger fields or v6-era authoring assumptions.
-- Added `V7Workflows.unity` and `V7Workflows.Lean.unity`, each instantiating all five v7 workflow prefabs.
+- Initially added `V7Workflows.unity` and `V7Workflows.Lean.unity`, each instantiating all five v7 workflow prefabs; removed during the 2026-06-16 review follow-up because those scenes were internal coverage clutter rather than useful public samples.
 - Configured the mixed diagnostics sample with four grids in one authored world, `GridDebugger` address mode `PhysicalAndMissing`, bounded diagnostics, `GridTracerTests` in XZ layer mode, `GridForgeUnityLogger`, and an XZ blocker child.
 - Follow-up hardening: Unity did not persist `FixedMathSharp.Fixed64` payloads inside `_savedGridConfigurations` while `Fixed64` was a readonly struct. Diagnostic probes in FixedMathSharp-Unity confirmed direct, nested, and list-held `Fixed64`/`Vector2d`/`Vector3d` values could drop to `{}`/zero under Unity serialization.
 - FixedMathSharp-Unity v5.0.1 removed that Unity serialization limitation by making `Fixed64.m_rawValue` public mutable package storage. GridForge then removed its temporary raw-`long` mirrors and the GridForge-specific fixed-value property drawer; `SerializableGridConfiguration` now serializes `Vector3d` bounds directly and `SerializableGridTopologyMetrics` serializes `Fixed64` metrics directly.
 - Added a generated-asset whitespace normalizer for prefabs/scenes only; Unity-owned `.meta` files are still generated and left untouched.
-- Added `GridForgeSampleWorkflowsEditModeTests.cs` covering sample workflow enum/API surface, v7 workflow prefab existence, topology/storage/sparse authoring, and mixed diagnostics debugger setup for both package variants.
+- Added `GridForgeSampleWorkflowsEditModeTests.cs` covering sample workflow enum/API surface, v7 workflow prefab existence, absence of extra workflow aggregation scenes, topology/storage/sparse authoring, and mixed diagnostics debugger setup for both package variants.
 - Synced the shared sample script from `Build/Base` into both standard and lean package variants before generating serialized sample assets.
 - Verification completed:
   - Initial RED Unity EditMode run: 29 passed, 8 failed on the expected missing Phase 6 workflow enum/API and assets.
@@ -174,6 +174,30 @@
   - stale sample scan for `_voxelFilter`, `_legacyVoxelSize`, `GridWorld(`, `new GridWorld`, `Voxel Size`, world-level voxel language, and `BoundingArea`: clean.
   - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
 - Next phase target: Phase 7, documentation and public user experience pass.
+
+### 2026-06-16 - Phase 6 Review Follow-Up And Core Trace Fix
+
+- Removed `V7Workflows.unity` and `V7Workflows.Lean.unity` from the public samples. The workflow prefabs remain the reusable coverage surface, while `DemoScene` remains the sample scene entry point.
+- Updated `GridForgeSampleAssetGenerator` so it does not recreate the workflow aggregation scenes and deletes the obsolete scene assets through `AssetDatabase.DeleteAsset(...)` when samples are regenerated. Unity owned the corresponding `.meta` deletions.
+- Updated `GridForgeSampleWorkflowsEditModeTests` to assert the workflow scenes are absent while all workflow prefabs remain present.
+- Confirmed the trace visualizer report was rooted in GridForge core, not Unity adapter code:
+  - `GridTracer.TraceLine` accepted candidate grids from the broadphase even when the actual line segment did not intersect the grid bounds, which let off-segment hex grids contribute traced cells.
+  - Hex tracing omitted the clamped grid-edge endpoint when the caller's end point was outside the grid, because endpoint inclusion was delegated to the global end voxel lookup.
+- Fixed `GridTracer.TraceLine` in core with deterministic fixed-point segment-vs-bounds filtering and hex endpoint inclusion that preserves `includeEnd: false` for real in-grid end voxels.
+- Added core regression tests for off-segment hex candidates, dense hex edge completion, sparse hex edge completion, and `includeEnd: false` semantics.
+- Added Unity visualizer regressions for mixed-topology off-segment grids and hex edge completion through the `GridTracerTests` component path.
+- Rebuilt standard and lean `GridForge.dll`/`.pdb` from local pre-release GridForge, copied the `netstandard2.1` artifacts into both package variants, and updated `.assets/gridforge-core-source.json` with the new DLL hashes plus a working-tree status note.
+- Verification completed:
+  - Core RED run before fix: 3 targeted `GridTracerTests` failures for off-segment hex candidate and dense/sparse hex edge endpoint cases.
+  - Core targeted `GridTracerTests`: pass, 38/38.
+  - Core full Debug tests: pass, 413/413.
+  - Core full ReleaseLean tests: pass, 415/415.
+  - Core `dotnet build GridForge.slnx --configuration Release`: pass, 0 warnings, 0 errors.
+  - Core `dotnet build GridForge.slnx --configuration ReleaseLean`: pass, 0 warnings, 0 errors.
+  - Unity RED sample-scene run before generator cleanup: 38 passed, 2 failed on the now-unwanted workflow scenes.
+  - `GridForgeSampleAssetGenerator.GenerateSamplesBatchMode`: pass; obsolete workflow scenes removed.
+  - Unity EditMode final run: pass, 42 total, 42 passed, 0 failed, 0 skipped.
+  - `.assets/scripts/test-gridforge-package-sync.ps1`: pass after normalizing the standard sample `SceneGridManager.cs` copy back to `Build/Base`.
 
 ## Source Material
 
@@ -595,7 +619,7 @@ git diff --check
 - Create: `Build/Editor/GridForgeSampleAssetGenerator.cs`
 - Create: `Tests/EditMode/GridForgeSampleWorkflowsEditModeTests.cs`
 - Create: dense rectangular, dense hex, sparse rectangular, sparse hex, and mixed diagnostics workflow prefabs for both package variants.
-- Create: `V7Workflows.unity` and `V7Workflows.Lean.unity`.
+- Remove: obsolete `V7Workflows.unity` and `V7Workflows.Lean.unity`; keep workflow coverage in prefabs and EditMode tests.
 
 **Recommended Samples:**
 
@@ -612,6 +636,7 @@ git diff --check
 - [x] Show the debugger configured for physical cells and missing sparse address cells.
 - [x] Keep standard and lean sample assets in sync while preserving package-specific GUIDs.
 - [x] Run package sync before touching serialized sample assets so managed-code drift is gone.
+- [x] Avoid extra sample scenes that exist only to aggregate workflow prefabs for internal coverage.
 
 **Exit Criteria:**
 
