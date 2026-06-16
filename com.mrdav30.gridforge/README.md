@@ -1,6 +1,6 @@
 # GridForge For Unity
 
-Default Unity adapter package for GridForge v7.
+Default Unity adapter package for GridForge.
 
 Install through Unity Package Manager:
 
@@ -36,14 +36,14 @@ https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcol
 5. Assign the intended `GridWorldComponent` on `BlockerComponent`,
    `GridDebugger`, and `Grid Trace Visualizer` when a scene has multiple worlds.
 
-The package sample named `Demo Scene` shows the v7 workflows in Unity:
+The package sample named `Demo Scene` shows the workflows in Unity:
 rectangular grids, hex grids, sparse grids, diagnostics, blockers, tracing, and
 optional Unity logging.
 
 ## Docs
 
-- Unity v7 guide:
-  [../.docs/wiki/GridForge-Unity-v7-User-Guide.md](../.docs/wiki/GridForge-Unity-v7-User-Guide.md)
+- Unity guide:
+  [../.docs/wiki/GridForge-Unity-User-Guide.md](../.docs/wiki/GridForge-Unity-User-Guide.md)
 - Package selection and maintenance:
   [../README.md](../README.md)
 - Core GridForge wiki:

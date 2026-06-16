@@ -43,18 +43,20 @@ Fresh-import validation should check the settled compile after the bootstrap
 updates the manifest. A first pass can log transient unresolved plugin
 references before dependency resolution completes; the second pass must be clean.
 
+CI uses `.assets/scripts/new-gridforge-ci-test-project.ps1` to build the
+temporary Unity smoke project for each package variant. Keep that generator in
+sync with `.assets/unity-package-versions.json`; do not hand-write dependency
+URLs or test assembly references directly in the workflow.
+
 ## Core DLL Intake
 
-Until GridForge v7 is released, the package `Plugins/GridForge.dll` and
-`Plugins/GridForge.xml` files are sourced from local core builds:
+The package `Plugins/GridForge.dll` and `Plugins/GridForge.xml` files are
+sourced from GridForge release builds:
 
 ```powershell
 dotnet build F:\gamedevrepos\GridForge -c Release
 dotnet build F:\gamedevrepos\GridForge -c ReleaseLean
 ```
-
-After updating embedded DLL/XML files, record the core commit and hashes in
-`.assets/gridforge-core-source.json`.
 
 ## Required Validation
 

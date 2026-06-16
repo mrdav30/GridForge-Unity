@@ -1,6 +1,6 @@
-# GridForge Unity v7 User Guide
+# GridForge Unity User Guide
 
-This guide covers the Unity-facing workflow for GridForge v7. For engine-neutral
+This guide covers the Unity-facing workflow for GridForge. For engine-neutral
 core behavior, use the GridForge wiki:
 
 - [Getting Started](https://github.com/mrdav30/GridForge/wiki/Getting-Started)
@@ -86,7 +86,7 @@ public sealed class GridBootstrap : MonoBehaviour
 ```
 
 The package sample uses `SceneGridManager` for this bootstrap and to switch
-between the included v7 workflow demonstrations.
+between the included workflow demonstrations.
 
 ## Rectangular Grid Authoring
 

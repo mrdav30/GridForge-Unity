@@ -51,14 +51,12 @@ namespace GridForge.Build.Editor
                 "Assets/Packages/com.mrdav30.gridforge",
                 "GridForge.Runtime",
                 "GridForge.Samples",
-                "DemoScene.unity",
-                "V7Workflows.unity"),
+                "DemoScene.unity"),
             new(
                 "Assets/Packages/com.mrdav30.gridforge.lean",
                 "GridForge.Lean.Runtime",
                 "GridForge.Lean.Samples",
-                "DemoScene.Lean.unity",
-                "V7Workflows.Lean.unity")
+                "DemoScene.Lean.unity")
         };
 
         private static readonly WorkflowDefinition[] Workflows =
@@ -120,7 +118,7 @@ namespace GridForge.Build.Editor
                 includeDiagnostics: true)
         };
 
-        [MenuItem("Tools/GridForge/Generate v7 Sample Assets")]
+        [MenuItem("Tools/GridForge/Generate Sample Assets")]
         public static void GenerateSamplesMenu()
         {
             GenerateSamples();
@@ -150,7 +148,7 @@ namespace GridForge.Build.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Debug.Log("GridForge v7 sample assets generated.");
+            Debug.Log("GridForge sample assets generated.");
         }
 
         private static void GeneratePackageSamples(PackageVariant variant)
@@ -243,7 +241,7 @@ namespace GridForge.Build.Editor
         {
             Scene scene = CreateEmptySampleScene("GridForge Demo");
             GameObject instance = InstantiatePrefab(variant.PrefabPath("MixedTopologyDiagnostics"));
-            instance.name = "GridForge v7 Diagnostics Demo";
+            instance.name = "GridForge Diagnostics Demo";
             instance.transform.position = Vector3.zero;
 
             SaveScene(scene, variant.ScenePath(variant.DemoSceneName));
@@ -426,7 +424,7 @@ namespace GridForge.Build.Editor
 
         private static void DeleteObsoleteAsset(string assetPath)
         {
-            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath) == null)
+            if (string.IsNullOrEmpty(assetPath) || AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath) == null)
                 return;
 
             if (!AssetDatabase.DeleteAsset(assetPath))
@@ -687,7 +685,7 @@ namespace GridForge.Build.Editor
                 string runtimeAssemblyName,
                 string samplesAssemblyName,
                 string demoSceneName,
-                string obsoleteWorkflowSceneName)
+                string obsoleteWorkflowSceneName = null)
             {
                 RootAssetPath = rootAssetPath;
                 RuntimeAssemblyName = runtimeAssemblyName;

@@ -5,11 +5,8 @@
 - The actual Git repo root is the `Assets/Packages` directory, not the outer Unity project root.
 - This repo ships two Unity Package Manager variants:
   `com.mrdav30.gridforge` and `com.mrdav30.gridforge.lean`.
-- Both package variants are currently being migrated to GridForge `v7.0.0`.
+- Both package variants are currently using GridForge `v7.0.0`.
 - The old `.variants/` workflow is retired and should not be reintroduced.
-- The v7 migration ledger lives at
-  `.docs/feature-work/2026-06-15-gridforge-v7-unity-package-migration-battle-plan.md`.
-  Keep it current when phase scope, status, risks, or verification change.
 
 ## Source Of Truth
 
@@ -57,9 +54,7 @@
   fields, custom FixedMathSharp drawers, or GridForge-specific serialized
   collection variants when FixedMathSharp-Unity or SwiftCollections-Unity
   already owns that problem.
-- Do not preserve v6 compatibility state unless explicitly requested. This v7
-  migration intentionally removes legacy authoring such as world-level voxel
-  size fields.
+- Do not preserve compatibility state unless explicitly requested.
 
 ## Tooling
 
@@ -113,7 +108,7 @@
 - Keep deterministic math in FixedMathSharp and GridForge types. Convert Unity
   `float`, `Vector2`, `Vector3`, `Bounds`, `Transform`, collider, and renderer
   data at the adapter boundary only.
-- Prefer GridForge v7 APIs for topology, storage, diagnostics, tracing, and
+- Prefer GridForge APIs for topology, storage, diagnostics, tracing, and
   logging. For debugging visuals, consume `GridForge.Diagnostics` geometry and
   descriptors instead of recreating rectangular-only loops in Unity code.
 - Keep this repo focused on Unity integration instead of re-implementing GridForge core behavior here.

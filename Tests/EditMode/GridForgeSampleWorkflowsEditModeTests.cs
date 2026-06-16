@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -15,9 +16,8 @@ namespace GridForge.Unity.Tests.EditMode
         private const int Sparse = 1;
         private const int PhysicalAndMissing = 1;
 
-        [TestCase("GridForge.Samples")]
-        [TestCase("GridForge.Lean.Samples")]
-        public void SceneGridManagerExposesV7WorkflowChoices(string sampleAssemblyName)
+        [TestCaseSource(nameof(SampleAssemblyNames))]
+        public void SceneGridManagerExposeWorkflowChoices(string sampleAssemblyName)
         {
             Type workflowType = FindType(sampleAssemblyName, "GridForgeSampleWorkflow");
             Type managerType = FindType(sampleAssemblyName, "SceneGridManager");
@@ -37,11 +37,10 @@ namespace GridForge.Unity.Tests.EditMode
             Assert.NotNull(managerType.GetMethod("ApplyAuthoringToWorld", BindingFlags.Instance | BindingFlags.Public));
         }
 
-        [TestCase("com.mrdav30.gridforge")]
-        [TestCase("com.mrdav30.gridforge.lean")]
-        public void WorkflowPrefabsUseV7AuthoringComponents(string packageRoot)
+        [TestCaseSource(nameof(PackageRoots))]
+        public void WorkflowPrefabsUseAuthoringComponents(string packageRoot)
         {
-            string prefabRoot = $"Assets/Packages/{packageRoot}/Samples/GridforgeDemo/Prefabs";
+            string prefabRoot = $"{GetPackageAssetRoot(packageRoot)}/Samples/GridforgeDemo/Prefabs";
 
             AssertWorkflowConfig(
                 $"{prefabRoot}/DenseRectangular.prefab",
@@ -84,12 +83,11 @@ namespace GridForge.Unity.Tests.EditMode
                 expectedSparseCount: null);
         }
 
-        [TestCase("com.mrdav30.gridforge")]
-        [TestCase("com.mrdav30.gridforge.lean")]
+        [TestCaseSource(nameof(PackageRoots))]
         public void MixedDiagnosticsPrefabShowsPhysicalAndMissingSparseCells(string packageRoot)
         {
             GameObject prefab = AssertAssetExists<GameObject>(
-                $"Assets/Packages/{packageRoot}/Samples/GridforgeDemo/Prefabs/MixedTopologyDiagnostics.prefab");
+                $"{GetPackageAssetRoot(packageRoot)}/Samples/GridforgeDemo/Prefabs/MixedTopologyDiagnostics.prefab");
 
             Component debugger = AssertComponent(prefab, "GridForge.Utility.GridDebugger");
             SerializedObject serializedDebugger = new(debugger);
@@ -101,6 +99,30 @@ namespace GridForge.Unity.Tests.EditMode
 
             AssertComponent(prefab, "GridForge.Utility.GridTracerTests");
             AssertComponent(prefab, "GridForge.Utility.GridForgeUnityLogger");
+        }
+
+        private static IEnumerable<string> SampleAssemblyNames()
+        {
+#if GRIDFORGE_TEST_STANDARD_ONLY
+            yield return "GridForge.Samples";
+#elif GRIDFORGE_TEST_LEAN_ONLY
+            yield return "GridForge.Lean.Samples";
+#else
+            yield return "GridForge.Samples";
+            yield return "GridForge.Lean.Samples";
+#endif
+        }
+
+        private static IEnumerable<string> PackageRoots()
+        {
+#if GRIDFORGE_TEST_STANDARD_ONLY
+            yield return "com.mrdav30.gridforge";
+#elif GRIDFORGE_TEST_LEAN_ONLY
+            yield return "com.mrdav30.gridforge.lean";
+#else
+            yield return "com.mrdav30.gridforge";
+            yield return "com.mrdav30.gridforge.lean";
+#endif
         }
 
         private static void AssertWorkflowConfig(
@@ -140,6 +162,19 @@ namespace GridForge.Unity.Tests.EditMode
             T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.NotNull(asset, $"Missing sample asset: {assetPath}");
             return asset;
+        }
+
+        private static string GetPackageAssetRoot(string packageRoot)
+        {
+            string embeddedRoot = $"Assets/Packages/{packageRoot}";
+            if (AssetDatabase.IsValidFolder(embeddedRoot))
+                return embeddedRoot;
+
+            string packageManagerRoot = $"Packages/{packageRoot}";
+            if (AssetDatabase.IsValidFolder(packageManagerRoot))
+                return packageManagerRoot;
+
+            return embeddedRoot;
         }
 
         private static Component AssertComponent(GameObject owner, string fullNameOrName)

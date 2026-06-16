@@ -1,6 +1,6 @@
 # GridForge-Unity
 
-Unity Package Manager host for [GridForge](https://github.com/mrdav30/GridForge) v7.
+Unity Package Manager host for [GridForge](https://github.com/mrdav30/GridForge).
 
 GridForge remains an engine-agnostic deterministic grid library. This repository
 contains Unity adapters, samples, inspectors, package metadata, and embedded
@@ -28,8 +28,8 @@ Both variants target Unity `2022.3+`.
    - `Tools > GridForge > Repair Dependencies` for the standard package.
    - `Tools > GridForge.Lean > Repair Dependencies` for the lean package.
 4. Import the package sample named `Demo Scene`.
-5. Read the Unity v7 guide:
-   [.docs/wiki/GridForge-Unity-v7-User-Guide.md](.docs/wiki/GridForge-Unity-v7-User-Guide.md).
+5. Read the Unity guide:
+   [.docs/wiki/GridForge-Unity-User-Guide.md](.docs/wiki/GridForge-Unity-User-Guide.md).
 
 ## What Ships
 
@@ -49,7 +49,7 @@ debuggers, and trace tools instead of relying on automatic scene lookup.
 ## Docs
 
 - Unity guide:
-  [.docs/wiki/GridForge-Unity-v7-User-Guide.md](.docs/wiki/GridForge-Unity-v7-User-Guide.md)
+  [.docs/wiki/GridForge-Unity-User-Guide.md](.docs/wiki/GridForge-Unity-User-Guide.md)
 - Package maintenance:
   [.docs/wiki/GridForge-Unity-Package-Maintenance.md](.docs/wiki/GridForge-Unity-Package-Maintenance.md)
 - Standard package README:
@@ -78,8 +78,3 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\sync-gridforge-uni
 pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\export-gridforge-unity-packages.ps1 -WhatIf
 git diff --check
 ```
-
-Until GridForge v7 is released, the embedded `Plugins/GridForge.dll` and
-`Plugins/GridForge.xml` files are sourced from local GridForge `Release` and
-`ReleaseLean` builds. The source commit and DLL/XML hashes are tracked in
-`.assets/gridforge-core-source.json`.

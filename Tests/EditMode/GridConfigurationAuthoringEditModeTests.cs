@@ -162,7 +162,7 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void SavedGridConfigurationsPersistFixedAuthoringValuesThroughUnitySerialization()
         {
-            const string tempRoot = "Assets/Packages/Temp";
+            const string tempRoot = "Assets/Temp";
             const string testFolder = tempRoot + "/GridForgeSerializationTests";
             const string assetPath = testFolder + "/GridConfigurationSerializationRoundTrip.prefab";
 
@@ -186,7 +186,7 @@ namespace GridForge.Unity.Tests.EditMode
 
                 if (!AssetDatabase.IsValidFolder(tempRoot))
                 {
-                    AssetDatabase.CreateFolder("Assets/Packages", "Temp");
+                    AssetDatabase.CreateFolder("Assets", "Temp");
                     createdTempRoot = true;
                 }
 
@@ -227,7 +227,7 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void FixedMathSharpAuthoringValuesPersistThroughUnitySerialization()
         {
-            const string tempRoot = "Assets/Packages/Temp";
+            const string tempRoot = "Assets/Temp";
             const string testFolder = tempRoot + "/FixedMathSharpSerializationTests";
             const string assetPath = testFolder + "/FixedMathSharpSerializationRoundTrip.asset";
 
@@ -246,7 +246,7 @@ namespace GridForge.Unity.Tests.EditMode
 
                 if (!AssetDatabase.IsValidFolder(tempRoot))
                 {
-                    AssetDatabase.CreateFolder("Assets/Packages", "Temp");
+                    AssetDatabase.CreateFolder("Assets", "Temp");
                     createdTempRoot = true;
                 }
 
@@ -294,7 +294,8 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void GridConfigurationSaverInspectorShowsOnlyRelevantAuthoringSections()
         {
-            Type visibilityType = RequireEditorType("GridForge.Configuration.Editor.GridConfigurationEditorVisibility, GridForge.Editor");
+            Type visibilityType = RequireEditorType(
+                $"GridForge.Configuration.Editor.GridConfigurationEditorVisibility, {GridForgeEditorAssemblyName}");
 
             Assert.IsTrue(InvokeEditorPolicy(visibilityType, "ShouldDrawRectangularMetrics", GridTopologyKind.RectangularPrism));
             Assert.IsFalse(InvokeEditorPolicy(visibilityType, "ShouldDrawHexMetrics", GridTopologyKind.RectangularPrism));
@@ -340,6 +341,13 @@ namespace GridForge.Unity.Tests.EditMode
             Assert.IsNotNull(type, $"{assemblyQualifiedName} should exist for editor authoring policy tests.");
             return type;
         }
+
+        private static string GridForgeEditorAssemblyName =>
+#if GRIDFORGE_TEST_LEAN_ONLY
+            "GridForge.Lean.Editor";
+#else
+            "GridForge.Editor";
+#endif
 
         private static bool InvokeEditorPolicy(Type type, string methodName, object value)
         {

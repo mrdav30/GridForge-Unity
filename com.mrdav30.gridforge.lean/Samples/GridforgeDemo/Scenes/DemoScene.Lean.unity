@@ -266,7 +266,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6761387299096628251, guid: 51c1fc765caecfc4d80c61597215812a, type: 3}
       propertyPath: m_Name
-      value: GridForge v7 Diagnostics Demo
+      value: GridForge Diagnostics Demo
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

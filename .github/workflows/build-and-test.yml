@@ -32,12 +32,10 @@ jobs:
           - package_display_name: GridForge
             package_name: com.mrdav30.gridforge
             package_path: com.mrdav30.gridforge
-            runtime_assembly: GridForge.Runtime
             artifact_suffix: standard
           - package_display_name: GridForge Lean
             package_name: com.mrdav30.gridforge.lean
             package_path: com.mrdav30.gridforge.lean
-            runtime_assembly: GridForge.Lean.Runtime
             artifact_suffix: lean
 
     steps:
@@ -63,72 +61,18 @@ jobs:
           ./.assets/scripts/test-gridforge-package-sync.ps1
 
       - name: Prepare Unity test project
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-
-          project_path=".ci/unity-project"
-          rm -rf "$project_path"
-          mkdir -p "$project_path/Assets/Tests/EditMode"
-          mkdir -p "$project_path/Packages"
-          mkdir -p "$project_path/ProjectSettings"
-
-          shopt -s nullglob
-          editmode_tests=(Tests/EditMode/*.cs)
-          if [ ${#editmode_tests[@]} -eq 0 ]; then
-            echo "::error::No EditMode test sources found under Tests/EditMode."
-            exit 1
-          fi
-
-          cp "${editmode_tests[@]}" "$project_path/Assets/Tests/EditMode/"
-
-          cat > "$project_path/Assets/Tests/EditMode/GridForge.Unity.Tests.EditMode.asmdef" <<JSON
-          {
-              "name": "GridForge.Unity.Tests.EditMode",
-              "references": [
-                  "${{ matrix.runtime_assembly }}",
-                  "UnityEngine.TestRunner",
-                  "UnityEditor.TestRunner"
-              ],
-              "includePlatforms": [
-                  "Editor"
-              ],
-              "excludePlatforms": [],
-              "allowUnsafeCode": false,
-              "overrideReferences": true,
-              "precompiledReferences": [
-                  "nunit.framework.dll",
-                  "GridForge.dll"
-              ],
-              "autoReferenced": false,
-              "defineConstraints": [
-                  "UNITY_INCLUDE_TESTS"
-              ],
-              "versionDefines": []
-          }
-          JSON
-
-          cat > "$project_path/Packages/manifest.json" <<JSON
-          {
-            "dependencies": {
-              "${{ matrix.package_name }}": "file:../../../${{ matrix.package_path }}",
-              "com.unity.modules.imgui": "1.0.0",
-              "com.unity.modules.physics": "1.0.0",
-              "com.unity.test-framework": "1.6.0"
-            }
-          }
-          JSON
-
-          cat > "$project_path/ProjectSettings/ProjectVersion.txt" <<'EOF'
-          m_EditorVersion: 6000.3.9f1
-          m_EditorVersionWithRevision: 6000.3.9f1 (7a9955a4f2fa)
-          EOF
+          ./.assets/scripts/new-gridforge-ci-test-project.ps1 `
+            -ProjectPath ".ci/unity-project" `
+            -PackageName "${{ matrix.package_name }}" `
+            -PackagePath "${{ matrix.package_path }}"
 
       - name: Cache Unity Library
         uses: actions/cache@v5
         with:
           path: .ci/unity-project/Library
-          key: unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('Tests/EditMode/**/*.cs', 'Tests/EditMode/**/*.asmdef', 'com.mrdav30.gridforge/**/*.cs', 'com.mrdav30.gridforge/**/*.asmdef', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge.lean/**/*.cs', 'com.mrdav30.gridforge.lean/**/*.asmdef', 'com.mrdav30.gridforge.lean/package.json') }}
+          key: unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('Tests/EditMode/**/*.cs', 'Tests/EditMode/**/*.asmdef', '.assets/unity-package-versions.json', '.assets/scripts/new-gridforge-ci-test-project.ps1', 'com.mrdav30.gridforge/**/*.cs', 'com.mrdav30.gridforge/**/*.asmdef', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge.lean/**/*.cs', 'com.mrdav30.gridforge.lean/**/*.asmdef', 'com.mrdav30.gridforge.lean/package.json') }}
           restore-keys: |
             unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-
 

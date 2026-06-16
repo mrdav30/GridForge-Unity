@@ -200,7 +200,8 @@ namespace GridForge.Unity.Tests.EditMode
         [Test]
         public void GridDebuggerInspectorTreatsRuntimeStatusAsReadOnly()
         {
-            Type displayType = RequireEditorType("GridForge.Utility.Debugging.Editor.GridDebuggerEditorDisplay, GridForge.Editor");
+            Type displayType = RequireEditorType(
+                $"GridForge.Utility.Debugging.Editor.GridDebuggerEditorDisplay, {GridForgeEditorAssemblyName}");
 
             Assert.IsTrue(GetEditorDisplayPolicy(displayType, "QueryStatusIsReadOnly"));
             Assert.IsTrue(GetEditorDisplayPolicy(displayType, "SelectedVoxelIsReadOnly"));
@@ -250,6 +251,13 @@ namespace GridForge.Unity.Tests.EditMode
             Assert.IsNotNull(type, $"{assemblyQualifiedName} should exist for editor display policy tests.");
             return type;
         }
+
+        private static string GridForgeEditorAssemblyName =>
+#if GRIDFORGE_TEST_LEAN_ONLY
+            "GridForge.Lean.Editor";
+#else
+            "GridForge.Editor";
+#endif
 
         private static bool GetEditorDisplayPolicy(Type type, string propertyName)
         {
