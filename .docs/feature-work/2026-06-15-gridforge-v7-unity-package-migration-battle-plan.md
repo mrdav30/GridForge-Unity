@@ -15,7 +15,7 @@
 - Date: 2026-06-15.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
-- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phase 5 is currently local worktree implementation.
+- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 and 6 are currently local worktree implementation.
 - Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop` at `866c91f`.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
@@ -136,7 +136,44 @@
   - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
   - `export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
   - `git diff --check`: no whitespace errors.
-- Next phase target: Phase 6, rebuild samples around v7 workflows.
+- Next phase target at the time: Phase 6, rebuild samples around v7 workflows.
+
+### 2026-06-15 - Phase 6 v7 Sample Workflow Rebuild
+
+- Added `GridForgeSampleWorkflow` and a public `ApplyAuthoringToWorld()` method to the sample `SceneGridManager`, keeping sample runtime code small and centered on `GridConfigurationSaver` plus `GridWorldComponent`.
+- Added `GridForgeSampleAssetGenerator`, an Editor-only build utility that generates sample prefabs and scenes through Unity APIs while resolving standard and lean runtime/sample types by assembly name to avoid package variant type collisions.
+- Generated v7 sample workflow prefabs for both package variants:
+  - `DenseRectangular`
+  - `DenseHex`
+  - `SparseRectangular`
+  - `SparseHex`
+  - `MixedTopologyDiagnostics`
+- Regenerated legacy `SceneGridManager`, `GridDebugger`, `Blocker`, and `DemoScene` sample assets so they no longer carry stale debugger fields or v6-era authoring assumptions.
+- Added `V7Workflows.unity` and `V7Workflows.Lean.unity`, each instantiating all five v7 workflow prefabs.
+- Configured the mixed diagnostics sample with four grids in one authored world, `GridDebugger` address mode `PhysicalAndMissing`, bounded diagnostics, `GridTracerTests` in XZ layer mode, `GridForgeUnityLogger`, and an XZ blocker child.
+- Follow-up hardening: Unity did not persist `FixedMathSharp.Fixed64` payloads inside `_savedGridConfigurations` while `Fixed64` was a readonly struct. Diagnostic probes in FixedMathSharp-Unity confirmed direct, nested, and list-held `Fixed64`/`Vector2d`/`Vector3d` values could drop to `{}`/zero under Unity serialization.
+- FixedMathSharp-Unity v5.0.1 removed that Unity serialization limitation by making `Fixed64.m_rawValue` public mutable package storage. GridForge then removed its temporary raw-`long` mirrors and the GridForge-specific fixed-value property drawer; `SerializableGridConfiguration` now serializes `Vector3d` bounds directly and `SerializableGridTopologyMetrics` serializes `Fixed64` metrics directly.
+- Added a generated-asset whitespace normalizer for prefabs/scenes only; Unity-owned `.meta` files are still generated and left untouched.
+- Added `GridForgeSampleWorkflowsEditModeTests.cs` covering sample workflow enum/API surface, v7 workflow prefab existence, topology/storage/sparse authoring, and mixed diagnostics debugger setup for both package variants.
+- Synced the shared sample script from `Build/Base` into both standard and lean package variants before generating serialized sample assets.
+- Verification completed:
+  - Initial RED Unity EditMode run: 29 passed, 8 failed on the expected missing Phase 6 workflow enum/API and assets.
+  - `GridForgeSampleAssetGenerator.GenerateSamplesBatchMode`: pass after resolving FixedMathSharp value construction through runtime constructor reflection.
+  - Follow-up RED evidence for authoring serialization: direct `Fixed64`/`Vector2d`/`Vector3d` fields serialized as `{}` through both Unity JSON serializer paths when `Fixed64` remained readonly.
+  - FixedMathSharp-Unity v5.0.1 cleanup RED: 39/40 passed, with the lone failure requiring GridForge authoring to remove `_boundsMinXRaw`/raw metric mirror fields.
+  - Direct FixedMathSharp serialization probe now covers scalar, vector, nested struct, and list-held values through a Unity `ScriptableObject` asset round trip.
+  - Final Unity EditMode run without `-quit`: pass, 40 total, 40 passed, 0 failed, 0 skipped after direct FixedMathSharp authoring storage and sample regeneration.
+  - `.assets/scripts/sync-gridforge-unity-packages.ps1`: pass, 0 copied, 0 deleted, 0 removed files after generation.
+  - `.assets/scripts/test-gridforge-package-sync.ps1`: pass.
+  - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
+  - Follow-up FixedMathSharp-Unity drawer adapter check: `GridForge.Editor.csproj`, `GridForge.Lean.Editor.csproj`, and `GridForge.Build.csproj` build; `GridForge.Build.csproj` still has the pre-existing package-manifest field warnings.
+  - `.assets/scripts/test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `.assets/scripts/export-gridforge-unity-packages.ps1 -WhatIf`: resolves Unity/project/export command.
+  - sample YAML scan for empty fixed authoring payloads (`_boundsMin: {}`, `_boundsMax: {}`, `_rectangularCellWidth: {}`, `_hexRadius: {}`): clean.
+  - stale sample scan for `_voxelFilter`, `_legacyVoxelSize`, `GridWorld(`, `new GridWorld`, `Voxel Size`, world-level voxel language, and `BoundingArea`: clean.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Next phase target: Phase 7, documentation and public user experience pass.
 
 ## Source Material
 
@@ -196,7 +233,7 @@
 
 - Both package manifests now report `7.0.0`.
 - Both package folders contain updated `GridForge.dll`, `.pdb`, and `.xml` files exposing v7 topology, storage, diagnostics, and logging APIs.
-- Dependency version config targets FixedMathSharp Unity v5.0.0 and SwiftCollections Unity v5.0.0.
+- Dependency version config targets FixedMathSharp Unity v5.0.1 and SwiftCollections Unity v5.0.1.
 - PowerShell wrappers exist for version sync, package sync, and `.unitypackage` export.
 - Unity CI scaffolding exists for standard and lean package EditMode test matrices.
 - Phase 3 rebuilt `GridDebugger` on `GridForge.Diagnostics`, including topology-aware rectangular/hex drawing, sparse missing-address descriptors, query bounds, max-cell status, and physical-only selected-cell resolution.
@@ -398,8 +435,10 @@ git diff --check
 - [x] Sparse hex configured axial indices are passed into `TryAddGrid`.
 - [x] Invalid scan cell size clamps or resolves to `GridConfiguration.DefaultScanCellSize`.
 - [x] Invalid metrics are rejected before world registration.
+- [x] Saved grid configurations persist fixed-point bounds and topology metrics through Unity prefab serialization.
 
 > 2026-06-15 follow-up: the local TestRunner issue was caused by passing `-quit` with `-runTests`. `.assets/scripts/run-gridforge-unity-editmode-tests.ps1` omits `-quit`, produces a result XML, and currently reports 10/10 EditMode tests passing.
+> 2026-06-15 follow-up: `FixedMathSharp.Fixed64` values were not safe as direct Unity serialized storage while the type remained readonly. FixedMathSharp-Unity v5.0.1 now publishes mutable Unity package storage for `m_rawValue`, so GridForge authoring again stores `Fixed64` and `Vector3d` directly instead of carrying private raw mirrors.
 
 **Exit Criteria:**
 
@@ -546,14 +585,17 @@ git diff --check
 
 **Goal:** Make samples teach the package's real v7 value instead of only proving that a rectangular demo scene opens.
 
+**Execution Status:** Implemented locally as of 2026-06-15; verified through Unity EditMode tests, generated project build, package sync validation, and package maintenance scripts.
+
 **Files:**
 
 - Modify: `Build/Base/Samples/GridforgeDemo/Scripts/SceneGridManager.cs`
 - Modify: `com.mrdav30.gridforge/Samples/GridforgeDemo`
 - Modify: `com.mrdav30.gridforge.lean/Samples/GridforgeDemo`
-- Create: sample scene or prefab for dense hex grids.
-- Create: sample scene or prefab for sparse grids.
-- Create: sample scene or prefab for diagnostics/debugger usage.
+- Create: `Build/Editor/GridForgeSampleAssetGenerator.cs`
+- Create: `Tests/EditMode/GridForgeSampleWorkflowsEditModeTests.cs`
+- Create: dense rectangular, dense hex, sparse rectangular, sparse hex, and mixed diagnostics workflow prefabs for both package variants.
+- Create: `V7Workflows.unity` and `V7Workflows.Lean.unity`.
 
 **Recommended Samples:**
 
@@ -565,17 +607,17 @@ git diff --check
 
 **Work:**
 
-- [ ] Keep sample code small and explicit.
-- [ ] Use `GridWorldComponent` plus authoring components rather than ad hoc runtime construction where possible.
-- [ ] Show the debugger configured for physical cells and missing sparse address cells.
-- [ ] Keep standard and lean sample assets in sync while preserving package-specific GUIDs.
-- [ ] Run package sync before touching serialized sample assets so managed-code drift is gone.
+- [x] Keep sample code small and explicit.
+- [x] Use `GridWorldComponent` plus authoring components rather than ad hoc runtime construction where possible.
+- [x] Show the debugger configured for physical cells and missing sparse address cells.
+- [x] Keep standard and lean sample assets in sync while preserving package-specific GUIDs.
+- [x] Run package sync before touching serialized sample assets so managed-code drift is gone.
 
 **Exit Criteria:**
 
-- Importing either package gives users an obvious v7 path: rectangular, hex, sparse, diagnostics.
-- Samples do not install both variants together.
-- Samples do not teach stale v6 constructors or world-level voxel-size concepts.
+- [x] Importing either package gives users an obvious v7 path: rectangular, hex, sparse, diagnostics.
+- [x] Samples do not install both variants together.
+- [x] Samples do not teach stale v6 constructors or world-level voxel-size concepts.
 
 ## Phase 7: Documentation And Public User Experience Pass
 

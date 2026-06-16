@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5048625497584760286
+--- !u!1 &4527970102579054657
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,63 +8,63 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1501001554770277346}
-  - component: {fileID: 1179012785331720637}
-  - component: {fileID: 4980361377559853614}
-  - component: {fileID: 6854994468277239238}
+  - component: {fileID: 5991296250070615995}
+  - component: {fileID: 3741554802196314168}
+  - component: {fileID: 2678633887605246805}
+  - component: {fileID: 8993913701859273670}
   m_Layer: 0
-  m_Name: SceneGridManager
+  m_Name: SparseHex
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1501001554770277346
+--- !u!4 &5991296250070615995
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 4527970102579054657}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4488707830062004407}
+  - {fileID: 8869053740109179101}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1179012785331720637
+--- !u!114 &3741554802196314168
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 4527970102579054657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2054855da532764b98a918f14ded7fc, type: 3}
+  m_Script: {fileID: 11500000, guid: 6dbdb1512c48d3d45b31ed705cdfe943, type: 3}
   m_Name:
-  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
+  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 16
   _savedGridConfigurations:
   - _boundsMin:
       X:
-        m_rawValue: -25769803776
+        m_rawValue: 0
       Y:
         m_rawValue: 0
       Z:
-        m_rawValue: -25769803776
+        m_rawValue: 0
     _boundsMax:
       X:
-        m_rawValue: 25769803776
+        m_rawValue: 42949672960
       Y:
         m_rawValue: 4294967296
       Z:
-        m_rawValue: 25769803776
+        m_rawValue: 42949672960
     _scanCellSize: 4
-    _topologyKind: 0
+    _topologyKind: 1
     _topologyMetrics:
       _rectangularCellWidth:
         m_rawValue: 4294967296
@@ -77,39 +77,54 @@ MonoBehaviour:
       _hexLayerHeight:
         m_rawValue: 4294967296
       _hexOrientation: 1
-    _storageKind: 0
+    _storageKind: 1
     _configuredSparseVoxels:
-      _indices: []
+      _indices:
+      - _x: 0
+        _y: 0
+        _z: 0
+      - _x: 1
+        _y: 0
+        _z: 0
+      - _x: 0
+        _y: 0
+        _z: 1
+      - _x: 1
+        _y: 0
+        _z: 1
+      - _x: 2
+        _y: 0
+        _z: 0
   Show: 1
---- !u!114 &4980361377559853614
+--- !u!114 &2678633887605246805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 4527970102579054657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec67418943f17494987fa8ac482c73cc, type: 3}
+  m_Script: {fileID: 11500000, guid: 35cea9583918cf24782b06ea52e28359, type: 3}
   m_Name:
-  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Unity.GridWorldComponent
+  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Unity.GridWorldComponent
   _spatialGridCellSize: 16
   _initializeOnAwake: 1
   _disposeOnDestroy: 1
---- !u!114 &6854994468277239238
+--- !u!114 &8993913701859273670
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 4527970102579054657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa1d6e1b09011a3408862f9d867607be, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f0dbe959f3a50a4a8b7b1531a82dfa4, type: 3}
   m_Name:
-  m_EditorClassIdentifier: GridForge.Lean.Samples::SceneGridManager
-  _workflow: 0
---- !u!1 &6476098649987200666
+  m_EditorClassIdentifier: GridForge.Samples::SceneGridManager
+  _workflow: 3
+--- !u!1 &7883431453438623673
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,46 +132,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4488707830062004407}
-  - component: {fileID: 2012223670695543877}
-  - component: {fileID: 748374658052901554}
+  - component: {fileID: 8869053740109179101}
+  - component: {fileID: 4044725409324536990}
+  - component: {fileID: 2784774057456934153}
   m_Layer: 0
-  m_Name: Dense Rectangular Marker
+  m_Name: Workflow Marker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4488707830062004407
+--- !u!4 &8869053740109179101
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 7883431453438623673}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.8, y: 0.15, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1501001554770277346}
+  m_Father: {fileID: 5991296250070615995}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2012223670695543877
+--- !u!33 &4044725409324536990
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 7883431453438623673}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &748374658052901554
+--- !u!23 &2784774057456934153
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 7883431453438623673}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1

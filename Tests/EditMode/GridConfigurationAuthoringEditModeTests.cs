@@ -5,9 +5,13 @@ using GridForge.Grids.Storage;
 using GridForge.Grids.Topology;
 using GridForge.Spatial;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace GridForge.Unity.Tests.EditMode
 {
@@ -156,6 +160,135 @@ namespace GridForge.Unity.Tests.EditMode
         }
 
         [Test]
+        public void SavedGridConfigurationsPersistFixedAuthoringValuesThroughUnitySerialization()
+        {
+            const string tempRoot = "Assets/Packages/Temp";
+            const string testFolder = tempRoot + "/GridForgeSerializationTests";
+            const string assetPath = testFolder + "/GridConfigurationSerializationRoundTrip.prefab";
+
+            GameObject owner = new("Grid configuration serialization test");
+            bool createdTempRoot = false;
+
+            try
+            {
+                GridConfigurationSaver saver = owner.AddComponent<GridConfigurationSaver>();
+                saver.Save(new SerializableGridConfiguration(
+                    new Vector3d(-2, 1, 3),
+                    new Vector3d(4, 5, 6),
+                    scanCellSize: 7,
+                    GridTopologyKind.HexPrism,
+                    SerializableGridTopologyMetrics.Hex(new Fixed64(2), new Fixed64(3), HexOrientation.FlatTop),
+                    GridStorageKind.Sparse,
+                    new SerializableSparseVoxelSet(new[]
+                    {
+                        new SerializableVoxelIndex(0, 1, 2)
+                    })));
+
+                if (!AssetDatabase.IsValidFolder(tempRoot))
+                {
+                    AssetDatabase.CreateFolder("Assets/Packages", "Temp");
+                    createdTempRoot = true;
+                }
+
+                AssetDatabase.CreateFolder(tempRoot, "GridForgeSerializationTests");
+                PrefabUtility.SaveAsPrefabAsset(owner, assetPath);
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceSynchronousImport);
+
+                GameObject loaded = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                GridConfigurationSaver loadedSaver = loaded.GetComponent<GridConfigurationSaver>();
+                SerializableGridConfiguration loadedConfig = loadedSaver.SavedGridConfigurations[0];
+
+                Assert.AreEqual(new Vector3d(-2, 1, 3), loadedConfig.BoundsMin);
+                Assert.AreEqual(new Vector3d(4, 5, 6), loadedConfig.BoundsMax);
+                Assert.IsTrue(loadedConfig.TryToGridConfiguration(out GridConfiguration config, out string failure), failure);
+                Assert.AreEqual(7, config.ScanCellSize);
+                Assert.AreEqual(GridTopologyKind.HexPrism, config.TopologyKind);
+                Assert.AreEqual(GridStorageKind.Sparse, config.StorageKind);
+                Assert.AreEqual(new Fixed64(2), config.TopologyMetrics.CellRadius);
+                Assert.AreEqual(new Fixed64(3), config.TopologyMetrics.LayerHeight);
+                Assert.AreEqual(HexOrientation.FlatTop, config.TopologyMetrics.HexOrientation);
+                Assert.IsTrue(loadedConfig.TryGetConfiguredSparseVoxels(out VoxelIndex[] voxels, out string sparseFailure), sparseFailure);
+                Assert.AreEqual(new VoxelIndex(0, 1, 2), voxels[0]);
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+                AssetDatabase.DeleteAsset(assetPath);
+                AssetDatabase.DeleteAsset(testFolder);
+
+                if (createdTempRoot)
+                    AssetDatabase.DeleteAsset(tempRoot);
+            }
+        }
+
+        [Test]
+        public void FixedMathSharpAuthoringValuesPersistThroughUnitySerialization()
+        {
+            const string tempRoot = "Assets/Packages/Temp";
+            const string testFolder = tempRoot + "/FixedMathSharpSerializationTests";
+            const string assetPath = testFolder + "/FixedMathSharpSerializationRoundTrip.asset";
+
+            FixedMathSharpSerializationProbe probe = ScriptableObject.CreateInstance<FixedMathSharpSerializationProbe>();
+            bool createdTempRoot = false;
+
+            try
+            {
+                probe.Configure(
+                    new Fixed64(9),
+                    new Vector2d(2, 3),
+                    new Vector3d(-4, 5, 6),
+                    new FixedMathSharpNestedSerializationProbe(
+                        new Fixed64(7),
+                        new Vector3d(8, -9, 10)));
+
+                if (!AssetDatabase.IsValidFolder(tempRoot))
+                {
+                    AssetDatabase.CreateFolder("Assets/Packages", "Temp");
+                    createdTempRoot = true;
+                }
+
+                AssetDatabase.CreateFolder(tempRoot, "FixedMathSharpSerializationTests");
+                AssetDatabase.CreateAsset(probe, assetPath);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceSynchronousImport);
+
+                FixedMathSharpSerializationProbe loadedProbe = AssetDatabase.LoadAssetAtPath<FixedMathSharpSerializationProbe>(assetPath);
+
+                Assert.AreEqual(new Fixed64(9), loadedProbe.Scalar);
+                Assert.AreEqual(new Vector2d(2, 3), loadedProbe.Plane);
+                Assert.AreEqual(new Vector3d(-4, 5, 6), loadedProbe.Space);
+                Assert.AreEqual(new Fixed64(7), loadedProbe.Nested[0].Scalar);
+                Assert.AreEqual(new Vector3d(8, -9, 10), loadedProbe.Nested[0].Space);
+            }
+            finally
+            {
+                if (probe != null && !AssetDatabase.Contains(probe))
+                    Object.DestroyImmediate(probe);
+
+                AssetDatabase.DeleteAsset(assetPath);
+                AssetDatabase.DeleteAsset(testFolder);
+
+                if (createdTempRoot)
+                    AssetDatabase.DeleteAsset(tempRoot);
+            }
+        }
+
+        [Test]
+        public void GridConfigurationAuthoringStoresFixedMathSharpTypesDirectly()
+        {
+            AssertSerializedFieldType(typeof(SerializableGridConfiguration), "_boundsMin", typeof(Vector3d));
+            AssertSerializedFieldType(typeof(SerializableGridConfiguration), "_boundsMax", typeof(Vector3d));
+            AssertSerializedFieldType(typeof(SerializableGridTopologyMetrics), "_rectangularCellWidth", typeof(Fixed64));
+            AssertSerializedFieldType(typeof(SerializableGridTopologyMetrics), "_rectangularLayerHeight", typeof(Fixed64));
+            AssertSerializedFieldType(typeof(SerializableGridTopologyMetrics), "_rectangularCellLength", typeof(Fixed64));
+            AssertSerializedFieldType(typeof(SerializableGridTopologyMetrics), "_hexRadius", typeof(Fixed64));
+            AssertSerializedFieldType(typeof(SerializableGridTopologyMetrics), "_hexLayerHeight", typeof(Fixed64));
+
+            AssertNoRawFixedAuthoringFields(typeof(SerializableGridConfiguration));
+            AssertNoRawFixedAuthoringFields(typeof(SerializableGridTopologyMetrics));
+        }
+
+        [Test]
         public void AuthoringComponentsDoNotRetainLegacyVoxelSizeCompatibilityFields()
         {
             AssertNoLegacyVoxelSizeFields(typeof(GridConfigurationSaver));
@@ -192,6 +325,27 @@ namespace GridForge.Unity.Tests.EditMode
             }
         }
 
+        private static void AssertSerializedFieldType(Type type, string fieldName, Type expectedType)
+        {
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"{type.Name} should serialize {fieldName} directly.");
+            Assert.AreEqual(expectedType, field.FieldType, $"{type.Name}.{fieldName} should use FixedMathSharp storage directly.");
+            Assert.IsNotNull(field.GetCustomAttribute<SerializeField>(), $"{type.Name}.{fieldName} should be serialized.");
+        }
+
+        private static void AssertNoRawFixedAuthoringFields(Type type)
+        {
+            FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+            foreach (FieldInfo field in fields)
+            {
+                StringAssert.DoesNotEndWith(
+                    "Raw",
+                    field.Name,
+                    $"{type.Name}.{field.Name} should not preserve GridForge-owned FixedMathSharp raw storage.");
+            }
+        }
+
         private static void AssertNoLegacyVoxelSizeFields(System.Type type)
         {
             FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
@@ -211,5 +365,48 @@ namespace GridForge.Unity.Tests.EditMode
                 }
             }
         }
+
+    }
+
+    public sealed class FixedMathSharpSerializationProbe : ScriptableObject
+    {
+        [SerializeField] private Fixed64 _scalar;
+        [SerializeField] private Vector2d _plane;
+        [SerializeField] private Vector3d _space;
+        [SerializeField] private List<FixedMathSharpNestedSerializationProbe> _nested = new();
+
+        public Fixed64 Scalar => _scalar;
+        public Vector2d Plane => _plane;
+        public Vector3d Space => _space;
+        public IReadOnlyList<FixedMathSharpNestedSerializationProbe> Nested => _nested;
+
+        public void Configure(
+            Fixed64 scalar,
+            Vector2d plane,
+            Vector3d space,
+            FixedMathSharpNestedSerializationProbe nested)
+        {
+            _scalar = scalar;
+            _plane = plane;
+            _space = space;
+            _nested.Clear();
+            _nested.Add(nested);
+        }
+    }
+
+    [Serializable]
+    public struct FixedMathSharpNestedSerializationProbe
+    {
+        [SerializeField] private Fixed64 _scalar;
+        [SerializeField] private Vector3d _space;
+
+        public FixedMathSharpNestedSerializationProbe(Fixed64 scalar, Vector3d space)
+        {
+            _scalar = scalar;
+            _space = space;
+        }
+
+        public readonly Fixed64 Scalar => _scalar;
+        public readonly Vector3d Space => _space;
     }
 }

@@ -108,8 +108,8 @@ namespace GridForge.Configuration
             }
 
             config = new GridConfiguration(
-                _boundsMin,
-                _boundsMax,
+                BoundsMin,
+                BoundsMax,
                 _scanCellSize > 0 ? _scanCellSize : GridConfiguration.DefaultScanCellSize,
                 _topologyKind,
                 metrics,

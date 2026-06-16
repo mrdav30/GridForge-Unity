@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5048625497584760286
+--- !u!1 &2011929767018242871
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,40 +8,40 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1501001554770277346}
-  - component: {fileID: 1179012785331720637}
-  - component: {fileID: 4980361377559853614}
-  - component: {fileID: 6854994468277239238}
+  - component: {fileID: 4928294325119755491}
+  - component: {fileID: 1153996006469630444}
+  - component: {fileID: 1683720144385776056}
+  - component: {fileID: 9065710043904196876}
   m_Layer: 0
-  m_Name: SceneGridManager
+  m_Name: DenseRectangular
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1501001554770277346
+--- !u!4 &4928294325119755491
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 2011929767018242871}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4488707830062004407}
+  - {fileID: 9082978478808176545}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1179012785331720637
+--- !u!114 &1153996006469630444
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 2011929767018242871}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a2054855da532764b98a918f14ded7fc, type: 3}
@@ -81,13 +81,13 @@ MonoBehaviour:
     _configuredSparseVoxels:
       _indices: []
   Show: 1
---- !u!114 &4980361377559853614
+--- !u!114 &1683720144385776056
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 2011929767018242871}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec67418943f17494987fa8ac482c73cc, type: 3}
@@ -96,20 +96,20 @@ MonoBehaviour:
   _spatialGridCellSize: 16
   _initializeOnAwake: 1
   _disposeOnDestroy: 1
---- !u!114 &6854994468277239238
+--- !u!114 &9065710043904196876
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5048625497584760286}
+  m_GameObject: {fileID: 2011929767018242871}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa1d6e1b09011a3408862f9d867607be, type: 3}
   m_Name:
   m_EditorClassIdentifier: GridForge.Lean.Samples::SceneGridManager
   _workflow: 0
---- !u!1 &6476098649987200666
+--- !u!1 &5370850786076777957
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,46 +117,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4488707830062004407}
-  - component: {fileID: 2012223670695543877}
-  - component: {fileID: 748374658052901554}
+  - component: {fileID: 9082978478808176545}
+  - component: {fileID: 83593913287269645}
+  - component: {fileID: 3856157478472685509}
   m_Layer: 0
-  m_Name: Dense Rectangular Marker
+  m_Name: Workflow Marker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4488707830062004407
+--- !u!4 &9082978478808176545
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 5370850786076777957}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.8, y: 0.15, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1501001554770277346}
+  m_Father: {fileID: 4928294325119755491}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2012223670695543877
+--- !u!33 &83593913287269645
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 5370850786076777957}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &748374658052901554
+--- !u!23 &3856157478472685509
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6476098649987200666}
+  m_GameObject: {fileID: 5370850786076777957}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
