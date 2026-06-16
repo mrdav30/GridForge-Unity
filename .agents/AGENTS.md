@@ -5,8 +5,11 @@
 - The actual Git repo root is the `Assets/Packages` directory, not the outer Unity project root.
 - This repo ships two Unity Package Manager variants:
   `com.mrdav30.gridforge` and `com.mrdav30.gridforge.lean`.
-- Both package variants are currently aligned to GridForge `v6.0.0`.
+- Both package variants are currently being migrated to GridForge `v7.0.0`.
 - The old `.variants/` workflow is retired and should not be reintroduced.
+- The v7 migration ledger lives at
+  `.docs/feature-work/2026-06-15-gridforge-v7-unity-package-migration-battle-plan.md`.
+  Keep it current when phase scope, status, risks, or verification change.
 
 ## Source Of Truth
 
@@ -15,6 +18,11 @@
   `com.mrdav30.gridforge/` and `com.mrdav30.gridforge.lean/`.
 - The build tooling lives under `Build/Editor/`.
 - `Build/GridForge.Build.asmdef` exists only to support the build/editor tooling and is not part of either shipped package.
+- GridForge-Unity is an adapter package. Core grid behavior belongs in the
+  upstream GridForge repo; fixed-point math belongs in FixedMathSharp; Unity
+  math serialization/editor support belongs in FixedMathSharp-Unity; collection
+  behavior and Unity collection adapters belong in SwiftCollections and
+  SwiftCollections-Unity.
 
 ## Managed Vs Unmanaged Content
 
@@ -31,6 +39,10 @@
 - The shared sample script path is intentional. Shared serialized sample assets are not.
 - Package-specific asmdefs, package manifests, plugin payloads, installer scripts, README files, and serialized sample assets remain unmanaged and must be edited in the package-specific folder that owns them.
 - If a file should differ between standard and lean, it does not belong in `Build/Base/`.
+- Unity `.meta` files are Unity-owned. Do not manually create or edit them.
+- Serialized sample prefabs and scenes are package-specific assets. Prefer
+  regenerating them through `GridForgeSampleAssetGenerator` instead of hand
+  editing YAML.
 
 ## Editing Rules
 
@@ -40,6 +52,14 @@
 - If you add a new shared managed path, update the `ManagedEntries` list in `Build/Editor/GridForgePackageSync.cs`.
 - If dependency behavior changes, update both package-specific `Editor/Utility/GitDependencyInstaller.cs` files and the repo `README.md` together.
 - Preserve the Unity package structure when moving or adding files.
+- When Unity serialization behaves badly, check the lower-stack Unity packages
+  before adding GridForge-owned compatibility mirrors. Do not add raw Fixed64
+  fields, custom FixedMathSharp drawers, or GridForge-specific serialized
+  collection variants when FixedMathSharp-Unity or SwiftCollections-Unity
+  already owns that problem.
+- Do not preserve v6 compatibility state unless explicitly requested. This v7
+  migration intentionally removes legacy authoring such as world-level voxel
+  size fields.
 
 ## Tooling
 
@@ -54,22 +74,61 @@
 - Batchmode export optionally accepts:
   `-gridforgeUnityPackageOutputPath <folder>`
 - The exporter runs the shared-code sync before packaging.
+- Use `.assets/scripts/sync-gridforge-unity-packages.ps1` for batch package sync.
+- Use `.assets/scripts/run-gridforge-unity-editmode-tests.ps1` for EditMode
+  tests. Do not add `-quit` to Unity `-runTests`; the Unity Test Framework exits
+  after writing the result XML.
+- Use `.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly` to
+  check package version and dependency installer drift.
+- Use `.assets/scripts/test-gridforge-package-sync.ps1` to verify `Build/Base`
+  managed files match both package variants.
 
 ## Package Layout Notes
 
-- `Plugins/GridForge.dll` is a precompiled upstream dependency that lives inside each package variant.
+- `Plugins/GridForge.dll` is a precompiled upstream GridForge dependency that
+  lives inside each package variant.
 - `Plugins/GridForge.xml` is useful for API discovery when the core GridForge source is not locally available.
 - The runtime code in this repo is intentionally thin. If a change belongs in the core data-structure library rather than Unity integration, it likely belongs in the upstream GridForge repo instead.
 - Each package folder keeps its own install README, manifest, asmdefs, dependencies, and serialized sample assets.
+- Package manifests intentionally keep `dependencies` empty. Dependency repair
+  is handled by the package-specific installer scripts and version config.
 
 ## Coding Expectations
 
+- Prefer reusing the lowest owning layer before writing new GridForge-Unity
+  code. Do not reimplement FixedMathSharp, FixedMathSharp-Unity,
+  SwiftCollections, SwiftCollections-Unity, Chronicler, or GridForge core
+  behavior in this adapter package.
 - Prefer SwiftCollections types and helpers over .NET/BCL collections whenever a suitable SwiftCollections type exists.
 - Do not introduce `List<>`, `Dictionary<>`, `HashSet<>`, `Stack<>`, or similar .NET collections in package code unless there is no SwiftCollections equivalent and the reason is explicit.
+- Arrays and `IEnumerable<T>` are still acceptable for Unity-backed serialized
+  data, interop boundaries, and APIs where they are the natural representation.
+- Direct `SwiftList<T>`, `SwiftDictionary<TKey,TValue>`, and related core
+  collection types are runtime collections, not Unity-persisted fields. For
+  Unity serialized fields, use SwiftCollections-Unity `SerializedSwift*`
+  adapters and consume the real collection through `.Runtime`.
+- Store FixedMathSharp types directly in GridForge authoring data. Do not add
+  GridForge-owned raw-value mirrors for `Fixed64`, `Vector2d`, or `Vector3d`;
+  fix or consume FixedMathSharp-Unity support instead.
+- Keep deterministic math in FixedMathSharp and GridForge types. Convert Unity
+  `float`, `Vector2`, `Vector3`, `Bounds`, `Transform`, collider, and renderer
+  data at the adapter boundary only.
+- Prefer GridForge v7 APIs for topology, storage, diagnostics, tracing, and
+  logging. For debugging visuals, consume `GridForge.Diagnostics` geometry and
+  descriptors instead of recreating rectangular-only loops in Unity code.
 - Keep this repo focused on Unity integration instead of re-implementing GridForge core behavior here.
 
 ## Verification
 
-- There are currently no automated tests set up for this package repo.
-- Command-line `dotnet build` may fail outside a proper Unity environment because Unity-generated `.csproj` files can reference local Unity analyzers and source generators that are not available on every machine.
-- Prefer verification in the Unity Editor when possible, and call out environment limitations clearly when CLI validation is incomplete.
+- Automated EditMode tests live under `Tests/EditMode`.
+- Standard verification after managed code changes:
+  - `.assets/scripts/test-gridforge-package-sync.ps1`
+  - `.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly`
+  - `.assets/scripts/sync-gridforge-unity-packages.ps1`
+  - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`
+  - `git diff --check`
+- Generated Unity `.csproj` builds can be useful after Unity import has produced
+  the project files. For example:
+  `dotnet build F:\gamedevrepos\GridForge-Unity\GridForge.Unity.Tests.EditMode.csproj`
+- If Unity tests cannot be run, state that clearly and do not claim the package
+  is verified.
