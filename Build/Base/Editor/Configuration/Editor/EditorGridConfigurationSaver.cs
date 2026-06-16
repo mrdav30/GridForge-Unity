@@ -277,7 +277,7 @@ namespace GridForge.Configuration.Editor
 
         private static void DrawValidationMessages(GridConfigurationSaver saver)
         {
-            for (int i = 0; i < saver.SavedGridConfigurations.Length; i++)
+            for (int i = 0; i < saver.SavedGridConfigurations.Count; i++)
             {
                 SerializableGridConfiguration config = saver.SavedGridConfigurations[i];
                 if (config.BoundsMax < config.BoundsMin)

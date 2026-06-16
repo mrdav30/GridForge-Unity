@@ -49,37 +49,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 16
   _savedGridConfigurations:
-  - _boundsMin:
-      X:
-        m_rawValue: -34359738368
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: -34359738368
-    _boundsMax:
-      X:
-        m_rawValue: 34359738368
-      Y:
-        m_rawValue: 4294967296
-      Z:
-        m_rawValue: 34359738368
-    _scanCellSize: 4
-    _topologyKind: 1
-    _topologyMetrics:
-      _rectangularCellWidth:
-        m_rawValue: 4294967296
-      _rectangularLayerHeight:
-        m_rawValue: 4294967296
-      _rectangularCellLength:
-        m_rawValue: 4294967296
-      _hexRadius:
-        m_rawValue: 4294967296
-      _hexLayerHeight:
-        m_rawValue: 4294967296
-      _hexOrientation: 1
-    _storageKind: 0
-    _configuredSparseVoxels:
-      _indices: []
+    _items:
+    - _boundsMin:
+        X:
+          m_rawValue: -34359738368
+        Y:
+          m_rawValue: 0
+        Z:
+          m_rawValue: -34359738368
+      _boundsMax:
+        X:
+          m_rawValue: 34359738368
+        Y:
+          m_rawValue: 4294967296
+        Z:
+          m_rawValue: 34359738368
+      _scanCellSize: 4
+      _topologyKind: 1
+      _topologyMetrics:
+        _rectangularCellWidth:
+          m_rawValue: 4294967296
+        _rectangularLayerHeight:
+          m_rawValue: 4294967296
+        _rectangularCellLength:
+          m_rawValue: 4294967296
+        _hexRadius:
+          m_rawValue: 4294967296
+        _hexLayerHeight:
+          m_rawValue: 4294967296
+        _hexOrientation: 1
+      _storageKind: 0
+      _configuredSparseVoxels:
+        _indices:
+          _items: []
   Show: 1
 --- !u!114 &7895298773022472102
 MonoBehaviour:

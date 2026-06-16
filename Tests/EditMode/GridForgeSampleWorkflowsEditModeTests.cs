@@ -119,21 +119,19 @@ namespace GridForge.Unity.Tests.EditMode
             SerializedObject serializedManager = new(manager);
             Assert.AreEqual(workflowIndex, serializedManager.FindProperty("_workflow").enumValueIndex);
 
-            SerializedObject serializedSaver = new(saver);
-            SerializedProperty configs = serializedSaver.FindProperty("_savedGridConfigurations");
-            Assert.AreEqual(expectedGridCount, configs.arraySize);
+            object configs = GetPropertyValue(saver, "SavedGridConfigurations");
+            Assert.AreEqual(expectedGridCount, GetCount(configs));
 
             if (!expectedTopologyKind.HasValue || !expectedStorageKind.HasValue)
                 return;
 
-            SerializedProperty config = configs.GetArrayElementAtIndex(0);
-            Assert.AreEqual(expectedTopologyKind.Value, config.FindPropertyRelative("_topologyKind").enumValueIndex);
-            Assert.AreEqual(expectedStorageKind.Value, config.FindPropertyRelative("_storageKind").enumValueIndex);
+            object config = GetIndexedValue(configs, 0);
+            Assert.AreEqual(expectedTopologyKind.Value, ToEnumIndex(GetPropertyValue(config, "TopologyKind")));
+            Assert.AreEqual(expectedStorageKind.Value, ToEnumIndex(GetPropertyValue(config, "StorageKind")));
 
-            SerializedProperty sparseIndices = config
-                .FindPropertyRelative("_configuredSparseVoxels")
-                .FindPropertyRelative("_indices");
-            Assert.AreEqual(expectedSparseCount.GetValueOrDefault(), sparseIndices.arraySize);
+            object sparseVoxels = GetPropertyValue(config, "ConfiguredSparseVoxels");
+            object sparseIndices = GetPropertyValue(sparseVoxels, "Indices");
+            Assert.AreEqual(expectedSparseCount.GetValueOrDefault(), GetCount(sparseIndices));
         }
 
         private static T AssertAssetExists<T>(string assetPath)
@@ -168,6 +166,41 @@ namespace GridForge.Unity.Tests.EditMode
             Type type = assembly.GetTypes().FirstOrDefault(candidate => candidate.Name == typeName);
             Assert.NotNull(type, $"Unable to find {typeName} in {assemblyName}.");
             return type;
+        }
+
+        private static object GetPropertyValue(object owner, string propertyName)
+        {
+            Type type = owner.GetType();
+            PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(property, $"{type.FullName} should expose {propertyName}.");
+            return property.GetValue(owner);
+        }
+
+        private static object GetIndexedValue(object owner, int index)
+        {
+            if (owner is Array array)
+                return array.GetValue(index);
+
+            Type type = owner.GetType();
+            PropertyInfo indexer = type.GetProperty("Item", BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(indexer, $"{type.FullName} should expose an integer indexer.");
+            return indexer.GetValue(owner, new object[] { index });
+        }
+
+        private static int GetCount(object owner)
+        {
+            if (owner is Array array)
+                return array.Length;
+
+            Type type = owner.GetType();
+            PropertyInfo count = type.GetProperty("Count", BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(count, $"{type.FullName} should expose Count.");
+            return (int)count.GetValue(owner);
+        }
+
+        private static int ToEnumIndex(object enumValue)
+        {
+            return Convert.ToInt32(enumValue);
         }
     }
 }

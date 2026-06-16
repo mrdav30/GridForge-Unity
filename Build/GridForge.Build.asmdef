@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "FixedMathSharp.Runtime",
-        "FixedMathSharp.Editor"
+        "FixedMathSharp.Editor",
+        "SwiftCollections.Runtime"
     ],
     "includePlatforms": [
         "Editor"

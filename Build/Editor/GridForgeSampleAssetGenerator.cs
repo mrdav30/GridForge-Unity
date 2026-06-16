@@ -332,15 +332,12 @@ namespace GridForge.Build.Editor
             RequiredProperty(serialized, "Show").boolValue = true;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
-            FieldInfo savedConfigurationsField = RequireField(saver.GetType(), "_savedGridConfigurations");
-            Type configurationType = savedConfigurationsField.FieldType.GetElementType()
-                ?? throw new InvalidOperationException("_savedGridConfigurations must be an array.");
-            Array savedConfigurations = Array.CreateInstance(configurationType, configurations.Length);
+            MethodInfo saveMethod = RequireInstanceMethod(saver.GetType(), "Save", 1);
+            Type configurationType = saveMethod.GetParameters()[0].ParameterType;
 
             for (int i = 0; i < configurations.Length; i++)
-                savedConfigurations.SetValue(CreateSerializableGridConfiguration(configurationType, configurations[i]), i);
+                saveMethod.Invoke(saver, new[] { CreateSerializableGridConfiguration(configurationType, configurations[i]) });
 
-            savedConfigurationsField.SetValue(saver, savedConfigurations);
             EditorUtility.SetDirty(saver);
         }
 
@@ -612,6 +609,18 @@ namespace GridForge.Build.Editor
         private static MethodInfo RequireMethod(Type type, string methodName, int parameterCount)
         {
             foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (method.Name == methodName && method.GetParameters().Length == parameterCount)
+                    return method;
+            }
+
+            throw new InvalidOperationException(
+                $"Unable to resolve {type.FullName}.{methodName} with {parameterCount} arguments.");
+        }
+
+        private static MethodInfo RequireInstanceMethod(Type type, string methodName, int parameterCount)
+        {
+            foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (method.Name == methodName && method.GetParameters().Length == parameterCount)
                     return method;

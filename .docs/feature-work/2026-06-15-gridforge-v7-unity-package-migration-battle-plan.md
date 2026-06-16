@@ -221,14 +221,15 @@
 ### 2026-06-16 - Collection Policy And Test Hygiene Hardening
 
 - Removed remaining `System.Collections.Generic.List<T>` and `Dictionary<TKey,TValue>` usage from GridForge-owned package/runtime/test code, except for allowed `IEnumerable<T>` API signatures and generated XML documentation.
-- Changed Unity-persisted authoring collections to arrays:
-  - `GridConfigurationSaver._savedGridConfigurations` is now `SerializableGridConfiguration[]`.
-  - `SerializableSparseVoxelSet._indices` is now `SerializableVoxelIndex[]`.
+- Moved Unity-persisted authoring collections onto SwiftCollections-Unity v5.0.2 adapters:
+  - `GridConfigurationSaver._savedGridConfigurations` is now `SerializedSwiftList<SerializableGridConfiguration>`.
+  - `SerializableSparseVoxelSet._indices` is now `SerializedSwiftList<SerializableVoxelIndex>`.
+  - `SavedGridConfigurations` and `SerializableSparseVoxelSet.Indices` expose `SwiftList<T>` runtime collections for GridForge consumers.
   - The FixedMathSharp serialization probe now uses an array for nested values.
 - Used SwiftCollections where the collections are working buffers or maps:
   - `GridTracerTests.GetTraceVoxelsInto(...)` now accepts `SwiftList<Voxel>`.
   - Trace visualizer and logger tests use `SwiftList<T>` instead of `List<T>`.
-  - `SerializableSparseVoxelSet` uses `SwiftList<SerializableVoxelIndex>` for temporary conversion buffers.
+  - `SerializableSparseVoxelSet` uses `SwiftList<SerializableVoxelIndex>` for runtime access and temporary conversion buffers.
   - `GridForgePackageSync` uses `SwiftDictionary<string, string>` for managed-file maps.
 - Reworked package `GitDependencyInstaller` JSON handling from nested `Dictionary` deserialization to `JsonObject`, and replaced the mojibake dependency log arrow with ASCII `->`.
 - Added `Chronicler.dll` to the EditMode test asmdef precompiled references because direct `SwiftList<T>` usage exposes SwiftCollections' `IStateBacked<>` interface to the compiler.
@@ -236,10 +237,17 @@
   - `PackagesKeepV7WorkflowCoverageInPrefabsWithoutExtraDemoScene(...)`
   - `AuthoringComponentsDoNotRetainLegacyVoxelSizeCompatibilityFields()`
 - Kept behaviorful coverage for prefab workflow authoring, FixedMathSharp serialization, authoring persistence, debugger inspector policy, tracing, blockers, and logging.
-- Source review note: SwiftCollections core types are `[Serializable]` and expose JSON/MemoryPack/Chronicler state, but the current `SwiftCollections-Unity` package does not appear to provide Unity property drawers, Unity-visible serialized backing fields, or Unity serialization callbacks for direct persisted `SwiftList<T>`/`SwiftDictionary<TKey,TValue>` fields. GridForge persisted authoring therefore uses arrays for this pass; direct SwiftCollections Unity persistence remains an upstream SwiftCollections-Unity hardening question if that is a desired public guarantee.
+- Source review resolution: SwiftCollections-Unity v5.0.2 added `SerializedSwift*` Unity persistence adapters. GridForge now uses those adapters for saved grid configurations and sparse voxel authoring while continuing to treat direct `SwiftList<T>`/`SwiftDictionary<TKey,TValue>` fields as runtime-only types.
 - Debugging note: NUnit `CollectionAssert` can trip `SwiftList<T>`'s non-generic enumerator after enumeration completes, so the logger tests now assert `Count` plus indexed values instead of routing `SwiftList<T>` through NUnit's collection adapter.
 - Synced shared managed source from `Build/Base` into both standard and lean package variants. No `.meta` files were manually created or edited.
 - Verification completed:
+  - 2026-06-16 adapter follow-up:
+    - `.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly`: pass.
+    - Initial package sync reproduced the expected compile red while package copies still exposed array APIs.
+    - Added `SwiftCollections.Runtime` to `Build/GridForge.Build.asmdef` so Build/Base source can compile against `SerializedSwiftList<T>`.
+    - Updated the local Unity project manifest/package lock to SwiftCollections-Unity v5.0.2 for lean dependencies as well as standard dependencies.
+    - `.assets/scripts/sync-gridforge-unity-packages.ps1`: pass, 0 copied, 0 deleted, 0 removed files after the mechanical package-copy bootstrap.
+    - `GridForgeSampleAssetGenerator.GenerateSamplesBatchMode`: pass; sample prefabs now serialize saved configs and sparse indices through adapter `_items` backing data.
   - `.assets/scripts/sync-gridforge-unity-packages.ps1`: pass after a targeted mechanical source sync let Unity compile the changed shared signatures; final sync reported 0 copied, 0 deleted, 0 removed files.
   - `.assets/scripts/run-gridforge-unity-editmode-tests.ps1`: pass, 42 total, 42 passed, 0 failed, 0 skipped.
   - `.assets/scripts/test-gridforge-package-sync.ps1`: pass.
@@ -304,7 +312,7 @@
 
 - Both package manifests now report `7.0.0`.
 - Both package folders contain updated `GridForge.dll`, `.pdb`, and `.xml` files exposing v7 topology, storage, diagnostics, and logging APIs.
-- Dependency version config targets FixedMathSharp Unity v5.0.1 and SwiftCollections Unity v5.0.1.
+- Dependency version config targets FixedMathSharp Unity v5.0.1 and SwiftCollections Unity v5.0.2.
 - PowerShell wrappers exist for version sync, package sync, and `.unitypackage` export.
 - Unity CI scaffolding exists for standard and lean package EditMode test matrices.
 - Phase 3 rebuilt `GridDebugger` on `GridForge.Diagnostics`, including topology-aware rectangular/hex drawing, sparse missing-address descriptors, query bounds, max-cell status, and physical-only selected-cell resolution.

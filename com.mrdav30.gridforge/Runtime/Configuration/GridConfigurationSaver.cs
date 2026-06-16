@@ -10,7 +10,8 @@ using GridForge.Grids;
 using GridForge.Grids.Storage;
 using GridForge.Spatial;
 using GridForge.Unity;
-using System;
+using SwiftCollections;
+using SwiftCollections.Unity;
 using UnityEngine;
 
 namespace GridForge.Configuration
@@ -35,9 +36,9 @@ namespace GridForge.Configuration
         /// <summary>
         /// Saved grid configurations.
         /// </summary>
-        [SerializeField] private SerializableGridConfiguration[] _savedGridConfigurations = Array.Empty<SerializableGridConfiguration>();
+        [SerializeField] private SerializedSwiftList<SerializableGridConfiguration> _savedGridConfigurations = new();
 
-        public SerializableGridConfiguration[] SavedGridConfigurations => _savedGridConfigurations ?? Array.Empty<SerializableGridConfiguration>();
+        public SwiftList<SerializableGridConfiguration> SavedGridConfigurations => SavedConfigurationAdapter.Runtime;
 
         /// <summary>
         /// Enables visualization of grid bounds in the editor.
@@ -45,6 +46,15 @@ namespace GridForge.Configuration
         public bool Show = true;
 
         #endregion
+
+        private SerializedSwiftList<SerializableGridConfiguration> SavedConfigurationAdapter
+        {
+            get
+            {
+                _savedGridConfigurations ??= new SerializedSwiftList<SerializableGridConfiguration>();
+                return _savedGridConfigurations;
+            }
+        }
 
         private void OnValidate()
         {
@@ -67,10 +77,7 @@ namespace GridForge.Configuration
         /// </summary>
         public void Save(SerializableGridConfiguration configuration)
         {
-            _savedGridConfigurations ??= Array.Empty<SerializableGridConfiguration>();
-            int index = _savedGridConfigurations.Length;
-            Array.Resize(ref _savedGridConfigurations, index + 1);
-            _savedGridConfigurations[index] = configuration;
+            SavedConfigurationAdapter.Add(configuration);
         }
 
         /// <summary>

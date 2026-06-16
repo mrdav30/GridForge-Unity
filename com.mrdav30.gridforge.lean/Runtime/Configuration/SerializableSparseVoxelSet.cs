@@ -7,6 +7,7 @@
 
 using GridForge.Spatial;
 using SwiftCollections;
+using SwiftCollections.Unity;
 using System;
 using UnityEngine;
 
@@ -50,31 +51,32 @@ namespace GridForge.Configuration
     [Serializable]
     public struct SerializableSparseVoxelSet
     {
-        [SerializeField] private SerializableVoxelIndex[] _indices;
+        [SerializeField] private SerializedSwiftList<SerializableVoxelIndex> _indices;
 
-        public readonly int Count => Indices.Length;
+        public readonly int Count => _indices?.Count ?? 0;
         public readonly bool HasConfiguredVoxels => Count > 0;
-        public readonly SerializableVoxelIndex[] Indices => _indices ?? Array.Empty<SerializableVoxelIndex>();
+        public readonly SwiftList<SerializableVoxelIndex> Indices => _indices?.Runtime ?? new SwiftList<SerializableVoxelIndex>();
 
         public static SerializableSparseVoxelSet Empty => new(Array.Empty<SerializableVoxelIndex>());
 
         public SerializableSparseVoxelSet(System.Collections.Generic.IEnumerable<SerializableVoxelIndex> indices)
         {
-            _indices = ToArray(indices);
+            _indices = new SerializedSwiftList<SerializableVoxelIndex>();
+            _indices.SetItems(ToArray(indices));
         }
 
         public readonly bool TryToVoxelIndices(out VoxelIndex[] indices, out string failureReason)
         {
             failureReason = string.Empty;
-            SerializableVoxelIndex[] serializedIndices = Indices;
-            if (serializedIndices.Length == 0)
+            SwiftList<SerializableVoxelIndex> serializedIndices = Indices;
+            if (serializedIndices.Count == 0)
             {
                 indices = Array.Empty<VoxelIndex>();
                 return true;
             }
 
-            indices = new VoxelIndex[serializedIndices.Length];
-            for (int i = 0; i < serializedIndices.Length; i++)
+            indices = new VoxelIndex[serializedIndices.Count];
+            for (int i = 0; i < serializedIndices.Count; i++)
             {
                 SerializableVoxelIndex serialized = serializedIndices[i];
                 if (serialized.X < 0 || serialized.Y < 0 || serialized.Z < 0)

@@ -51,12 +51,12 @@ namespace GridForge.Editor
             new(
                 "com.mrdav30.swiftcollections.lean",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
-                "v5.0.1"
+                "v5.0.2"
             ),
             new(
                 "com.mrdav30.swiftcollections.fixedmathsharp.lean",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean",
-                "v5.0.1"
+                "v5.0.2"
             )
         };
 

@@ -487,160 +487,165 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 16
   _savedGridConfigurations:
-  - _boundsMin:
-      X:
-        m_rawValue: -51539607552
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: -25769803776
-    _boundsMax:
-      X:
-        m_rawValue: -25769803776
-      Y:
-        m_rawValue: 4294967296
-      Z:
-        m_rawValue: 0
-    _scanCellSize: 4
-    _topologyKind: 0
-    _topologyMetrics:
-      _rectangularCellWidth:
-        m_rawValue: 4294967296
-      _rectangularLayerHeight:
-        m_rawValue: 4294967296
-      _rectangularCellLength:
-        m_rawValue: 4294967296
-      _hexRadius:
-        m_rawValue: 4294967296
-      _hexLayerHeight:
-        m_rawValue: 4294967296
-      _hexOrientation: 1
-    _storageKind: 0
-    _configuredSparseVoxels:
-      _indices: []
-  - _boundsMin:
-      X:
-        m_rawValue: 0
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: -25769803776
-    _boundsMax:
-      X:
-        m_rawValue: 34359738368
-      Y:
-        m_rawValue: 4294967296
-      Z:
-        m_rawValue: 8589934592
-    _scanCellSize: 4
-    _topologyKind: 1
-    _topologyMetrics:
-      _rectangularCellWidth:
-        m_rawValue: 4294967296
-      _rectangularLayerHeight:
-        m_rawValue: 4294967296
-      _rectangularCellLength:
-        m_rawValue: 4294967296
-      _hexRadius:
-        m_rawValue: 4294967296
-      _hexLayerHeight:
-        m_rawValue: 4294967296
-      _hexOrientation: 1
-    _storageKind: 0
-    _configuredSparseVoxels:
-      _indices: []
-  - _boundsMin:
-      X:
-        m_rawValue: -51539607552
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: 25769803776
-    _boundsMax:
-      X:
-        m_rawValue: -25769803776
-      Y:
-        m_rawValue: 4294967296
-      Z:
-        m_rawValue: 51539607552
-    _scanCellSize: 4
-    _topologyKind: 0
-    _topologyMetrics:
-      _rectangularCellWidth:
-        m_rawValue: 4294967296
-      _rectangularLayerHeight:
-        m_rawValue: 4294967296
-      _rectangularCellLength:
-        m_rawValue: 4294967296
-      _hexRadius:
-        m_rawValue: 4294967296
-      _hexLayerHeight:
-        m_rawValue: 4294967296
-      _hexOrientation: 1
-    _storageKind: 1
-    _configuredSparseVoxels:
-      _indices:
-      - _x: 0
-        _y: 0
-        _z: 0
-      - _x: 1
-        _y: 0
-        _z: 0
-      - _x: 1
-        _y: 0
-        _z: 1
-      - _x: 2
-        _y: 0
-        _z: 1
-      - _x: 3
-        _y: 0
-        _z: 2
-  - _boundsMin:
-      X:
-        m_rawValue: 0
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: 25769803776
-    _boundsMax:
-      X:
-        m_rawValue: 34359738368
-      Y:
-        m_rawValue: 4294967296
-      Z:
-        m_rawValue: 60129542144
-    _scanCellSize: 4
-    _topologyKind: 1
-    _topologyMetrics:
-      _rectangularCellWidth:
-        m_rawValue: 4294967296
-      _rectangularLayerHeight:
-        m_rawValue: 4294967296
-      _rectangularCellLength:
-        m_rawValue: 4294967296
-      _hexRadius:
-        m_rawValue: 4294967296
-      _hexLayerHeight:
-        m_rawValue: 4294967296
-      _hexOrientation: 1
-    _storageKind: 1
-    _configuredSparseVoxels:
-      _indices:
-      - _x: 0
-        _y: 0
-        _z: 0
-      - _x: 1
-        _y: 0
-        _z: 0
-      - _x: 0
-        _y: 0
-        _z: 1
-      - _x: 1
-        _y: 0
-        _z: 1
-      - _x: 2
-        _y: 0
-        _z: 0
+    _items:
+    - _boundsMin:
+        X:
+          m_rawValue: -51539607552
+        Y:
+          m_rawValue: 0
+        Z:
+          m_rawValue: -25769803776
+      _boundsMax:
+        X:
+          m_rawValue: -25769803776
+        Y:
+          m_rawValue: 4294967296
+        Z:
+          m_rawValue: 0
+      _scanCellSize: 4
+      _topologyKind: 0
+      _topologyMetrics:
+        _rectangularCellWidth:
+          m_rawValue: 4294967296
+        _rectangularLayerHeight:
+          m_rawValue: 4294967296
+        _rectangularCellLength:
+          m_rawValue: 4294967296
+        _hexRadius:
+          m_rawValue: 4294967296
+        _hexLayerHeight:
+          m_rawValue: 4294967296
+        _hexOrientation: 1
+      _storageKind: 0
+      _configuredSparseVoxels:
+        _indices:
+          _items: []
+    - _boundsMin:
+        X:
+          m_rawValue: 0
+        Y:
+          m_rawValue: 0
+        Z:
+          m_rawValue: -25769803776
+      _boundsMax:
+        X:
+          m_rawValue: 34359738368
+        Y:
+          m_rawValue: 4294967296
+        Z:
+          m_rawValue: 8589934592
+      _scanCellSize: 4
+      _topologyKind: 1
+      _topologyMetrics:
+        _rectangularCellWidth:
+          m_rawValue: 4294967296
+        _rectangularLayerHeight:
+          m_rawValue: 4294967296
+        _rectangularCellLength:
+          m_rawValue: 4294967296
+        _hexRadius:
+          m_rawValue: 4294967296
+        _hexLayerHeight:
+          m_rawValue: 4294967296
+        _hexOrientation: 1
+      _storageKind: 0
+      _configuredSparseVoxels:
+        _indices:
+          _items: []
+    - _boundsMin:
+        X:
+          m_rawValue: -51539607552
+        Y:
+          m_rawValue: 0
+        Z:
+          m_rawValue: 25769803776
+      _boundsMax:
+        X:
+          m_rawValue: -25769803776
+        Y:
+          m_rawValue: 4294967296
+        Z:
+          m_rawValue: 51539607552
+      _scanCellSize: 4
+      _topologyKind: 0
+      _topologyMetrics:
+        _rectangularCellWidth:
+          m_rawValue: 4294967296
+        _rectangularLayerHeight:
+          m_rawValue: 4294967296
+        _rectangularCellLength:
+          m_rawValue: 4294967296
+        _hexRadius:
+          m_rawValue: 4294967296
+        _hexLayerHeight:
+          m_rawValue: 4294967296
+        _hexOrientation: 1
+      _storageKind: 1
+      _configuredSparseVoxels:
+        _indices:
+          _items:
+          - _x: 0
+            _y: 0
+            _z: 0
+          - _x: 1
+            _y: 0
+            _z: 0
+          - _x: 1
+            _y: 0
+            _z: 1
+          - _x: 2
+            _y: 0
+            _z: 1
+          - _x: 3
+            _y: 0
+            _z: 2
+    - _boundsMin:
+        X:
+          m_rawValue: 0
+        Y:
+          m_rawValue: 0
+        Z:
+          m_rawValue: 25769803776
+      _boundsMax:
+        X:
+          m_rawValue: 34359738368
+        Y:
+          m_rawValue: 4294967296
+        Z:
+          m_rawValue: 60129542144
+      _scanCellSize: 4
+      _topologyKind: 1
+      _topologyMetrics:
+        _rectangularCellWidth:
+          m_rawValue: 4294967296
+        _rectangularLayerHeight:
+          m_rawValue: 4294967296
+        _rectangularCellLength:
+          m_rawValue: 4294967296
+        _hexRadius:
+          m_rawValue: 4294967296
+        _hexLayerHeight:
+          m_rawValue: 4294967296
+        _hexOrientation: 1
+      _storageKind: 1
+      _configuredSparseVoxels:
+        _indices:
+          _items:
+          - _x: 0
+            _y: 0
+            _z: 0
+          - _x: 1
+            _y: 0
+            _z: 0
+          - _x: 0
+            _y: 0
+            _z: 1
+          - _x: 1
+            _y: 0
+            _z: 1
+          - _x: 2
+            _y: 0
+            _z: 0
   Show: 1
 --- !u!114 &6897902078440886492
 MonoBehaviour:

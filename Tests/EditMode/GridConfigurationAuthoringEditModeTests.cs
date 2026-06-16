@@ -5,6 +5,7 @@ using GridForge.Grids.Storage;
 using GridForge.Grids.Topology;
 using GridForge.Spatial;
 using NUnit.Framework;
+using SwiftCollections;
 using System;
 using System.Reflection;
 using UnityEditor;
@@ -195,7 +196,8 @@ namespace GridForge.Unity.Tests.EditMode
 
                 GameObject loaded = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 GridConfigurationSaver loadedSaver = loaded.GetComponent<GridConfigurationSaver>();
-                SerializableGridConfiguration loadedConfig = loadedSaver.SavedGridConfigurations[0];
+                SwiftList<SerializableGridConfiguration> savedConfigurations = loadedSaver.SavedGridConfigurations;
+                SerializableGridConfiguration loadedConfig = savedConfigurations[0];
 
                 Assert.AreEqual(new Vector3d(-2, 1, 3), loadedConfig.BoundsMin);
                 Assert.AreEqual(new Vector3d(4, 5, 6), loadedConfig.BoundsMax);
@@ -206,6 +208,8 @@ namespace GridForge.Unity.Tests.EditMode
                 Assert.AreEqual(new Fixed64(2), config.TopologyMetrics.CellRadius);
                 Assert.AreEqual(new Fixed64(3), config.TopologyMetrics.LayerHeight);
                 Assert.AreEqual(HexOrientation.FlatTop, config.TopologyMetrics.HexOrientation);
+                SwiftList<SerializableVoxelIndex> savedSparseVoxels = loadedConfig.ConfiguredSparseVoxels.Indices;
+                Assert.AreEqual(new SerializableVoxelIndex(0, 1, 2).ToVoxelIndex(), savedSparseVoxels[0].ToVoxelIndex());
                 Assert.IsTrue(loadedConfig.TryGetConfiguredSparseVoxels(out VoxelIndex[] voxels, out string sparseFailure), sparseFailure);
                 Assert.AreEqual(new VoxelIndex(0, 1, 2), voxels[0]);
             }
