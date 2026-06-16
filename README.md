@@ -1,83 +1,84 @@
 # GridForge-Unity
 
-Unity package host for [GridForge](https://github.com/mrdav30/GridForge).
+Unity Package Manager host for [GridForge](https://github.com/mrdav30/GridForge) v7.
 
-This repository contains two installable Unity Package Manager variants. Choose
-one package only. The variants overlap and are not meant to be installed
-together.
+GridForge remains an engine-agnostic deterministic grid library. This repository
+contains Unity adapters, samples, inspectors, package metadata, and embedded
+GridForge runtime DLLs for Unity projects.
 
-## Which Package Should I Use?
+## Packages
 
-| Package | Use it when | Install |
+Install one package variant only. The variants expose the same Unity-facing
+GridForge API surface and should not be installed together.
+
+| Package | Use it when | Install URL |
 | --- | --- | --- |
-| `com.mrdav30.gridforge` | You want the default GridForge Unity package with the standard dependency chain. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge` |
-| `com.mrdav30.gridforge.lean` | You want the same Unity integration without the `MemoryPack` dependency chain. Prefer this for Burst AOT or your own serialization stack. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean` |
+| `com.mrdav30.gridforge` | You want the standard package and the default dependency chain. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge` |
+| `com.mrdav30.gridforge.lean` | You want the same Unity integration without the `MemoryPack` dependency chain. Prefer this for Burst AOT projects or custom serialization stacks. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean` |
 
-## How The Variants Differ
+Both variants target Unity `2022.3+`.
 
-`Lean` variants:
+## Start Here
 
-- Omit the `MemoryPack` dependency chain.
-- Prefer these when Burst AOT compatibility or a custom serialization layer is
-  more important than the default serialization path.
+1. Install exactly one package URL through Unity Package Manager.
+2. Let the package dependency installer resolve the matching
+   FixedMathSharp-Unity and SwiftCollections-Unity packages.
+3. If dependency resolution needs a manual nudge, use:
+   - `Tools > GridForge > Repair Dependencies` for the standard package.
+   - `Tools > GridForge.Lean > Repair Dependencies` for the lean package.
+4. Import the package sample named `Demo Scene`.
+5. Read the Unity v7 guide:
+   [.docs/wiki/GridForge-Unity-v7-User-Guide.md](.docs/wiki/GridForge-Unity-v7-User-Guide.md).
 
-Shared behavior:
+## What Ships
 
-- Both packages target GridForge v7 and use explicit `GridWorld` ownership.
-- Both packages include the same Unity-facing helpers such as
-  `GridWorldComponent`, `GridConfigurationSaver`, `BlockerComponent`,
-  `GridDebugger`, and `GridTracerTests`.
-- GridForge v7 adds core support for rectangular-prism and hex-prism topologies,
-  dense and sparse storage, and engine-agnostic diagnostics that this Unity
-  package will adapt through its authoring and debugging tools.
-- If you use multiple worlds in one scene, assign the intended
-  `GridWorldComponent` explicitly on blockers and debugging helpers instead of
-  relying on auto-resolution.
+- `GridWorldComponent` owns an explicit scene `GridWorld`.
+- `GridConfigurationSaver` authors rectangular, hex, dense, and sparse grid
+  configurations.
+- `BlockerComponent` creates scene-authored blockers from transforms,
+  colliders, renderers, or manual fixed bounds.
+- `GridDebugger` visualizes active grids through `GridForge.Diagnostics`.
+- `Grid Trace Visualizer` displays topology-aware traced voxel coverage.
+- `GridForgeUnityLogger` optionally forwards core GridForge logs into Unity.
 
-## Dependency Handling
+Unity adapts the core library; it does not replace the core ownership model. In
+multi-world scenes, assign the intended `GridWorldComponent` on blockers,
+debuggers, and trace tools instead of relying on automatic scene lookup.
 
-Each package includes an editor-side dependency installer that attempts to add
-the matching `FixedMathSharp-Unity` and `SwiftCollections-Unity` package
-variants for you.
+## Docs
 
-If Unity does not resolve those dependencies cleanly, use the matching install
-URLs below or run the package repair menu item under `Tools > GridForge*`.
+- Unity guide:
+  [.docs/wiki/GridForge-Unity-v7-User-Guide.md](.docs/wiki/GridForge-Unity-v7-User-Guide.md)
+- Package maintenance:
+  [.docs/wiki/GridForge-Unity-Package-Maintenance.md](.docs/wiki/GridForge-Unity-Package-Maintenance.md)
+- Standard package README:
+  [com.mrdav30.gridforge/README.md](com.mrdav30.gridforge/README.md)
+- Lean package README:
+  [com.mrdav30.gridforge.lean/README.md](com.mrdav30.gridforge.lean/README.md)
+- Core wiki:
+  [Getting Started](https://github.com/mrdav30/GridForge/wiki/Getting-Started),
+  [Common Workflows](https://github.com/mrdav30/GridForge/wiki/Common-Workflows),
+  [Sparse Grid Storage](https://github.com/mrdav30/GridForge/wiki/Sparse-Grid-Storage),
+  [Grid Diagnostics and Geometry](https://github.com/mrdav30/GridForge/wiki/Grid-Diagnostics-and-Geometry),
+  [Diagnostics and Logging](https://github.com/mrdav30/GridForge/wiki/Diagnostics-and-Logging)
 
-- Standard dependencies:
-  `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp`
-  and
-  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections`
-  and
-  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp`
-- Lean dependencies:
-  `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean`
-  and
-  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean`
-  and
-  `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean`
+## Maintainer Quick Path
 
-## Notes
+Shared managed source belongs in `Build/Base`. The package folders keep their
+own package metadata, plugins, asmdefs, samples, and Unity-generated `.meta`
+files.
 
-- All packages in this repo target Unity `2022.3+`.
-- The underlying .NET library lives here:
-  [GridForge](https://github.com/mrdav30/GridForge)
-- Until GridForge v7 is released, the embedded `Plugins/GridForge.dll` files are
-  sourced from local GridForge `Release` and `ReleaseLean` builds. The current
-  source commit and DLL hashes are tracked in
-  `.assets/gridforge-core-source.json`.
-- Each package folder keeps a short, package-specific install README with
-  `GridWorld` usage examples.
-- Repo maintenance note:
-  `Assets/Packages/Build/Base/` is the shared managed-code source of truth.
-  The package-specific folders keep their own package metadata, plugins, asmdefs,
-  and serialized sample assets.
-- Sync shared managed code from Unity via
-  `Tools > GridForge > Sync Managed Package Files`.
-- Sync from the command line via Unity batchmode and
-  `-executeMethod GridForge.Build.Editor.GridForgePackageSync.SyncPackagesBatchMode`.
-- Export both `.unitypackage` archives from Unity via
-  `Tools > GridForge > Export Unity Packages`.
-- Export from the command line via Unity batchmode and
-  `-executeMethod GridForge.Build.Editor.GridForgeUnityPackageExporter.ExportUnityPackagesBatchMode`.
-  Optionally pass `-gridforgeUnityPackageOutputPath <folder>` to override the
-  default export folder `UnityPackageExports~` at the project root.
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\test-update-unity-package-versions.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\update-unity-package-versions.ps1 -ValidateOnly
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\test-gridforge-package-sync.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\run-gridforge-unity-editmode-tests.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\sync-gridforge-unity-packages.ps1 -WhatIf
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets\scripts\export-gridforge-unity-packages.ps1 -WhatIf
+git diff --check
+```
+
+Until GridForge v7 is released, the embedded `Plugins/GridForge.dll` and
+`Plugins/GridForge.xml` files are sourced from local GridForge `Release` and
+`ReleaseLean` builds. The source commit and DLL/XML hashes are tracked in
+`.assets/gridforge-core-source.json`.

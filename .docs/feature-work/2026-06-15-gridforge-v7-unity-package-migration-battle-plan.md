@@ -15,7 +15,7 @@
 - Date: 2026-06-16.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
-- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 and 6 are currently local worktree implementation.
+- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 through 7 are currently local worktree implementation.
 - Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop`; embedded package DLLs now come from local HEAD `b5b2f3e` plus the uncommitted `GridTracer.TraceLine` fixes captured below.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
@@ -254,6 +254,31 @@
   - Generated `GridForge.Unity.Tests.EditMode.csproj` restore/build: pass, 0 warnings, 0 errors.
   - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
 
+### 2026-06-16 - Phase 7 Documentation And Public UX Pass
+
+- Reworked the root README into a concise package selection and maintainer entry point instead of a long API walkthrough.
+- Reworked the standard and lean package READMEs into short Package Manager-friendly install/setup pages with exact dependency repair menu names.
+- Added `.docs/wiki/GridForge-Unity-v7-User-Guide.md` for detailed public v7 Unity workflows:
+  - scene-owned `GridWorldComponent`
+  - rectangular grid authoring
+  - hex grid authoring
+  - sparse grid authoring
+  - diagnostics debugger
+  - trace visualizer and blockers
+  - optional Unity logging adapter
+  - FixedMathSharp and SwiftCollections-Unity serialization policy
+- Added `.docs/wiki/GridForge-Unity-Package-Maintenance.md` for release-maintainer workflow, package variant policy, DLL intake, validation commands, package sync, and export reminders.
+- Linked the READMEs and Unity guide to the core GridForge wiki pages for Getting Started, Common Workflows, Sparse Grid Storage, Grid Diagnostics and Geometry, and Diagnostics and Logging.
+- Kept detailed public API information under `.docs/wiki` so Unity does not import the docs as assets and the package READMEs stay focused.
+- Verification completed:
+  - `test-update-unity-package-versions.ps1`: 4/4 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - stale doc scan for `v6`, `BoundingArea`, old `GridWorld(Fixed64.One, 50)` examples, future-tense migration wording, and `_legacyVoxelSize`: clean.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+  - Unity EditMode tests were not rerun for this docs-only pass; the previous Phase 6 run covered the current code and sample state.
+- Next phase target: Phase 8, dependency installer and package release hardening.
+
 ## Source Material
 
 - Core v7 docs:
@@ -320,15 +345,15 @@
 
 ### High-Priority Gaps
 
-- `README.md`, `com.mrdav30.gridforge/README.md`, and `com.mrdav30.gridforge.lean/README.md` still describe GridForge v6 and contain v6-era examples such as `new GridWorld(Fixed64.One, 50)`.
-- The package readmes do not cover hex-prism grids, sparse storage, `GridDiagnostics`, or `GridForgeLogger`.
+- Phase 7 replaced the stale root and package READMEs with concise v7 package entry points.
+- Phase 7 added `.docs/wiki/GridForge-Unity-v7-User-Guide.md` for hex-prism grids, sparse storage, `GridDiagnostics`, and `GridForgeLogger` Unity workflows.
 - Phase 2 resolved grid configuration authoring for topology kind, topology metrics, storage kind, and sparse configured cells.
 - Phase 2 removed `_voxelSize` authoring and compatibility storage; v7 cell geometry is explicitly per-grid topology metrics.
 - Phase 3 replaced `GridDebugger` dense rectangular loops with `GridDiagnostics.VisitCells(...)`, topology-aware diagnostic geometry, sparse missing-address visualization, and physical-only cell resolution.
 - Phase 4 reframed `GridTracerTests` as the Grid Trace Visualizer and replaced cube drawing with diagnostic geometry.
 - Phase 4 resolved `GridTracerTests` `FillSize`/`WireSize` drift and package sync validation now catches managed-source drift across both variants.
 - `Tests/EditMode` now contains lifecycle, authoring, diagnostics, blocker, and trace visualizer coverage.
-- `.assets/scripts/test-update-unity-package-versions.ps1` currently fails because its test config does not define a `packages` array.
+- Phase 0 fixed `.assets/scripts/test-update-unity-package-versions.ps1` so the generated fixture defines standard and lean package entries.
 - `GitDependencyInstaller.cs` now uses ASCII log output and compiles with `System.Text.Json.Nodes` in Unity 6000.3.9f1; broader fresh-import behavior still needs Phase 8 validation.
 - Package manifests declare no UPM dependencies and rely on editor-time manifest mutation. That path needs explicit validation and friendlier failure behavior.
 
@@ -703,33 +728,36 @@ git diff --check
 
 **Goal:** Make package docs accurate, discoverable, and aligned with core wiki language.
 
+**Execution Status:** Implemented locally as of 2026-06-16; verified through package version validation, package sync validation, stale-doc scans, and `git diff --check`.
+
 **Files:**
 
 - Modify: `README.md`
 - Modify: `com.mrdav30.gridforge/README.md`
 - Modify: `com.mrdav30.gridforge.lean/README.md`
-- Create: `docs/feature-work/2026-06-15-gridforge-v7-unity-package-migration-notes.md` if implementation uncovers migration details worth tracking separately.
+- Create: `.docs/wiki/GridForge-Unity-v7-User-Guide.md`
+- Create: `.docs/wiki/GridForge-Unity-Package-Maintenance.md`
 
 **Work:**
 
-- [ ] Replace all v6 references with v7 language.
-- [ ] Remove or update `new GridWorld(Fixed64.One, 50)` examples.
-- [ ] Replace stale `BoundingArea` references with `FixedBoundArea`.
-- [ ] Add a short package selection section for standard versus lean variants.
-- [ ] Add setup examples for:
+- [x] Replace all v6 references with v7 language.
+- [x] Remove or update `new GridWorld(Fixed64.One, 50)` examples.
+- [x] Replace stale `BoundingArea` references with `FixedBoundArea`.
+- [x] Add a short package selection section for standard versus lean variants.
+- [x] Add setup examples for:
   - scene-owned `GridWorldComponent`
   - rectangular grid authoring
   - hex grid authoring
   - sparse grid authoring
   - diagnostics debugger
   - optional Unity logging adapter
-- [ ] Link to relevant core wiki pages:
+- [x] Link to relevant core wiki pages:
   - Getting Started
   - Common Workflows
   - Sparse Grid Storage
   - Grid Diagnostics and Geometry
   - Diagnostics and Logging
-- [ ] Document package maintenance:
+- [x] Document package maintenance:
   - edit shared managed source in `Build/Base`
   - run package sync
   - run version validation
@@ -738,9 +766,9 @@ git diff --check
 
 **Exit Criteria:**
 
-- A new user can install one package variant and find a v7 example for their grid shape.
-- Docs consistently explain that Unity is an adapter, not the owner of GridForge core state.
-- No stale v6 terms remain except in historical notes.
+- [x] A new user can install one package variant and find a v7 example for their grid shape.
+- [x] Docs consistently explain that Unity is an adapter, not the owner of GridForge core state.
+- [x] No stale v6 terms remain except in historical notes.
 
 ## Phase 8: Dependency Installer And Package Release Hardening
 

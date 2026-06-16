@@ -1,93 +1,56 @@
-# GridForge for Unity Lean
+# GridForge For Unity Lean
 
-Lean Unity package host for GridForge v7.
+Lean Unity adapter package for GridForge v7.
 
-Install:
-`https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean`
+Install through Unity Package Manager:
 
-This package matches the default Unity integration but omits the `MemoryPack`
-dependency chain.
-
-The included editor repair tool will attempt to add the matching lean
-dependencies for you. If Unity does not resolve them automatically, install:
-
-- `https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean`
-- `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean`
-- `https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean`
-
-## GridWorld Setup
-
-GridForge scenes should own an explicit `GridWorld` through `GridWorldComponent`.
-
-Typical scene setup:
-
-1. Add `GridWorldComponent` to the scene object that should own the world.
-2. Add `GridConfigurationSaver` to author grid configuration data.
-3. Call `GridConfigurationSaver.EarlyApply(world)` after creating the world, or
-   use the sample `SceneGridManager` component which does that bootstrap for
-   you.
-4. Point `BlockerComponent`, `GridDebugger`, and `GridTracerTests` at the
-   intended `GridWorldComponent` when using multiple worlds in one scene.
-
-## Core Usage
-
-```csharp
-using FixedMathSharp;
-using FixedMathSharp.Bounds;
-using GridForge.Blockers;
-using GridForge.Configuration;
-using GridForge.Grids;
-
-GridWorld world = new GridWorld(spatialGridCellSize: 50);
-
-GridConfiguration config = new GridConfiguration(
-    new Vector3d(-10, 0, -10),
-    new Vector3d(10, 0, 10));
-
-world.TryAddGrid(config, out ushort gridIndex);
-
-Vector3d queryPosition = new Vector3d(5, 0, 5);
-if (world.TryGetGridAndVoxel(queryPosition, out VoxelGrid grid, out Voxel voxel))
-{
-    UnityEngine.Debug.Log($"Voxel at {queryPosition} is {(voxel.IsOccupied ? "occupied" : "empty")}");
-}
-
-FixedBoundArea blockArea = new FixedBoundArea(new Vector3d(3, 0, 3), new Vector3d(5, 0, 5));
-BoundsBlocker blocker = new BoundsBlocker(world, blockArea, true, false);
-blocker.ApplyBlockage();
+```text
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean
 ```
 
-GridForge v7 core also supports hex-prism grids, sparse storage, and the
-`GridForge.Diagnostics` namespace. Unity authoring and debugging components are
-being updated to expose those v7 surfaces without adding Unity dependencies to
-the core library.
+Install this package when you want the same Unity integration as the standard
+package without the `MemoryPack` dependency chain. Prefer it for Burst AOT
+projects or projects that provide their own serialization stack. Do not install
+it with `com.mrdav30.gridforge`.
 
-## Query Helpers
+## Dependencies
 
-```csharp
-using FixedMathSharp;
-using GridForge.Grids;
-using GridForge.Spatial;
+The included editor repair tool attempts to add the required lean packages on
+import. If Unity does not resolve them automatically, use
+`Tools > GridForge.Lean > Repair Dependencies` or install these URLs manually:
 
-if (world.TryGetGridAndVoxel(queryPosition, out _, out Voxel voxel))
-{
-    PathPartition partition = new PathPartition();
-    partition.Setup(voxel.WorldIndex);
-    voxel.AddPartition(partition);
-}
-
-Vector3d scanCenter = new Vector3d(0, 0, 0);
-Fixed64 scanRadius = (Fixed64)5;
-foreach (IVoxelOccupant occupant in GridScanManager.ScanRadius(world, scanCenter, scanRadius))
-{
-    UnityEngine.Debug.Log($"Found occupant at {occupant.WorldPosition}");
-}
+```text
+https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean
 ```
 
-## Debugging Tools
+## Quick Setup
 
-- `GridDebugger` visualizes grids, voxels, and selected cells.
-- `GridTracerTests` visualizes traced voxel coverage.
-- `BlockerComponent` plus its custom inspector provides scene-authored blockers.
+1. Add `GridWorldComponent` to the scene object that owns the runtime world.
+2. Add `GridConfigurationSaver` to author saved grid configurations.
+3. Add rectangular, hex, dense, or sparse configurations in the inspector.
+4. Apply the saved configurations at startup with
+   `GridConfigurationSaver.EarlyApply(world)`, or use the sample
+   `SceneGridManager`.
+5. Assign the intended `GridWorldComponent` on `BlockerComponent`,
+   `GridDebugger`, and `Grid Trace Visualizer` when a scene has multiple worlds.
+
+The package sample named `Demo Scene` shows the v7 workflows in Unity:
+rectangular grids, hex grids, sparse grids, diagnostics, blockers, tracing, and
+optional Unity logging.
+
+## Docs
+
+- Unity v7 guide:
+  [../.docs/wiki/GridForge-Unity-v7-User-Guide.md](../.docs/wiki/GridForge-Unity-v7-User-Guide.md)
+- Package selection and maintenance:
+  [../README.md](../README.md)
+- Core GridForge wiki:
+  [Getting Started](https://github.com/mrdav30/GridForge/wiki/Getting-Started),
+  [Common Workflows](https://github.com/mrdav30/GridForge/wiki/Common-Workflows),
+  [Sparse Grid Storage](https://github.com/mrdav30/GridForge/wiki/Sparse-Grid-Storage),
+  [Grid Diagnostics and Geometry](https://github.com/mrdav30/GridForge/wiki/Grid-Diagnostics-and-Geometry),
+  [Diagnostics and Logging](https://github.com/mrdav30/GridForge/wiki/Diagnostics-and-Logging)
 
 Unity compatibility: `2022.3+`
