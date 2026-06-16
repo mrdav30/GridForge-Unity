@@ -1,5 +1,7 @@
 # GridForge-Unity
 
+[![Build](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml)
+
 Unity Package Manager host for [GridForge](https://github.com/mrdav30/GridForge).
 
 GridForge remains an engine-agnostic deterministic grid library. This repository
