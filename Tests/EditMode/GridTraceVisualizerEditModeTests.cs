@@ -112,6 +112,62 @@ namespace GridForge.Unity.Tests.EditMode
         }
 
         [Test]
+        public void XzLayerTraceContinuesSegmentWhenEnteringLaterHexGrid()
+        {
+            GridTopologyMetrics metrics = GridTopologyMetrics.Hex(
+                new Fixed64(2),
+                Fixed64.One,
+                HexOrientation.PointyTop);
+            GridConfiguration rectangularConfiguration = RectangularConfig(
+                new Vector3d(0, 0, -1),
+                new Vector3d(4, 0, 3),
+                GridStorageKind.Dense);
+            Vector3d hexBoundsMin = new(8, 0, 0);
+            Vector3d hexBoundsMax = hexBoundsMin + PointyTopHexOffset(new VoxelIndex(3, 0, 3), metrics);
+            GridConfiguration hexConfiguration = HexConfig(
+                hexBoundsMin,
+                hexBoundsMax,
+                GridStorageKind.Dense,
+                metrics);
+            using GridWorld world = new();
+            AddGrid(world, rectangularConfiguration, null, out _);
+            AddGrid(world, hexConfiguration, null, out ushort hexGridIndex);
+            VoxelGrid hexGrid = world.ActiveGrids[hexGridIndex];
+            GameObject owner = new("Grid trace visualizer edit mode test");
+
+            try
+            {
+                Assert.IsTrue(hexGrid.TryGetVoxel(
+                    new VoxelIndex(hexGrid.Width - 1, 0, hexGrid.Length - 1),
+                    out Voxel endVoxel));
+
+                Vector3d start = rectangularConfiguration.BoundsMin;
+                Vector3d end = endVoxel.WorldPosition;
+                Fixed64 entryT = (hexGrid.BoundsMin.X - start.X) / (end.X - start.X);
+                Vector3d expectedHexEntry = new(
+                    hexGrid.BoundsMin.X,
+                    start.Y + (end.Y - start.Y) * entryT,
+                    start.Z + (end.Z - start.Z) * entryT);
+
+                Assert.IsTrue(hexGrid.TryGetClosestVoxel(expectedHexEntry, out Voxel expectedFirstHexVoxel));
+
+                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
+
+                List<Voxel> traced = new();
+                visualizer.GetTraceVoxelsInto(world, start, end, traced);
+
+                List<Voxel> tracedHexVoxels = traced.FindAll(voxel => voxel.WorldIndex.GridIndex == hexGridIndex);
+                Assert.IsNotEmpty(tracedHexVoxels);
+                Assert.AreEqual(expectedFirstHexVoxel.Index, tracedHexVoxels[0].Index);
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+            }
+        }
+
+        [Test]
         public void HexTraceIncludesBoundaryVoxelWhenEndFallsPastGridEdge()
         {
             GridTopologyMetrics metrics = GridTopologyMetrics.Hex(
@@ -251,5 +307,17 @@ namespace GridForge.Unity.Tests.EditMode
                 GridTopologyKind.HexPrism,
                 metrics,
                 storageKind);
+
+        private static Vector3d PointyTopHexOffset(VoxelIndex index, GridTopologyMetrics metrics)
+        {
+            Fixed64 sqrt3 = Fixed64.FromRaw(7439101574L);
+            Fixed64 q = new(index.x);
+            Fixed64 r = new(index.z);
+
+            return new Vector3d(
+                metrics.CellRadius * sqrt3 * (q + r * Fixed64.Half),
+                index.y * metrics.LayerHeight,
+                metrics.CellRadius * Fixed64.Three * Fixed64.Half * r);
+        }
     }
 }

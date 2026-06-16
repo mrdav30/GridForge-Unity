@@ -16,7 +16,7 @@
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
 - Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 and 6 are currently local worktree implementation.
-- Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop`; embedded package DLLs now come from local HEAD `b5b2f3e` plus the uncommitted `GridTracer.TraceLine` fix captured below.
+- Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop`; embedded package DLLs now come from local HEAD `b5b2f3e` plus the uncommitted `GridTracer.TraceLine` fixes captured below.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
 - This file is the migration progress ledger. Keep it current as phases land or as new release risks are discovered.
@@ -183,20 +183,22 @@
 - Confirmed the trace visualizer report was rooted in GridForge core, not Unity adapter code:
   - `GridTracer.TraceLine` accepted candidate grids from the broadphase even when the actual line segment did not intersect the grid bounds, which let off-segment hex grids contribute traced cells.
   - Hex tracing omitted the clamped grid-edge endpoint when the caller's end point was outside the grid, because endpoint inclusion was delegated to the global end voxel lookup.
-- Fixed `GridTracer.TraceLine` in core with deterministic fixed-point segment-vs-bounds filtering and hex endpoint inclusion that preserves `includeEnd: false` for real in-grid end voxels.
-- Added core regression tests for off-segment hex candidates, dense hex edge completion, sparse hex edge completion, and `includeEnd: false` semantics.
-- Added Unity visualizer regressions for mixed-topology off-segment grids and hex edge completion through the `GridTracerTests` component path.
+  - Follow-up review found that intersected later grids still received the full global start/end segment, so traces visually restarted at the later grid's local origin instead of continuing from the segment entry point.
+- Fixed `GridTracer.TraceLine` in core with deterministic fixed-point segment-vs-bounds filtering, per-grid clipped trace segments, exact boundary-coordinate snapping for clipped fixed-point intersections, and hex endpoint inclusion that preserves `includeEnd: false` for real in-grid end voxels.
+- Added core regression tests for off-segment hex candidates, dense hex edge completion, sparse hex edge completion, cross-grid continuation into a later hex grid, and `includeEnd: false` semantics.
+- Added Unity visualizer regressions for mixed-topology off-segment grids, hex edge completion, and cross-grid continuation through the `GridTracerTests` component path.
 - Rebuilt standard and lean `GridForge.dll`/`.pdb` from local pre-release GridForge, copied the `netstandard2.1` artifacts into both package variants, and updated `.assets/gridforge-core-source.json` with the new DLL hashes plus a working-tree status note.
 - Verification completed:
   - Core RED run before fix: 3 targeted `GridTracerTests` failures for off-segment hex candidate and dense/sparse hex edge endpoint cases.
-  - Core targeted `GridTracerTests`: pass, 38/38.
-  - Core full Debug tests: pass, 413/413.
-  - Core full ReleaseLean tests: pass, 415/415.
+  - Core targeted `GridTracerTests`: pass, 39/39.
+  - Core full Debug tests: pass, 414/414.
+  - Core full ReleaseLean tests: pass, 416/416.
   - Core `dotnet build GridForge.slnx --configuration Release`: pass, 0 warnings, 0 errors.
   - Core `dotnet build GridForge.slnx --configuration ReleaseLean`: pass, 0 warnings, 0 errors.
   - Unity RED sample-scene run before generator cleanup: 38 passed, 2 failed on the now-unwanted workflow scenes.
   - `GridForgeSampleAssetGenerator.GenerateSamplesBatchMode`: pass; obsolete workflow scenes removed.
-  - Unity EditMode final run: pass, 42 total, 42 passed, 0 failed, 0 skipped.
+  - Unity RED visualizer continuation run before rebuilt DLL copy: 42 passed, 1 failed, expected first hex voxel `(0, 0, 1)` but old DLL returned `(0, 0, 0)`.
+  - Unity EditMode final run: pass, 43 total, 43 passed, 0 failed, 0 skipped.
   - `.assets/scripts/test-gridforge-package-sync.ps1`: pass after normalizing the standard sample `SceneGridManager.cs` copy back to `Build/Base`.
 
 ## Source Material
