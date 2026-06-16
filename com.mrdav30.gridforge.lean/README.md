@@ -15,9 +15,10 @@ it with `com.mrdav30.gridforge`.
 
 ## Dependencies
 
-The included editor repair tool attempts to add the required lean packages on
-import. If Unity does not resolve them automatically, use
-`Tools > GridForge.Lean > Repair Dependencies` or install these URLs manually:
+On first editor load, the included dependency bootstrapper attempts to add the
+required lean git dependencies to `Packages/manifest.json`. If Unity does not
+resolve them automatically, use `Tools > GridForge.Lean > Repair Dependencies`
+or install these URLs manually:
 
 ```text
 https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean

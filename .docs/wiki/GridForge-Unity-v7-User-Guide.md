@@ -43,6 +43,19 @@ https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean
 The standard and lean variants define overlapping GridForge assemblies. Install
 one variant only.
 
+On first editor load, a small dependency bootstrapper compiles before the main
+GridForge assemblies. It adds the matching FixedMathSharp-Unity and
+SwiftCollections-Unity git dependencies to `Packages/manifest.json`, then asks
+Unity Package Manager to resolve again. If the manifest was edited outside Unity
+or resolution was interrupted, use the matching repair menu:
+
+- `Tools > GridForge > Repair Dependencies`
+- `Tools > GridForge.Lean > Repair Dependencies`
+
+Unity may need one extra resolve/recompile cycle on the first import while those
+git dependencies settle. The final compiler pass should be clean once the
+dependency entries are present in `Packages/manifest.json`.
+
 ## Scene-Owned World
 
 The simplest scene setup is one GameObject that holds both the world and the

@@ -11,7 +11,21 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "GRIDFORGE_HAS_FIXEDMATHSHARP",
+        "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mrdav30.fixedmathsharp",
+            "expression": "5.0.0",
+            "define": "GRIDFORGE_HAS_FIXEDMATHSHARP"
+        },
+        {
+            "name": "com.mrdav30.swiftcollections",
+            "expression": "5.0.0",
+            "define": "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
+        }
+    ],
     "noEngineReferences": false
 }

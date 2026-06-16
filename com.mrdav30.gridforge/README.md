@@ -14,9 +14,10 @@ the default dependency chain. Do not install it with
 
 ## Dependencies
 
-The included editor repair tool attempts to add the required packages on import.
-If Unity does not resolve them automatically, use
-`Tools > GridForge > Repair Dependencies` or install these URLs manually:
+On first editor load, the included dependency bootstrapper attempts to add the
+required git dependencies to `Packages/manifest.json`. If Unity does not resolve
+them automatically, use `Tools > GridForge > Repair Dependencies` or install
+these URLs manually:
 
 ```text
 https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp

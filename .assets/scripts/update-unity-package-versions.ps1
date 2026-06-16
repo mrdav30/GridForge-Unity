@@ -181,6 +181,12 @@ function Update-InstallerDependencies {
     $updatedContent = $content
     $hasChanges = $false
 
+    Test-InstallerDependencySet `
+        -Content $content `
+        -Dependencies $Dependencies `
+        -DisplayPath $DisplayPath `
+        -ValidationIssues $ValidationIssues
+
     foreach ($dependency in $Dependencies) {
         $name = Get-RequiredString -Object $dependency -PropertyName "name" -Context "Dependency in '$DisplayPath'"
         $gitUrl = Get-RequiredString -Object $dependency -PropertyName "gitUrl" -Context "Dependency '$name' in '$DisplayPath'"
@@ -253,6 +259,46 @@ function Update-InstallerDependencies {
 
     if ($Apply -and $hasChanges) {
         Set-Content -LiteralPath $InstallerPath -Value $updatedContent -Encoding UTF8 -NoNewline
+    }
+}
+
+function Test-InstallerDependencySet {
+    param(
+        [string]$Content,
+        [object[]]$Dependencies,
+        [string]$DisplayPath,
+        [System.Collections.Generic.List[string]]$ValidationIssues
+    )
+
+    $configuredNames = @{}
+    foreach ($dependency in $Dependencies) {
+        $name = Get-RequiredString -Object $dependency -PropertyName "name" -Context "Dependency in '$DisplayPath'"
+        $configuredNames[$name] = $true
+    }
+
+    $installerNames = @{}
+    $dependencyPattern = '(?ms)new\s*\(\s*"(?<name>[^"]+)"\s*,\s*"(?<gitUrl>[^"]*)"\s*,\s*"(?<version>[^"]*)"\s*\)'
+    $matches = [regex]::Matches($Content, $dependencyPattern)
+    if ($matches.Count -eq 0) {
+        throw "Could not find dependency entries in '$DisplayPath'."
+    }
+
+    foreach ($match in $matches) {
+        $installerNames[$match.Groups["name"].Value] = $true
+    }
+
+    foreach ($name in $installerNames.Keys) {
+        if ($configuredNames.ContainsKey($name)) {
+            continue
+        }
+
+        $message = "$DisplayPath contains unconfigured dependency $name"
+        if ($ValidateOnly) {
+            $ValidationIssues.Add($message)
+            continue
+        }
+
+        throw "$message. Update unity-package-versions.json before release."
     }
 }
 

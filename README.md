@@ -21,8 +21,9 @@ Both variants target Unity `2022.3+`.
 ## Start Here
 
 1. Install exactly one package URL through Unity Package Manager.
-2. Let the package dependency installer resolve the matching
-   FixedMathSharp-Unity and SwiftCollections-Unity packages.
+2. On first editor load, let the package dependency bootstrapper add the
+   matching FixedMathSharp-Unity and SwiftCollections-Unity git dependencies to
+   `Packages/manifest.json`.
 3. If dependency resolution needs a manual nudge, use:
    - `Tools > GridForge > Repair Dependencies` for the standard package.
    - `Tools > GridForge.Lean > Repair Dependencies` for the lean package.

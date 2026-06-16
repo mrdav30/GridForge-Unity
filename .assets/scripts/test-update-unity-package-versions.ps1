@@ -54,7 +54,7 @@ function New-TestRepo {
     {
       "path": "com.mrdav30.gridforge",
       "updatePackageVersion": true,
-      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "installer": "Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs",
       "dependencies": [
         {
           "name": "com.mrdav30.fixedmathsharp",
@@ -71,7 +71,7 @@ function New-TestRepo {
     {
       "path": "com.mrdav30.gridforge.lean",
       "updatePackageVersion": true,
-      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "installer": "Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs",
       "dependencies": [
         {
           "name": "com.mrdav30.fixedmathsharp.lean",
@@ -105,7 +105,7 @@ function New-TestRepo {
 }
 '@
 
-    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/GitDependencyInstaller.cs") -Content @'
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs") -Content @'
 private static readonly Dependency[] RequiredDependencies =
 {
     new(
@@ -121,7 +121,7 @@ private static readonly Dependency[] RequiredDependencies =
 };
 '@
 
-    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/GitDependencyInstaller.cs") -Content @'
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs") -Content @'
 private static readonly Dependency[] RequiredDependencies =
 {
     new(
@@ -193,12 +193,12 @@ function Test-ApplyUpdatesPackageAndInstallerVersions {
     Assert-Equal -Expected "4.0.6" -Actual (Get-PackageVersion (Join-Path $repoRoot "com.mrdav30.gridforge/package.json")) -Message "Apply should update package.json."
     Assert-Equal -Expected "4.0.6" -Actual (Get-PackageVersion (Join-Path $repoRoot "com.mrdav30.gridforge.lean/package.json")) -Message "Apply should update every configured package.json."
 
-    $standardInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/GitDependencyInstaller.cs")
+    $standardInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs")
     Assert-Contains -Text $standardInstaller -Expected "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp" -Message "Apply should update standard FixedMathSharp git URL."
     Assert-Contains -Text $standardInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections" -Message "Apply should update standard SwiftCollections git URL."
     Assert-Contains -Text $standardInstaller -Expected '"v5.0.0"' -Message "Apply should update standard dependency versions."
 
-    $leanInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/GitDependencyInstaller.cs")
+    $leanInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs")
     Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean" -Message "Apply should update lean FixedMathSharp git URL."
     Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean" -Message "Apply should update lean SwiftCollections git URL."
     Assert-Contains -Text $leanInstaller -Expected '"v5.0.0"' -Message "Apply should update lean dependency versions."
@@ -218,6 +218,35 @@ function Test-ValidateOnlyFailsWhenFilesDrift {
     throw "ValidateOnly should fail when files do not match the config."
 }
 
+function Test-ValidateOnlyFailsOnUnconfiguredInstallerDependency {
+    $repoRoot = New-TestRepo
+    Invoke-Updater -RepoRoot $repoRoot -Apply | Out-Null
+
+    $installerPath = Join-Path $repoRoot "com.mrdav30.gridforge/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs"
+    $installer = Get-FileText -Path $installerPath
+    $installer = $installer.Replace(
+        "};",
+        @'
+    new(
+        "com.mrdav30.unexpected",
+        "https://example.invalid/Unexpected.git?path=/com.mrdav30.unexpected",
+        "v1.0.0"
+    )
+};
+'@)
+    Set-Content -Path $installerPath -Value $installer -Encoding UTF8
+
+    try {
+        Invoke-Updater -RepoRoot $repoRoot -ValidateOnly | Out-Null
+    }
+    catch {
+        Assert-Contains -Text $_.Exception.Message -Expected "Validation failed" -Message "ValidateOnly should fail when installer dependencies drift from config."
+        return
+    }
+
+    throw "ValidateOnly should fail when an installer contains an unconfigured dependency."
+}
+
 function Test-ValidateOnlyPassesAfterApply {
     $repoRoot = New-TestRepo
     Invoke-Updater -RepoRoot $repoRoot -Apply | Out-Null
@@ -234,6 +263,7 @@ try {
         "Test-DryRunReportsChangesWithoutMutatingFiles",
         "Test-ApplyUpdatesPackageAndInstallerVersions",
         "Test-ValidateOnlyFailsWhenFilesDrift",
+        "Test-ValidateOnlyFailsOnUnconfiguredInstallerDependency",
         "Test-ValidateOnlyPassesAfterApply"
     )
 

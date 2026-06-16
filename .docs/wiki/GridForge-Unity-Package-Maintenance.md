@@ -33,6 +33,16 @@ Lean package:
 
 The two package variants overlap and should not be installed together.
 
+Each package has a dependency-installer bootstrap assembly under
+`Editor/Utility/DependencyInstaller`. The bootstrapper has no FixedMathSharp or
+SwiftCollections assembly references, so it can compile during a fresh import,
+write the required git dependencies into `Packages/manifest.json`, and trigger a
+package resolve before the main GridForge assemblies compile.
+
+Fresh-import validation should check the settled compile after the bootstrap
+updates the manifest. A first pass can log transient unresolved plugin
+references before dependency resolution completes; the second pass must be clean.
+
 ## Core DLL Intake
 
 Until GridForge v7 is released, the package `Plugins/GridForge.dll` and

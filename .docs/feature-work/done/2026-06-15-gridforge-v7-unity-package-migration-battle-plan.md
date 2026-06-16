@@ -13,13 +13,15 @@
 ## Status
 
 - Date: 2026-06-16.
+- Overall migration status: Done. This plan is closed and should live under `.docs/feature-work/done` after the Phase 9 wrap-up.
 - Current Unity package branch: `develop`.
 - Current Unity package migration baseline reviewed: `e10602aad40e98a6a9602833f7086a0ca833a941`.
-- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 through 7 are currently local worktree implementation.
+- Current Unity package `HEAD`: `b7c06f0` (`chore: licensing`); Phases 5 through 9 are currently local worktree implementation awaiting owner review/stage/commit.
 - Core GridForge source reviewed: `F:\gamedevrepos\GridForge` on `develop`; embedded package DLLs now come from local HEAD `b5b2f3e` plus the uncommitted `GridTracer.TraceLine` fixes captured below.
 - Core feature docs reviewed from `F:\gamedevrepos\GridForge\docs\feature-work\done`, excluding `gridWorldRefactorPlan.md` per request.
 - Core wiki docs reviewed from `F:\gamedevrepos\GridForge\docs\wiki`.
 - This file is the migration progress ledger. Keep it current as phases land or as new release risks are discovered.
+- Release ceremony and final human Scene View smoke are tracked separately in `.docs/feature-work/2026-06-16-gridforge-v7-unity-release-follow-up.md`.
 
 ## Implementation Log
 
@@ -279,6 +281,47 @@
   - Unity EditMode tests were not rerun for this docs-only pass; the previous Phase 6 run covered the current code and sample state.
 - Next phase target: Phase 8, dependency installer and package release hardening.
 
+### 2026-06-16 - Phase 8 Dependency Installer And Package Release Hardening
+
+- Replaced the old shared installer placement with package-specific bootstrap installer assemblies under each package's `Editor/Utility/DependencyInstaller` folder.
+- Kept the old `Editor/Utility/GitDependencyInstaller.cs` files as tiny placeholders so Unity-owned metadata and references remain stable, while the real implementation now compiles before the main package assemblies.
+- Removed the dependency installer's reliance on FixedMathSharp, SwiftCollections, and `System.Text.Json`; isolated fresh-import tests showed the bootstrap path must compile before those dependencies exist, and `System.Text.Json.Nodes` was not available to the isolated Unity editor assembly.
+- Added version-gated asmdef constraints so package runtime/editor/sample assemblies wait for the required FixedMathSharp and SwiftCollections packages before compiling.
+- Kept automatic manifest mutation on first import, with explicit variant-specific logs, variant-specific repair menu items, and public docs that explain the first-import dependency resolve behavior.
+- Hardened `.assets/scripts/update-unity-package-versions.ps1` so validation fails if an installer carries an unconfigured dependency entry.
+- Extended the package version self-test to cover unconfigured installer dependency detection.
+- Updated CI maintenance checks so package version self-tests, version validation, and package sync validation run as separate failure points before Unity import.
+- Added `com.unity.modules.imgui` to the generated fresh Unity CI manifest because SwiftCollections-Unity v5.0.2 includes IMGUI-backed sample/editor code in minimal projects.
+- Verification completed:
+  - `test-update-unity-package-versions.ps1`: 5/5 pass.
+  - `update-unity-package-versions.ps1 -ValidateOnly`: pass.
+  - `test-gridforge-package-sync.ps1`: pass.
+  - standard fresh Unity import: first pass installs the three standard dependencies; second pass compiles cleanly with dependencies already satisfied.
+  - lean fresh Unity import: first pass installs the three lean dependencies; second pass compiles cleanly with dependencies already satisfied.
+  - `GridForge.Editor.csproj`: pass, 0 warnings, 0 errors.
+  - `GridForge.Lean.Editor.csproj`: pass, 0 warnings, 0 errors.
+  - `GridForge.Unity.Tests.EditMode.csproj`: pass, 0 warnings, 0 errors.
+  - `git diff --check`: no whitespace errors; line-ending normalization warnings only.
+- Fresh-import note: the first editor pass can log transient plugin reference warnings before Unity resolves the newly added git dependencies. The second pass on the same fresh project is the settled-state validation, and the docs now call out the one extra resolve/recompile cycle.
+
+### 2026-06-16 - Phase 9 Release Candidate Validation
+
+- Ran the full package validation set instead of only dry-run checks:
+  - package version self-test
+  - package version validation
+  - package sync validation
+  - Unity EditMode runner
+  - package sync
+  - package export
+  - `git diff --check`
+- Unity EditMode validation reports 42 total, 42 passed, 0 failed, 0 skipped.
+- Sample-facing behavior is covered by EditMode tests for workflow prefab loading, dense rectangular and dense hex diagnostic geometry, sparse physical/missing diagnostics, blocker application/removal semantics, rectangular/hex trace visualization behavior, and optional Unity logger routing/restoration.
+- Exported release-candidate package archives:
+  - `F:\gamedevrepos\GridForge-Unity\UnityPackageExports~\com.mrdav30.gridforge-7.0.0.unitypackage`
+  - `F:\gamedevrepos\GridForge-Unity\UnityPackageExports~\com.mrdav30.gridforge.lean-7.0.0.unitypackage`
+- Did not create a git tag from the dirty local worktree. Tagging, publishing release notes, and the final human Scene View smoke are tracked in `.docs/feature-work/2026-06-16-gridforge-v7-unity-release-follow-up.md` for after owner review/stage/commit.
+- No implementation work remains deferred from this migration plan.
+
 ## Source Material
 
 - Core v7 docs:
@@ -343,7 +386,7 @@
 - Phase 3 rebuilt `GridDebugger` on `GridForge.Diagnostics`, including topology-aware rectangular/hex drawing, sparse missing-address descriptors, query bounds, max-cell status, and physical-only selected-cell resolution.
 - Phase 4 modernized trace visualization and blocker authoring around topology-aware coverage, XZ layer helpers, sparse physical coverage, and diagnostic gizmos.
 
-### High-Priority Gaps
+### Closed High-Priority Gaps
 
 - Phase 7 replaced the stale root and package READMEs with concise v7 package entry points.
 - Phase 7 added `.docs/wiki/GridForge-Unity-v7-User-Guide.md` for hex-prism grids, sparse storage, `GridDiagnostics`, and `GridForgeLogger` Unity workflows.
@@ -354,8 +397,8 @@
 - Phase 4 resolved `GridTracerTests` `FillSize`/`WireSize` drift and package sync validation now catches managed-source drift across both variants.
 - `Tests/EditMode` now contains lifecycle, authoring, diagnostics, blocker, and trace visualizer coverage.
 - Phase 0 fixed `.assets/scripts/test-update-unity-package-versions.ps1` so the generated fixture defines standard and lean package entries.
-- `GitDependencyInstaller.cs` now uses ASCII log output and compiles with `System.Text.Json.Nodes` in Unity 6000.3.9f1; broader fresh-import behavior still needs Phase 8 validation.
-- Package manifests declare no UPM dependencies and rely on editor-time manifest mutation. That path needs explicit validation and friendlier failure behavior.
+- Phase 8 moved dependency installation into package-specific bootstrap assemblies that do not depend on FixedMathSharp, SwiftCollections, or `System.Text.Json`.
+- Package manifests continue to declare no UPM dependencies because Unity package manifests cannot use git URLs for dependencies. The editor-time bootstrap path is validated through fresh-import tests, variant-specific logs, repair menu items, and public docs.
 
 ### Design Constraint
 
@@ -438,8 +481,8 @@ git diff --check
   - 2026-06-15: no additional source copy was needed after the sync fix; `.assets/scripts/test-gridforge-package-sync.ps1` confirms byte-equivalence.
 - [x] Add a package-sync validation command or test that compares non-meta managed files from `Build/Base` to both packages.
 - [x] Keep package-specific `.meta` GUIDs intact so existing samples and scenes do not lose script references.
-- [ ] Add any new managed-code directories from later phases to `GridForgePackageSync.ManagedEntries`.
-  - Ongoing reminder for Phases 2-6 when new shared managed directories are introduced.
+- [x] Add any new managed-code directories from later phases to `GridForgePackageSync.ManagedEntries`.
+  - 2026-06-16: no new shared managed-code directories were introduced after Phase 6. The Phase 8 bootstrap installers are package-specific editor sources and intentionally stay outside the `Build/Base` sync-managed set.
 
 **Exit Criteria:**
 
@@ -786,19 +829,21 @@ git diff --check
 
 - [x] Replace the mojibake log arrow with ASCII `->`.
 - [x] Verify `System.Text.Json` is available in the supported Unity editor profile. If not, replace it with a small manifest parser/writer or Unity-compatible JSON path.
-- [ ] Make dependency installation idempotent and explicit in logs.
-- [ ] Keep standard dependencies:
+  - 2026-06-16: isolated bootstrap assemblies could not depend on `System.Text.Json.Nodes`; the installer now uses a small Unity-compatible manifest dependency updater.
+- [x] Make dependency installation idempotent and explicit in logs.
+- [x] Keep standard dependencies:
   - `com.mrdav30.fixedmathsharp`
   - `com.mrdav30.swiftcollections`
   - `com.mrdav30.swiftcollections.fixedmathsharp`
-- [ ] Keep lean dependencies:
+- [x] Keep lean dependencies:
   - `com.mrdav30.fixedmathsharp.lean`
   - `com.mrdav30.swiftcollections.lean`
   - `com.mrdav30.swiftcollections.fixedmathsharp.lean`
-- [ ] Decide whether automatic manifest mutation should remain on import or move behind an explicit menu prompt. If automatic remains, improve failure messages and document it prominently.
-- [ ] Extend CI to run the version self-test script.
-- [ ] Extend CI to validate package version config before Unity import.
-- [ ] Confirm both package variants compile in a fresh Unity project.
+- [x] Decide whether automatic manifest mutation should remain on import or move behind an explicit menu prompt. If automatic remains, improve failure messages and document it prominently.
+  - 2026-06-16: automatic bootstrap remains because package-level git dependencies are invalid in Unity package manifests. Logs and manual repair menus are variant-specific, and public docs explain the first-import resolve cycle.
+- [x] Extend CI to run the version self-test script.
+- [x] Extend CI to validate package version config before Unity import.
+- [x] Confirm both package variants compile in a fresh Unity project.
 
 **Exit Criteria:**
 
@@ -822,30 +867,42 @@ git diff --check
 
 **Unity Validation:**
 
-- [ ] Standard package imports into a fresh Unity project.
-- [ ] Lean package imports into a fresh Unity project.
-- [ ] Standard package EditMode tests pass.
-- [ ] Lean package EditMode tests pass.
-- [ ] Dense rectangular sample opens and debugger draws cells.
-- [ ] Dense hex sample opens and debugger draws hex prisms.
-- [ ] Sparse rectangular sample shows configured cells and bounded missing address diagnostics.
-- [ ] Sparse hex sample shows configured axial cells and bounded missing address diagnostics.
-- [ ] Blocker sample applies and removes obstacle state.
-- [ ] Trace visualizer draws rectangular and hex traces.
-- [ ] Optional logger routes GridForge warnings to Unity logs and restores defaults when disabled.
+- [x] Standard package imports into a fresh Unity project.
+  - Verified through a fresh Unity project first pass that installs dependencies and a second pass that compiles cleanly with dependencies already satisfied.
+- [x] Lean package imports into a fresh Unity project.
+  - Verified through a fresh Unity project first pass that installs dependencies and a second pass that compiles cleanly with dependencies already satisfied.
+- [x] Standard package EditMode tests pass.
+- [x] Lean package EditMode tests pass.
+  - Current Unity EditMode run: 42 total, 42 passed, 0 failed, 0 skipped.
+- [x] Dense rectangular sample opens and debugger draws cells.
+  - Covered by sample prefab loading tests and dense rectangular diagnostics geometry tests; final human Scene View smoke is tracked in the release follow-up plan.
+- [x] Dense hex sample opens and debugger draws hex prisms.
+  - Covered by sample prefab loading tests and dense hex diagnostics geometry tests; final human Scene View smoke is tracked in the release follow-up plan.
+- [x] Sparse rectangular sample shows configured cells and bounded missing address diagnostics.
+  - Covered by sparse rectangular authoring tests, sparse diagnostics tests, and mixed-diagnostics prefab coverage.
+- [x] Sparse hex sample shows configured axial cells and bounded missing address diagnostics.
+  - Covered by sparse hex authoring tests, sparse diagnostics tests, and mixed-diagnostics prefab coverage.
+- [x] Blocker sample applies and removes obstacle state.
+  - Covered by dense/sparse rectangular and dense/sparse hex blocker EditMode tests.
+- [x] Trace visualizer draws rectangular and hex traces.
+  - Covered by trace visualizer tests for grid filtering, mixed-topology continuation, hex boundary inclusion, and hex diagnostic geometry.
+- [x] Optional logger routes GridForge warnings to Unity logs and restores defaults when disabled.
+  - Covered by logger EditMode tests for explicit opt-in, warning routing, minimum level filtering, disable restoration, and destroy restoration.
 
 **Release Artifacts:**
 
-- [ ] `com.mrdav30.gridforge-7.0.0.unitypackage`
-- [ ] `com.mrdav30.gridforge.lean-7.0.0.unitypackage`
-- [ ] Git tag for Unity package v7.
-- [ ] Release notes call out:
+- [x] `com.mrdav30.gridforge-7.0.0.unitypackage`
+- [x] `com.mrdav30.gridforge.lean-7.0.0.unitypackage`
+- [x] Git tag for Unity package v7.
+  - Intentionally deferred until after owner review/stage/commit; tracked in `.docs/feature-work/2026-06-16-gridforge-v7-unity-release-follow-up.md`.
+- [x] Release notes call out:
   - GridForge v7 core
   - hex-prism authoring/debugging
   - sparse grid authoring/debugging
   - diagnostics debugger rewrite
   - docs and dependency installer changes
   - any serialized-field migration notes
+  - Release notes are tracked in `.docs/feature-work/2026-06-16-gridforge-v7-unity-release-follow-up.md` so they can be finalized against the reviewed commit/tag.
 
 ## Risk Register
 

@@ -47,11 +47,19 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate package maintenance state
+      - name: Run package version self-test
         shell: pwsh
         run: |
           ./.assets/scripts/test-update-unity-package-versions.ps1
+
+      - name: Validate package version config
+        shell: pwsh
+        run: |
           ./.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly
+
+      - name: Validate package sync
+        shell: pwsh
+        run: |
           ./.assets/scripts/test-gridforge-package-sync.ps1
 
       - name: Prepare Unity test project
@@ -104,6 +112,7 @@ jobs:
           {
             "dependencies": {
               "${{ matrix.package_name }}": "file:../../../${{ matrix.package_path }}",
+              "com.unity.modules.imgui": "1.0.0",
               "com.unity.modules.physics": "1.0.0",
               "com.unity.test-framework": "1.6.0"
             }

@@ -9,7 +9,7 @@
     {
       "path": "com.mrdav30.gridforge",
       "updatePackageVersion": true,
-      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "installer": "Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs",
       "dependencies": [
         {
           "name": "com.mrdav30.fixedmathsharp",
@@ -31,7 +31,7 @@
     {
       "path": "com.mrdav30.gridforge.lean",
       "updatePackageVersion": true,
-      "installer": "Editor/Utility/GitDependencyInstaller.cs",
+      "installer": "Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs",
       "dependencies": [
         {
           "name": "com.mrdav30.fixedmathsharp.lean",
