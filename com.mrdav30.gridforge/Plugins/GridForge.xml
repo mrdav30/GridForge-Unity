@@ -2127,6 +2127,16 @@
             Clears all temporary scan state while retaining allocated backing storage.
             </summary>
         </member>
+        <member name="T:GridForge.Grids.GridTraceScratch">
+            <summary>
+            Reusable temporary storage for allocation-sensitive grid tracing and coverage operations.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridTraceScratch.Clear">
+            <summary>
+            Clears all temporary trace state while retaining allocated backing storage.
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.ObstacleClearEventInfo">
             <summary>
             Immutable snapshot describing a bulk obstacle clear operation on a voxel.
@@ -2332,6 +2342,26 @@
         </member>
         <member name="M:GridForge.Grids.Topology.GridTopologyMetrics.op_Inequality(GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Grids.Topology.GridTopologyMetrics)">
             <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridTopologyMetricUtility">
+            <summary>
+            Provides deterministic cell-edge measurements for grid topology-aware traversal and padding.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetricUtility.GetMaxCellEdge(GridForge.Grids.VoxelGrid)">
+            <summary>
+            Gets the largest 3D cell edge for the supplied grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetricUtility.GetPlanarMaxCellEdge(GridForge.Grids.VoxelGrid)">
+            <summary>
+            Gets the largest X/Z-plane cell edge for the supplied grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridTopologyMetricUtility.GetRepresentativeCellEdge(GridForge.Grids.GridWorld)">
+            <summary>
+            Gets a representative cell edge for a world, or the default rectangular cell size when no grid is active.
+            </summary>
         </member>
         <member name="T:GridForge.Grids.Topology.HexOrientation">
             <summary>
@@ -2749,6 +2779,15 @@
             <summary>
             Snaps a given position to the topology-local scan cell in the grid.
             </summary>
+        </member>
+        <member name="M:GridForge.Grids.VoxelGrid.NormalizeBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Normalizes world-space bounds to this grid's topology-aligned coverage bounds.
+            </summary>
+            <param name="min">The first world-space bounds corner.</param>
+            <param name="max">The second world-space bounds corner.</param>
+            <param name="padding">Optional non-negative padding applied before normalization.</param>
+            <returns>Topology-aligned minimum and maximum bounds suitable for deterministic coverage scans.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.GetHashCode">
             <inheritdoc/>
@@ -3627,6 +3666,50 @@
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the covered voxels.</returns>
         </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage with voxels covered by the supplied bounding area.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The minimum corner of the bounding area.</param>
+            <param name="boundsMax">The maximum corner of the bounding area.</param>
+            <param name="results">Caller-owned storage that receives covered voxels.</param>
+            <param name="padding">Value applied to the min/max bounds before normalization.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage with voxels covered by the supplied XZ-plane bounding area.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The 2D minimum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="results">Caller-owned storage that receives covered voxels.</param>
+            <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
+            <param name="padding">Value applied to the min/max bounds before normalization.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The minimum corner of the bounding area.</param>
+            <param name="boundsMax">The maximum corner of the bounding area.</param>
+            <param name="results">Caller-owned storage that receives covered voxels.</param>
+            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="padding">Value applied to the min/max bounds before normalization.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Clears and fills caller-owned storage using caller-owned scratch collections for an XZ-plane bounding area.
+            </summary>
+            <param name="world">The world whose grids should be queried.</param>
+            <param name="boundsMin">The 2D minimum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
+            <param name="results">Caller-owned storage that receives covered voxels.</param>
+            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
+            <param name="padding">Value applied to the min/max bounds before normalization.</param>
+        </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all scan cells within the given bounding area across relevant grids in the supplied world.
@@ -3676,6 +3759,71 @@
         <member name="M:GridForge.Utility.GridTracer.AddCoveredScanCellsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Appends covered scan cells using caller-owned scratch state for allocation-sensitive scans.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.AddCoveredVoxelsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Appends covered voxels without allocating an iterator for hot-path callers.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.AddCoveredVoxelsTo(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,System.Nullable{FixedMathSharp.Fixed64})">
+            <summary>
+            Appends covered voxels using caller-owned scratch state for allocation-sensitive coverage scans.
+            </summary>
+        </member>
+        <member name="T:GridForge.Utility.GridTraversalPaddingMode">
+            <summary>
+            Selects which topology edge measurement a grid traversal should use for padding.
+            </summary>
+        </member>
+        <member name="F:GridForge.Utility.GridTraversalPaddingMode.MaxCellEdge">
+            <summary>
+            Use the largest three-dimensional cell edge.
+            </summary>
+        </member>
+        <member name="F:GridForge.Utility.GridTraversalPaddingMode.PlanarMaxCellEdge">
+            <summary>
+            Use the largest X/Z-plane cell edge.
+            </summary>
+        </member>
+        <member name="T:GridForge.Utility.GridTraversalState">
+            <summary>
+            Tracks per-grid traversal padding while suppressing duplicate voxel visits.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversalState.#ctor(GridForge.Grids.GridWorld,GridForge.Utility.GridTraversalPaddingMode)">
+            <summary>
+            Initializes traversal state for one world and padding mode.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversalState.TryVisitUnique(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{System.Int32},FixedMathSharp.Fixed64@)">
+            <summary>
+            Visits a voxel only once and returns the selected cell-edge measurement for its grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversalState.GetCellEdge(GridForge.Grids.Voxel)">
+            <summary>
+            Gets the selected cell-edge measurement for a voxel's grid, caching repeated grid lookups.
+            </summary>
+        </member>
+        <member name="T:GridForge.Utility.GridTraversal">
+            <summary>
+            Provides deterministic helpers for duplicate-safe voxel traversal.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.TryGetUniquePartition``1(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{System.Int32},``0@)">
+            <summary>
+            Gets a voxel partition once per voxel spawn token.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.IsWorldPositionInPaddedBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
+            <summary>
+            Tests whether a 3D world position lies inside bounds expanded by half of a cell edge.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.IsPlanarPositionInPaddedBounds(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
+            <summary>
+            Tests whether a world position's X/Z projection lies inside bounds expanded by half of a cell edge.
             </summary>
         </member>
     </members>

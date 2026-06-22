@@ -1,9 +1,9 @@
 {
   "packageRoot": ".",
-  "packageVersion": "7.0.0",
+  "packageVersion": "7.1.3",
   "dependencyVersions": {
-    "FixedMathSharpUnity": "v5.0.1",
-    "SwiftCollectionsUnity": "v5.0.2"
+    "FixedMathSharpUnity": "v5.0.3",
+    "SwiftCollectionsUnity": "v5.1.0"
   },
   "packages": [
     {
