@@ -3613,6 +3613,29 @@
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
         </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
+            <summary>
+            Clears and fills caller-owned storage with voxels traced by a 3D line.
+            </summary>
+            <param name="world">The world whose grids should be traced.</param>
+            <param name="start">Starting position in world space.</param>
+            <param name="end">Ending position in world space.</param>
+            <param name="results">Caller-owned storage that receives traced voxels.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
+            <summary>
+            Clears and fills caller-owned storage with voxels traced by a 3D line using caller-owned scratch collections.
+            </summary>
+            <param name="world">The world whose grids should be traced.</param>
+            <param name="start">Starting position in world space.</param>
+            <param name="end">Ending position in world space.</param>
+            <param name="results">Caller-owned storage that receives traced voxels.</param>
+            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+        </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLine(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean,FixedMathSharp.Fixed64)">
             <summary>
             Traces a 2D XZ-plane line between two points in the supplied world, snapping them to grid coordinates.
@@ -3628,6 +3651,31 @@
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64},System.Boolean,FixedMathSharp.Fixed64)">
+            <summary>
+            Clears and fills caller-owned storage with voxels traced by a 2D XZ-plane line.
+            </summary>
+            <param name="world">The world whose grids should be traced.</param>
+            <param name="start">Starting XZ-plane position in world space.</param>
+            <param name="end">Ending XZ-plane position in world space.</param>
+            <param name="results">Caller-owned storage that receives traced voxels.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+            <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,System.Nullable{FixedMathSharp.Fixed64},System.Boolean,FixedMathSharp.Fixed64)">
+            <summary>
+            Clears and fills caller-owned storage with voxels traced by a 2D XZ-plane line using caller-owned scratch collections.
+            </summary>
+            <param name="world">The world whose grids should be traced.</param>
+            <param name="start">Starting XZ-plane position in world space.</param>
+            <param name="end">Ending XZ-plane position in world space.</param>
+            <param name="results">Caller-owned storage that receives traced voxels.</param>
+            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="padding">Value applied to the start/end positions before snapping.</param>
+            <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
+            <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
