@@ -17,8 +17,17 @@ public sealed class GridForgeSampleImportSmokeTests
         var importedPath = SessionState.GetString(ImportedPathKey, string.Empty);
         Assert.That(importedPath, Is.Not.Empty, "Sample import did not record an imported path.");
 
-        var importedAsmdefPath = Path.Combine(importedPath, config.expectedSampleAsmdef);
+        var importedAsmdefPath = Path.Combine(ToAbsoluteProjectPath(importedPath), config.expectedSampleAsmdef);
         Assert.That(File.Exists(importedAsmdefPath), Is.True, $"Imported sample asmdef was not found: {importedAsmdefPath}");
+    }
+
+    private static string ToAbsoluteProjectPath(string path)
+    {
+        if (Path.IsPathRooted(path))
+            return path;
+
+        var projectRoot = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, ".."));
+        return Path.Combine(projectRoot, path);
     }
 
     private static SmokeConfig LoadConfig()

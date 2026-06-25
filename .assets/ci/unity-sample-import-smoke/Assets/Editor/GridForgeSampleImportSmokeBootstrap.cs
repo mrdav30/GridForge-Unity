@@ -36,6 +36,15 @@ internal static class GridForgeSampleImportSmokeBootstrap
             return false;
         }
 
+        var authoringSamplePath = $"Packages/{config.packageName}/Samples/GridforgeDemo";
+        if (AssetDatabase.IsValidFolder(authoringSamplePath))
+        {
+            SessionState.SetString(ImportedPathKey, authoringSamplePath);
+            SessionState.SetBool(ImportAttemptedKey, true);
+            UnityEngine.Debug.Log($"GRIDFORGE_SAMPLE_SMOKE using authoring sample at {authoringSamplePath}");
+            return true;
+        }
+
         var sample = Sample.FindByPackage(packageInfo.name, packageInfo.version)
             .FirstOrDefault(candidate => string.Equals(candidate.displayName, SampleDisplayName, StringComparison.Ordinal));
         if (string.IsNullOrEmpty(sample.displayName))

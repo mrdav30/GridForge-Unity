@@ -86,6 +86,31 @@ function Get-RequiredString {
     return [string]$property.Value
 }
 
+function Write-Utf8NoBomFile {
+    param(
+        [string]$Path,
+        [AllowEmptyString()]
+        [string]$Content
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $encoding)
+}
+
+function ConvertTo-JsonText {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [object]$InputObject,
+
+        [int]$Depth = 2
+    )
+
+    process {
+        $json = $InputObject | ConvertTo-Json -Depth $Depth
+        return ($json -join [System.Environment]::NewLine) + [System.Environment]::NewLine
+    }
+}
+
 function Get-VariantSettings {
     param([string]$Name)
 
@@ -205,9 +230,9 @@ $manifest = [ordered]@{
     dependencies = $manifestDependencies
 }
 
-$manifest |
-    ConvertTo-Json -Depth 8 |
-    Set-Content -LiteralPath (Join-Path $packagesPath "manifest.json") -Encoding UTF8
+Write-Utf8NoBomFile `
+    -Path (Join-Path $packagesPath "manifest.json") `
+    -Content ($manifest | ConvertTo-JsonText -Depth 8)
 
 $asmdef = [ordered]@{
     name = "GridForge.Unity.Tests.EditMode"
@@ -254,15 +279,17 @@ $asmdef = [ordered]@{
     )
 }
 
-$asmdef |
-    ConvertTo-Json -Depth 8 |
-    Set-Content -LiteralPath (Join-Path $assetsTestsPath "GridForge.Unity.Tests.EditMode.asmdef") -Encoding UTF8
+Write-Utf8NoBomFile `
+    -Path (Join-Path $assetsTestsPath "GridForge.Unity.Tests.EditMode.asmdef") `
+    -Content ($asmdef | ConvertTo-JsonText -Depth 8)
 
 $projectVersionLines = @("m_EditorVersion: $UnityVersion")
 if (-not [string]::IsNullOrWhiteSpace($UnityVersionWithRevision)) {
     $projectVersionLines += "m_EditorVersionWithRevision: $UnityVersionWithRevision"
 }
 
-$projectVersionLines | Set-Content -LiteralPath (Join-Path $projectSettingsPath "ProjectVersion.txt") -Encoding UTF8
+Write-Utf8NoBomFile `
+    -Path (Join-Path $projectSettingsPath "ProjectVersion.txt") `
+    -Content (($projectVersionLines -join [System.Environment]::NewLine) + [System.Environment]::NewLine)
 
 Write-Output "Created GridForge CI Unity project at $resolvedProjectPath for $PackageName."

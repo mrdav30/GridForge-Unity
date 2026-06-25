@@ -91,6 +91,31 @@ function Get-RequiredString {
     return [string]$property.Value
 }
 
+function Write-Utf8NoBomFile {
+    param(
+        [string]$Path,
+        [AllowEmptyString()]
+        [string]$Content
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $encoding)
+}
+
+function ConvertTo-JsonText {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [object]$InputObject,
+
+        [int]$Depth = 2
+    )
+
+    process {
+        $json = $InputObject | ConvertTo-Json -Depth $Depth
+        return ($json -join [System.Environment]::NewLine) + [System.Environment]::NewLine
+    }
+}
+
 function ConvertTo-GitFilePackageUrl {
     param(
         [string]$Path,
@@ -192,17 +217,17 @@ $manifest = [ordered]@{
         -LocalPackageUrl $packageUrl
 }
 
-$manifest |
-    ConvertTo-Json -Depth 8 |
-    Set-Content -LiteralPath (Join-Path $resolvedProjectPath "Packages/manifest.json") -Encoding UTF8
+Write-Utf8NoBomFile `
+    -Path (Join-Path $resolvedProjectPath "Packages/manifest.json") `
+    -Content ($manifest | ConvertTo-JsonText -Depth 8)
 
 $smokeConfig = [ordered]@{
     packageName = $PackageName
     expectedSampleAsmdef = $ExpectedSampleAsmdef
 }
 
-$smokeConfig |
-    ConvertTo-Json -Depth 4 |
-    Set-Content -LiteralPath (Join-Path $resolvedProjectPath "Assets/GridForgeSampleImportSmokeConfig.json") -Encoding UTF8
+Write-Utf8NoBomFile `
+    -Path (Join-Path $resolvedProjectPath "Assets/GridForgeSampleImportSmokeConfig.json") `
+    -Content ($smokeConfig | ConvertTo-JsonText -Depth 4)
 
 Write-Output "Created GridForge sample import smoke project at $resolvedProjectPath for $PackageName."
