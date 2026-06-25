@@ -19,11 +19,11 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PackagePath,
 
-    [string]$ConfigPath = (Join-Path (Split-Path -Parent $PSScriptRoot) "unity-package-versions.json"),
+    [string]$ConfigPath,
 
-    [string]$UnityVersion = "6000.3.9f1",
+    [string]$UnityVersion = "6000.5.0f1",
 
-    [string]$UnityVersionWithRevision = "6000.3.9f1 (7a9955a4f2fa)"
+    [string]$UnityVersionWithRevision = ""
 )
 
 Set-StrictMode -Version Latest
@@ -146,6 +146,10 @@ function ConvertTo-OrderedDependencyMap {
 }
 
 $packagesRoot = Get-PackagesRoot
+if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+    $ConfigPath = Join-Path (Split-Path -Parent $PSScriptRoot) "unity-package-versions.json"
+}
+
 $resolvedProjectPath = Resolve-UnderRoot -Root $packagesRoot -Path $ProjectPath -Description "ProjectPath"
 $resolvedConfigPath = if ([System.IO.Path]::IsPathRooted($ConfigPath)) {
     [System.IO.Path]::GetFullPath($ConfigPath)
@@ -254,9 +258,11 @@ $asmdef |
     ConvertTo-Json -Depth 8 |
     Set-Content -LiteralPath (Join-Path $assetsTestsPath "GridForge.Unity.Tests.EditMode.asmdef") -Encoding UTF8
 
-@"
-m_EditorVersion: $UnityVersion
-m_EditorVersionWithRevision: $UnityVersionWithRevision
-"@ | Set-Content -LiteralPath (Join-Path $projectSettingsPath "ProjectVersion.txt") -Encoding UTF8
+$projectVersionLines = @("m_EditorVersion: $UnityVersion")
+if (-not [string]::IsNullOrWhiteSpace($UnityVersionWithRevision)) {
+    $projectVersionLines += "m_EditorVersionWithRevision: $UnityVersionWithRevision"
+}
+
+$projectVersionLines | Set-Content -LiteralPath (Join-Path $projectSettingsPath "ProjectVersion.txt") -Encoding UTF8
 
 Write-Output "Created GridForge CI Unity project at $resolvedProjectPath for $PackageName."

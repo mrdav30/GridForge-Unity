@@ -21,7 +21,7 @@ $ManagedEntries = @(
     "Runtime/Configuration",
     "Runtime/GridWorldComponent.cs",
     "Runtime/Utility/Debugging",
-    "Samples/GridforgeDemo/Scripts"
+    "Samples~/GridforgeDemo/Scripts"
 )
 
 function Join-NormalizedPath {
@@ -31,6 +31,33 @@ function Join-NormalizedPath {
     )
 
     return [System.IO.Path]::GetFullPath((Join-Path $Left ($Right -replace '/', [System.IO.Path]::DirectorySeparatorChar)))
+}
+
+function Get-PortableRelativePath {
+    param(
+        [string]$Root,
+        [string]$Path
+    )
+
+    $rootPath = [System.IO.Path]::GetFullPath($Root).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar
+    ) + [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $getRelativePathMethod = [System.IO.Path].GetMethod(
+        "GetRelativePath",
+        [type[]]@([string], [string])
+    )
+
+    if ($null -ne $getRelativePathMethod) {
+        return [System.IO.Path]::GetRelativePath($rootPath, $fullPath)
+    }
+
+    $rootUri = [System.Uri]::new($rootPath)
+    $pathUri = [System.Uri]::new($fullPath)
+    return [System.Uri]::UnescapeDataString(
+        $rootUri.MakeRelativeUri($pathUri).ToString()
+    ).Replace('/', [System.IO.Path]::DirectorySeparatorChar)
 }
 
 function Get-RelativeManagedFiles {
@@ -47,7 +74,7 @@ function Get-RelativeManagedFiles {
             continue
         }
 
-        $relative = [System.IO.Path]::GetRelativePath($Root, $file.FullName).Replace("\", "/")
+        $relative = (Get-PortableRelativePath -Root $Root -Path $file.FullName).Replace("\", "/")
         $files[$relative] = $file.FullName
     }
 
@@ -121,7 +148,14 @@ foreach ($packageRootName in $PackageRoots) {
     }
 
     foreach ($entry in $ManagedEntries) {
-        $sourcePath = Join-NormalizedPath -Left $BaseRoot -Right $entry
+        $sourceEntry = if ($entry.StartsWith("Samples~/", [System.StringComparison]::Ordinal)) {
+            "Samples/" + $entry.Substring("Samples~/".Length)
+        }
+        else {
+            $entry
+        }
+
+        $sourcePath = Join-NormalizedPath -Left $BaseRoot -Right $sourceEntry
         $destinationPath = Join-NormalizedPath -Left $variantRoot -Right $entry
 
         if (Test-Path -LiteralPath $sourcePath -PathType Leaf) {

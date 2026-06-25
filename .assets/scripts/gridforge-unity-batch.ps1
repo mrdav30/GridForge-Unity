@@ -177,8 +177,15 @@ function Invoke-GridForgeProcess {
     $startInfo.FileName = $FilePath
     $startInfo.UseShellExecute = $false
 
-    foreach ($argument in $Arguments) {
-        [void]$startInfo.ArgumentList.Add($argument)
+    if ($null -ne $startInfo.GetType().GetProperty("ArgumentList")) {
+        foreach ($argument in $Arguments) {
+            [void]$startInfo.ArgumentList.Add($argument)
+        }
+    }
+    else {
+        $startInfo.Arguments = ($Arguments | ForEach-Object {
+            Format-GridForgeCommandArgument -Argument $_
+        }) -join " "
     }
 
     $process = [System.Diagnostics.Process]::new()

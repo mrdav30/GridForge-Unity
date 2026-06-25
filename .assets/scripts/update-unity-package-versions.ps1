@@ -22,7 +22,7 @@ changes.
 #>
 [CmdletBinding()]
 param(
-    [string]$ConfigPath = (Join-Path (Split-Path -Parent $PSScriptRoot) "unity-package-versions.json"),
+    [string]$ConfigPath,
     [switch]$Apply,
     [switch]$ValidateOnly
 )
@@ -35,6 +35,10 @@ if ($Apply -and $ValidateOnly) {
 }
 
 $Mode = if ($ValidateOnly) { "VALIDATE" } elseif ($Apply) { "APPLY" } else { "DRY-RUN" }
+
+if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+    $ConfigPath = Join-Path (Split-Path -Parent $PSScriptRoot) "unity-package-versions.json"
+}
 
 function Resolve-ConfiguredPath {
     param(

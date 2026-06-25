@@ -85,7 +85,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: .ci/unity-project
-          unityVersion: 6000.3.9f1
+          unityVersion: 6000.5.0f1
+          customImage: unityci/editor:ubuntu-6000.5.0f1-base-3
           testMode: EditMode
           customParameters: -assemblyNames GridForge.Unity.Tests.EditMode -runSynchronously
           artifactsPath: artifacts/${{ matrix.artifact_suffix }}
@@ -98,3 +99,93 @@ jobs:
         with:
           name: unity-editmode-${{ matrix.artifact_suffix }}
           path: artifacts/${{ matrix.artifact_suffix }}
+
+  unity-sample-import-smoke:
+    name: Unity Sample Import Smoke (${{ matrix.package_display_name }})
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_display_name: GridForge
+            package_name: com.mrdav30.gridforge
+            package_path: com.mrdav30.gridforge
+            expected_sample_asmdef: GridForge.Samples.asmdef
+            artifact_suffix: standard
+          - package_display_name: GridForge Lean
+            package_name: com.mrdav30.gridforge.lean
+            package_path: com.mrdav30.gridforge.lean
+            expected_sample_asmdef: GridForge.Lean.Samples.asmdef
+            artifact_suffix: lean
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prepare Unity sample import smoke project
+        shell: pwsh
+        run: |
+          ./.assets/ci/scripts/prepare-unity-sample-import-smoke.ps1 `
+            -ProjectPath ".ci/unity-sample-import-${{ matrix.artifact_suffix }}" `
+            -PackageName "${{ matrix.package_name }}" `
+            -PackagePath "${{ matrix.package_path }}" `
+            -ExpectedSampleAsmdef "${{ matrix.expected_sample_asmdef }}" `
+            -WorkspacePath "/github/workspace" `
+            -GitSha "$env:GITHUB_SHA"
+
+      - name: Cache Unity sample import Library
+        uses: actions/cache@v5
+        with:
+          path: .ci/unity-sample-import-${{ matrix.artifact_suffix }}/Library
+          key: unity-sample-import-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('.assets/ci/scripts/prepare-unity-sample-import-smoke.ps1', '.assets/ci/unity-sample-import-smoke/**', '.assets/unity-package-versions.json', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge/Samples~/**', 'com.mrdav30.gridforge.lean/package.json', 'com.mrdav30.gridforge.lean/Samples~/**') }}
+          restore-keys: |
+            unity-sample-import-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-
+
+      - name: Trust local Git checkout inside Unity container
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          container_home="$RUNNER_TEMP/_github_home"
+          mkdir -p "$container_home"
+
+          git config --file "$container_home/.gitconfig" --add safe.directory /github/workspace
+          git config --file "$container_home/.gitconfig" --add safe.directory /github/workspace/.git
+
+      - name: Run Unity sample import smoke
+        id: sample-import
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .ci/unity-sample-import-${{ matrix.artifact_suffix }}
+          unityVersion: 6000.5.0f1
+          customImage: unityci/editor:ubuntu-6000.5.0f1-base-3
+          testMode: EditMode
+          customParameters: -assemblyNames GridForge.SampleImportSmokeTests -runSynchronously
+          artifactsPath: artifacts/sample-import-${{ matrix.artifact_suffix }}
+          githubToken: ${{ github.token }}
+          checkName: Unity Sample Import ${{ matrix.package_display_name }}
+
+      - name: Scan Unity sample import log
+        if: always() && steps.sample-import.outcome != 'skipped'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          bash .assets/ci/scripts/scan-unity-sample-import-log.sh \
+            "artifacts/sample-import-${{ matrix.artifact_suffix }}/editmode.log"
+
+      - name: Upload Unity sample import artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unity-sample-import-${{ matrix.artifact_suffix }}
+          path: artifacts/sample-import-${{ matrix.artifact_suffix }}

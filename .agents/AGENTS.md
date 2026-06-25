@@ -5,7 +5,7 @@
 - The actual Git repo root is the `Assets/Packages` directory, not the outer Unity project root.
 - This repo ships two Unity Package Manager variants:
   `com.mrdav30.gridforge` and `com.mrdav30.gridforge.lean`.
-- Both package variants are currently using GridForge `v7.0.0`.
+- Both package variants are currently using GridForge `v7.1.4`.
 - The old `.variants/` workflow is retired and should not be reintroduced.
 
 ## Source Of Truth
@@ -41,6 +41,25 @@
   regenerating them through `GridForgeSampleAssetGenerator` instead of hand
   editing YAML.
 
+## Unity Sample Authoring And Export Layout
+
+- Package samples use two folder shapes: `Samples/` for local authoring and
+  `Samples~/` for distributable Git/package-source installs.
+- Package manifests should point sample entries at `Samples~/...`. Unity hides
+  tilde folders in the Project pane, so edit sample scenes, prefabs, and scripts
+  through the local `Samples/` mirror.
+- Package-local `.gitignore` files ignore `Samples/`, `Samples.meta`, and
+  `Samples~.meta`. Do not commit package-variant `Samples/` folders or
+  top-level `Samples~.meta` files.
+- Keep nested `.meta` files inside `Samples~/GridforgeDemo` and local
+  `Samples/GridforgeDemo`. They preserve scene, prefab, asmdef, and script
+  references when Unity imports samples into `Assets/Samples/...`.
+- Shared sample scripts live in `Build/Base/Samples/GridforgeDemo/Scripts`.
+  The sync step hydrates missing package-local `Samples/` mirrors from tracked
+  `Samples~/`, then copies shared scripts into the visible authoring mirror.
+- The exporter overwrites each package `Samples~/` folder from its local
+  `Samples/` mirror and excludes `Samples/` from `.unitypackage` exports.
+
 ## Editing Rules
 
 - Do not hand-edit the same shared managed file in both package folders.
@@ -69,6 +88,8 @@
 - Batchmode export optionally accepts:
   `-gridforgeUnityPackageOutputPath <folder>`
 - The exporter runs the shared-code sync before packaging.
+- The exporter regenerates distributable `Samples~/` folders from local
+  authoring `Samples/` folders before packaging.
 - Use `.assets/scripts/sync-gridforge-unity-packages.ps1` for batch package sync.
 - Use `.assets/scripts/run-gridforge-unity-editmode-tests.ps1` for EditMode
   tests. Do not add `-quit` to Unity `-runTests`; the Unity Test Framework exits
@@ -116,6 +137,11 @@
 ## Verification
 
 - Automated EditMode tests live under `Tests/EditMode`.
+- Primary CI is `.github/workflows/build-and-test.yml`. It runs EditMode tests
+  for both standard and lean packages on Unity `6000.5.0f1`.
+- A main-only sample import smoke job installs both package variants via local
+  Git URL, imports the Demo Scene sample, and scans Unity logs for known sample
+  packaging failures.
 - Standard verification after managed code changes:
   - `.assets/scripts/test-gridforge-package-sync.ps1`
   - `.assets/scripts/update-unity-package-versions.ps1 -ValidateOnly`

@@ -27,7 +27,7 @@
     {
       "displayName": "Demo Scene",
       "description": "A sample scene demonstrating package usage",
-      "path": "Samples/GridforgeDemo"
+      "path": "Samples~/GridforgeDemo"
     }
   ]
 }
