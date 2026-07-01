@@ -1,5 +1,5 @@
 //=======================================================================
-// EditorBlockerComponent.cs
+// EditorBlockerComponent2d.cs
 //=======================================================================
 // MIT License, Copyright (c) 2024–present David Oravsky (mrdav30)
 // See LICENSE file in the project root for full license information.
@@ -14,18 +14,20 @@ using UnityEngine;
 namespace GridForge.Blockers.Editor
 {
     /// <summary>
-    /// Custom Unity Editor inspector for <see cref="BlockerComponent"/>.
+    /// Custom Unity Editor inspector for <see cref="BlockerComponent2d"/>.
     /// Dynamically displays relevant fields based on the selected blocker type.
     /// </summary>
-    [CustomEditor(typeof(BlockerComponent))]
-    public class EditorBlockerComponent : UnityEditor.Editor
+    [CustomEditor(typeof(BlockerComponent2d))]
+    public class EditorBlockerComponent2d : UnityEditor.Editor
     {
         private SerializedProperty _gridWorldComponent;
         private SerializedProperty _isActive;
         private SerializedProperty _cacheCoveredVoxels;
         private SerializedProperty _blockAreaSource;
         private SerializedProperty _includeChildrenInBlockArea;
-        private SerializedProperty _manualBlockBox;
+        private SerializedProperty _manualXzBlockAreaMin;
+        private SerializedProperty _manualXzBlockAreaMax;
+        private SerializedProperty _layerY;
         private SerializedProperty _showCoveragePreview;
         private SerializedProperty _coveragePreviewColor;
 
@@ -36,7 +38,9 @@ namespace GridForge.Blockers.Editor
             _cacheCoveredVoxels = serializedObject.FindProperty("_cacheCoveredVoxels");
             _blockAreaSource = serializedObject.FindProperty("_blockAreaSource");
             _includeChildrenInBlockArea = serializedObject.FindProperty("_includeChildrenInBlockArea");
-            _manualBlockBox = serializedObject.FindProperty("_manualBlockBox");
+            _manualXzBlockAreaMin = serializedObject.FindProperty("_manualXzBlockAreaMin");
+            _manualXzBlockAreaMax = serializedObject.FindProperty("_manualXzBlockAreaMax");
+            _layerY = serializedObject.FindProperty("_layerY");
             _showCoveragePreview = serializedObject.FindProperty("_showCoveragePreview");
             _coveragePreviewColor = serializedObject.FindProperty("_coveragePreviewColor");
         }
@@ -51,7 +55,7 @@ namespace GridForge.Blockers.Editor
             EditorGUILayout.PropertyField(_isActive, new GUIContent("Is Active?"));
             EditorGUILayout.PropertyField(_cacheCoveredVoxels, new GUIContent("Cache Covered Voxels?"));
 
-            EditorGUILayout.LabelField("Bounds Blocker Settings", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Area Blocker Settings", EditorStyles.boldLabel);
             DrawBlockAreaSettings();
             DrawCoveragePreviewSettings();
 
@@ -66,14 +70,18 @@ namespace GridForge.Blockers.Editor
             if (selectedSource == BlockAreaSource.Collider || selectedSource == BlockAreaSource.Renderer)
                 EditorGUILayout.PropertyField(_includeChildrenInBlockArea, new GUIContent("Include Children"));
 
+            EditorGUILayout.PropertyField(_layerY, new GUIContent("Layer Y"));
+
             if (selectedSource == BlockAreaSource.Manual)
             {
-                EditorGUILayout.PropertyField(_manualBlockBox, new GUIContent("Fixed Bound Box"));
+                EditorGUILayout.PropertyField(_manualXzBlockAreaMin, new GUIContent("XZ Min"));
+                EditorGUILayout.PropertyField(_manualXzBlockAreaMax, new GUIContent("XZ Max"));
+
                 return;
             }
 
             serializedObject.ApplyModifiedProperties();
-            DrawCalculatedBlockBoxPreview();
+            DrawCalculatedBlockAreaPreview();
         }
 
         private void DrawCoveragePreviewSettings()
@@ -89,26 +97,26 @@ namespace GridForge.Blockers.Editor
                 MessageType.Info);
         }
 
-        private void DrawCalculatedBlockBoxPreview()
+        private void DrawCalculatedBlockAreaPreview()
         {
-            if (target is not BlockerComponent blocker)
+            if (target is not BlockerComponent2d blocker)
                 return;
 
-            FixedBoundBox blockArea = blocker.CalculateBlockBox(
+            FixedBoundArea blockArea = blocker.CalculateXzBlockArea(
                 out BlockAreaSource resolvedSource,
                 out string fallbackReason);
 
             using (new EditorGUI.DisabledScope(true))
             {
                 EditorGUILayout.EnumPopup("Resolved Source", resolvedSource);
-                EditorGUILayout.Vector3Field("Fixed Bound Box Min", blockArea.Min.ToVector3());
-                EditorGUILayout.Vector3Field("Fixed Bound Box Max", blockArea.Max.ToVector3());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Min", blockArea.Min.ToVector3());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Max", blockArea.Max.ToVector3());
             }
 
             if (!string.IsNullOrEmpty(fallbackReason))
             {
                 EditorGUILayout.HelpBox(
-                    $"{fallbackReason} Falling back to {nameof(BlockAreaSource.Transform)} block box.",
+                    $"{fallbackReason} Falling back to {nameof(BlockAreaSource.Transform)} block area.",
                     MessageType.Warning);
             }
         }

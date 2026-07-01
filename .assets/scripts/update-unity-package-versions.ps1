@@ -102,6 +102,28 @@ function Get-OptionalBoolean {
     return [bool]$property.Value
 }
 
+function ConvertTo-UnityVersionDefineExpression {
+    param(
+        [string]$Version,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        throw "$Context version must be non-empty."
+    }
+
+    $expression = $Version.Trim()
+    if ($expression.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $expression = $expression.Substring(1)
+    }
+
+    if ([string]::IsNullOrWhiteSpace($expression)) {
+        throw "$Context version expression must be non-empty."
+    }
+
+    return $expression
+}
+
 function Read-JsonFile {
     param([string]$Path)
 
@@ -266,6 +288,86 @@ function Update-InstallerDependencies {
     }
 }
 
+function Update-AsmdefVersionDefines {
+    param(
+        [string]$AsmdefPath,
+        [object[]]$Dependencies,
+        [hashtable]$DependencyVersions,
+        [string]$DisplayPath,
+        [System.Collections.Generic.List[string]]$ChangeMessages,
+        [System.Collections.Generic.List[string]]$ValidationIssues
+    )
+
+    if (-not (Test-Path -LiteralPath $AsmdefPath)) {
+        throw "Configured asmdef does not exist: $DisplayPath"
+    }
+
+    $content = Get-Content -Raw -LiteralPath $AsmdefPath
+    $updatedContent = $content
+    $hasChanges = $false
+    $configuredVersionDefineCount = 0
+
+    foreach ($dependency in $Dependencies) {
+        if (-not (Get-OptionalBoolean -Object $dependency -PropertyName "asmdefVersionDefine" -DefaultValue $false)) {
+            continue
+        }
+
+        $configuredVersionDefineCount++
+        $name = Get-RequiredString -Object $dependency -PropertyName "name" -Context "Dependency in '$DisplayPath'"
+        $versionKey = Get-RequiredString -Object $dependency -PropertyName "versionKey" -Context "Dependency '$name' in '$DisplayPath'"
+
+        if (-not $DependencyVersions.ContainsKey($versionKey)) {
+            throw "Dependency '$name' in '$DisplayPath' uses unknown versionKey '$versionKey'."
+        }
+
+        $desiredExpression = ConvertTo-UnityVersionDefineExpression `
+            -Version ([string]$DependencyVersions[$versionKey]) `
+            -Context "Dependency '$name' in '$DisplayPath'"
+
+        $pattern = '(?ms)(?<prefix>\{\s*"name"\s*:\s*"' +
+            [regex]::Escape($name) +
+            '"\s*,\s*"expression"\s*:\s*")(?<expression>[^"]+)(?<suffix>"\s*,\s*"define"\s*:\s*"[^"]+"\s*\})'
+
+        $match = [regex]::Match($updatedContent, $pattern)
+        if (-not $match.Success) {
+            throw "Could not find asmdef versionDefine for dependency '$name' in '$DisplayPath'."
+        }
+
+        $currentExpression = $match.Groups["expression"].Value
+        if ($currentExpression -eq $desiredExpression) {
+            continue
+        }
+
+        $message = "$DisplayPath $name versionDefine expression $currentExpression -> $desiredExpression"
+        $ChangeMessages.Add($message)
+
+        if ($ValidateOnly) {
+            $ValidationIssues.Add($message)
+        }
+        else {
+            Write-Output "$Mode $message"
+        }
+
+        $hasChanges = $true
+
+        if ($Apply) {
+            $replacement = $match.Groups["prefix"].Value +
+                $desiredExpression +
+                $match.Groups["suffix"].Value
+
+            $updatedContent = $updatedContent.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
+        }
+    }
+
+    if ($configuredVersionDefineCount -eq 0) {
+        throw "Package config lists asmdef '$DisplayPath' but no dependency has asmdefVersionDefine enabled."
+    }
+
+    if ($Apply -and $hasChanges) {
+        Set-Content -LiteralPath $AsmdefPath -Value $updatedContent -Encoding UTF8 -NoNewline
+    }
+}
+
 function Test-InstallerDependencySet {
     param(
         [string]$Content,
@@ -373,6 +475,37 @@ foreach ($package in @($packagesProperty.Value)) {
         -DisplayPath $installerDisplayPath `
         -ChangeMessages $changeMessages `
         -ValidationIssues $validationIssues
+
+    foreach ($asmdefGroup in @(
+            [pscustomobject]@{ PropertyName = "asmdefs"; Required = $true },
+            [pscustomobject]@{ PropertyName = "optionalAsmdefs"; Required = $false }
+        )) {
+        $asmdefsProperty = $package.PSObject.Properties[$asmdefGroup.PropertyName]
+        if ($null -eq $asmdefsProperty -or $null -eq $asmdefsProperty.Value) {
+            continue
+        }
+
+        foreach ($asmdefRelativePath in @($asmdefsProperty.Value)) {
+            if ([string]::IsNullOrWhiteSpace([string]$asmdefRelativePath)) {
+                throw "Package '$packagePath' contains an empty $($asmdefGroup.PropertyName) path."
+            }
+
+            $asmdefPath = Resolve-ConfiguredPath -BasePath $packageDirectory -Path ([string]$asmdefRelativePath)
+            $asmdefDisplayPath = Get-DisplayPath -Path $asmdefPath -BasePath $repoRoot
+
+            if (-not $asmdefGroup.Required -and -not (Test-Path -LiteralPath $asmdefPath)) {
+                continue
+            }
+
+            Update-AsmdefVersionDefines `
+                -AsmdefPath $asmdefPath `
+                -Dependencies @($dependenciesProperty.Value) `
+                -DependencyVersions $dependencyVersions `
+                -DisplayPath $asmdefDisplayPath `
+                -ChangeMessages $changeMessages `
+                -ValidationIssues $validationIssues
+        }
+    }
 }
 
 if ($ValidateOnly -and $validationIssues.Count -gt 0) {

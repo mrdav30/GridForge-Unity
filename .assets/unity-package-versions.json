@@ -1,9 +1,9 @@
 {
   "packageRoot": ".",
-  "packageVersion": "7.1.4",
+  "packageVersion": "8.0.0",
   "dependencyVersions": {
-    "FixedMathSharpUnity": "v5.0.5",
-    "SwiftCollectionsUnity": "v5.1.1"
+    "FixedMathSharpUnity": "v6.0.0",
+    "SwiftCollectionsUnity": "v6.0.0"
   },
   "packages": [
     {
@@ -14,18 +14,28 @@
         {
           "name": "com.mrdav30.fixedmathsharp",
           "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
-          "versionKey": "FixedMathSharpUnity"
+          "versionKey": "FixedMathSharpUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
-          "versionKey": "SwiftCollectionsUnity"
+          "versionKey": "SwiftCollectionsUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections.fixedmathsharp",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp",
           "versionKey": "SwiftCollectionsUnity"
         }
+      ],
+      "asmdefs": [
+        "Runtime/GridForge.Runtime.asmdef",
+        "Editor/GridForge.Editor.asmdef",
+        "Samples~/GridforgeDemo/GridForge.Samples.asmdef"
+      ],
+      "optionalAsmdefs": [
+        "Samples/GridforgeDemo/GridForge.Samples.asmdef"
       ]
     },
     {
@@ -36,18 +46,28 @@
         {
           "name": "com.mrdav30.fixedmathsharp.lean",
           "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean",
-          "versionKey": "FixedMathSharpUnity"
+          "versionKey": "FixedMathSharpUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections.lean",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
-          "versionKey": "SwiftCollectionsUnity"
+          "versionKey": "SwiftCollectionsUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections.fixedmathsharp.lean",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean",
           "versionKey": "SwiftCollectionsUnity"
         }
+      ],
+      "asmdefs": [
+        "Runtime/GridForge.Lean.Runtime.asmdef",
+        "Editor/GridForge.Lean.Editor.asmdef",
+        "Samples~/GridforgeDemo/GridForge.Lean.Samples.asmdef"
+      ],
+      "optionalAsmdefs": [
+        "Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef"
       ]
     }
   ]

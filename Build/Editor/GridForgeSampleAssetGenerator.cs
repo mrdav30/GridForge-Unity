@@ -21,7 +21,6 @@ namespace GridForge.Build.Editor
         private const int Sparse = 1;
         private const int PointyTop = 1;
         private const int XzLayer = 1;
-        private const int BoundsBlocker = 1;
         private const int TransformBlockArea = 1;
         private const int PhysicalAndMissing = 1;
         private const int SpatialGridCellSize = 16;
@@ -376,16 +375,12 @@ namespace GridForge.Build.Editor
         private static void ConfigureBlocker(Component blocker, Component world)
         {
             SerializedObject serialized = new(blocker);
-            RequiredProperty(serialized, "_blockerType").enumValueIndex = BoundsBlocker;
             RequiredProperty(serialized, "_isActive").boolValue = true;
             RequiredProperty(serialized, "_cacheCoveredVoxels").boolValue = true;
             RequiredProperty(serialized, "_blockAreaSource").enumValueIndex = TransformBlockArea;
-            RequiredProperty(serialized, "_blockAreaMode").enumValueIndex = XzLayer;
             RequiredProperty(serialized, "_showCoveragePreview").boolValue = true;
             RequiredProperty(serialized, "_gridWorldComponent").objectReferenceValue = world;
             serialized.ApplyModifiedPropertiesWithoutUndo();
-
-            SetFixed64Field(blocker, "_layerY", 0);
         }
 
         private static GameObject CreateMarker(

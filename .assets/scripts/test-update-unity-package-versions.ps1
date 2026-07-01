@@ -59,13 +59,22 @@ function New-TestRepo {
         {
           "name": "com.mrdav30.fixedmathsharp",
           "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
-          "versionKey": "FixedMathSharpUnity"
+          "versionKey": "FixedMathSharpUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
-          "versionKey": "SwiftCollectionsUnity"
+          "versionKey": "SwiftCollectionsUnity",
+          "asmdefVersionDefine": true
         }
+      ],
+      "asmdefs": [
+        "Runtime/GridForge.Runtime.asmdef"
+      ],
+      "optionalAsmdefs": [
+        "Samples/GridforgeDemo/GridForge.Samples.asmdef",
+        "Samples/GridforgeDemo/Missing.Optional.asmdef"
       ]
     },
     {
@@ -76,13 +85,21 @@ function New-TestRepo {
         {
           "name": "com.mrdav30.fixedmathsharp.lean",
           "gitUrl": "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean",
-          "versionKey": "FixedMathSharpUnity"
+          "versionKey": "FixedMathSharpUnity",
+          "asmdefVersionDefine": true
         },
         {
           "name": "com.mrdav30.swiftcollections.lean",
           "gitUrl": "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean",
-          "versionKey": "SwiftCollectionsUnity"
+          "versionKey": "SwiftCollectionsUnity",
+          "asmdefVersionDefine": true
         }
+      ],
+      "asmdefs": [
+        "Runtime/GridForge.Lean.Runtime.asmdef"
+      ],
+      "optionalAsmdefs": [
+        "Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef"
       ]
     }
   ]
@@ -135,6 +152,86 @@ private static readonly Dependency[] RequiredDependencies =
         "v4.0.0"
     )
 };
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Runtime/GridForge.Runtime.asmdef") -Content @'
+{
+    "name": "GridForge.Runtime",
+    "defineConstraints": [
+        "GRIDFORGE_HAS_FIXEDMATHSHARP",
+        "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mrdav30.fixedmathsharp",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_HAS_FIXEDMATHSHARP"
+        },
+        {
+            "name": "com.mrdav30.swiftcollections",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
+        }
+    ]
+}
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Samples/GridforgeDemo/GridForge.Samples.asmdef") -Content @'
+{
+    "name": "GridForge.Samples",
+    "versionDefines": [
+        {
+            "name": "com.mrdav30.fixedmathsharp",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_HAS_FIXEDMATHSHARP"
+        },
+        {
+            "name": "com.mrdav30.swiftcollections",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
+        }
+    ]
+}
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Runtime/GridForge.Lean.Runtime.asmdef") -Content @'
+{
+    "name": "GridForge.Lean.Runtime",
+    "defineConstraints": [
+        "GRIDFORGE_LEAN_HAS_FIXEDMATHSHARP",
+        "GRIDFORGE_LEAN_HAS_SWIFTCOLLECTIONS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mrdav30.fixedmathsharp.lean",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_LEAN_HAS_FIXEDMATHSHARP"
+        },
+        {
+            "name": "com.mrdav30.swiftcollections.lean",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_LEAN_HAS_SWIFTCOLLECTIONS"
+        }
+    ]
+}
+'@
+
+    New-TestFile -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef") -Content @'
+{
+    "name": "GridForge.Lean.Samples",
+    "versionDefines": [
+        {
+            "name": "com.mrdav30.fixedmathsharp.lean",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_LEAN_HAS_FIXEDMATHSHARP"
+        },
+        {
+            "name": "com.mrdav30.swiftcollections.lean",
+            "expression": "4.0.0",
+            "define": "GRIDFORGE_LEAN_HAS_SWIFTCOLLECTIONS"
+        }
+    ]
+}
 '@
 
     return $repoRoot
@@ -198,10 +295,22 @@ function Test-ApplyUpdatesPackageAndInstallerVersions {
     Assert-Contains -Text $standardInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections" -Message "Apply should update standard SwiftCollections git URL."
     Assert-Contains -Text $standardInstaller -Expected '"v5.0.0"' -Message "Apply should update standard dependency versions."
 
+    $standardAsmdef = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Runtime/GridForge.Runtime.asmdef")
+    Assert-Contains -Text $standardAsmdef -Expected '"expression": "5.0.0"' -Message "Apply should update standard asmdef dependency version defines."
+
+    $standardAuthoringSamplesAsmdef = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge/Samples/GridforgeDemo/GridForge.Samples.asmdef")
+    Assert-Contains -Text $standardAuthoringSamplesAsmdef -Expected '"expression": "5.0.0"' -Message "Apply should update optional standard authoring sample asmdef dependency version defines."
+
     $leanInstaller = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Editor/Utility/DependencyInstaller/GitDependencyInstaller.cs")
     Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean" -Message "Apply should update lean FixedMathSharp git URL."
     Assert-Contains -Text $leanInstaller -Expected "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean" -Message "Apply should update lean SwiftCollections git URL."
     Assert-Contains -Text $leanInstaller -Expected '"v5.0.0"' -Message "Apply should update lean dependency versions."
+
+    $leanAsmdef = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Runtime/GridForge.Lean.Runtime.asmdef")
+    Assert-Contains -Text $leanAsmdef -Expected '"expression": "5.0.0"' -Message "Apply should update lean asmdef dependency version defines."
+
+    $leanAuthoringSamplesAsmdef = Get-FileText -Path (Join-Path $repoRoot "com.mrdav30.gridforge.lean/Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef")
+    Assert-Contains -Text $leanAuthoringSamplesAsmdef -Expected '"expression": "5.0.0"' -Message "Apply should update optional lean authoring sample asmdef dependency version defines."
 }
 
 function Test-ValidateOnlyFailsWhenFilesDrift {

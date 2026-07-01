@@ -26,7 +26,7 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
                 blocker.ConfigureBoundsBlocker();
-                blocker.ConfigureManualFixedBoundArea(new FixedBoundArea(
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
                     new Vector3d(0, 0, 0),
                     new Vector3d(3, 0, 3)));
 
@@ -53,7 +53,7 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
                 blocker.ConfigureBoundsBlocker();
-                blocker.ConfigureManualFixedBoundArea(new FixedBoundArea(
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
                     new Vector3d(0, 0, 0),
                     new Vector3d(12, 0, 12)));
 
@@ -84,8 +84,40 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
                 blocker.ConfigureBoundsBlocker();
-                blocker.ConfigureManualFixedBoundArea(new FixedBoundArea(
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
                     new Vector3d(0, 0, 0),
+                    new Vector3d(3, 0, 3)));
+
+                blocker.Start();
+
+                Assert.AreEqual(2, CountBlockedVoxels(grid));
+                Assert.IsFalse(grid.ContainsVoxel(new VoxelIndex(1, 0, 1)));
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+            }
+        }
+
+        [Test]
+        public void BoundsBlockerAppliesCenterSizeBoxOnlyToConfiguredSparseRectangularVoxels()
+        {
+            GameObject owner = CreateBlockerOwnerWithGrid(
+                RectangularConfig(new Vector3d(0, 0, 0), new Vector3d(3, 0, 3), GridStorageKind.Sparse),
+                new[]
+                {
+                    new VoxelIndex(0, 0, 0),
+                    new VoxelIndex(3, 0, 3)
+                },
+                out _,
+                out VoxelGrid grid);
+
+            try
+            {
+                BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
+                blocker.ConfigureBoundsBlocker();
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromCenterAndSize(
+                    Vector3d.FromDouble(1.5, 0, 1.5),
                     new Vector3d(3, 0, 3)));
 
                 blocker.Start();
@@ -116,7 +148,7 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
                 blocker.ConfigureBoundsBlocker();
-                blocker.ConfigureManualFixedBoundArea(new FixedBoundArea(
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
                     new Vector3d(0, 0, 0),
                     new Vector3d(12, 0, 12)));
 
@@ -142,8 +174,8 @@ namespace GridForge.Unity.Tests.EditMode
 
             try
             {
-                BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
-                blocker.ConfigureBoundsBlocker();
+                BlockerComponent2d blocker = owner.AddComponent<BlockerComponent2d>();
+                blocker.ConfigureAreaBlocker();
                 blocker.ConfigureManualXzArea(new Vector2d(0, 0), new Vector2d(3, 3), layerY: Fixed64.One);
 
                 blocker.Start();
@@ -170,7 +202,7 @@ namespace GridForge.Unity.Tests.EditMode
             {
                 BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
                 blocker.ConfigureBoundsBlocker();
-                blocker.ConfigureManualFixedBoundArea(new FixedBoundArea(
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
                     new Vector3d(0, 0, 0),
                     new Vector3d(3, 0, 3)));
 

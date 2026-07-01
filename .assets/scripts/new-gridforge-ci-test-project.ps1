@@ -135,6 +135,54 @@ function Get-VariantSettings {
     }
 }
 
+function ConvertTo-VersionDefineExpression {
+    param(
+        [string]$Version,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        throw "$Context version must be non-empty."
+    }
+
+    $expression = $Version.Trim()
+    if ($expression.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $expression = $expression.Substring(1)
+    }
+
+    if ([string]::IsNullOrWhiteSpace($expression)) {
+        throw "$Context version expression must be non-empty."
+    }
+
+    return $expression
+}
+
+function Get-DependencyVersionDefineExpression {
+    param(
+        [object]$PackageConfig,
+        [hashtable]$DependencyVersions,
+        [string]$DependencyName
+    )
+
+    foreach ($dependency in @($PackageConfig.dependencies)) {
+        $name = Get-RequiredString -Object $dependency -PropertyName "name" -Context "Dependency"
+        if ($name -ne $DependencyName) {
+            continue
+        }
+
+        $versionKey = Get-RequiredString -Object $dependency -PropertyName "versionKey" -Context "Dependency '$name'"
+        if (-not $DependencyVersions.ContainsKey($versionKey)) {
+            throw "Dependency '$name' uses unknown versionKey '$versionKey'."
+        }
+
+        return ConvertTo-VersionDefineExpression `
+            -Version ([string]$DependencyVersions[$versionKey]) `
+            -Context "Dependency '$name'"
+    }
+
+    throw "Package config does not define dependency '$DependencyName'."
+}
+
 function ConvertTo-OrderedDependencyMap {
     param(
         [object]$PackageConfig,
@@ -226,6 +274,16 @@ if (-not $manifestDependencies.Contains($variant.SwiftCollectionsPackage)) {
     throw "Package '$PackageName' dependencies must include '$($variant.SwiftCollectionsPackage)'."
 }
 
+$fixedMathVersionDefineExpression = Get-DependencyVersionDefineExpression `
+    -PackageConfig $packageConfig `
+    -DependencyVersions $dependencyVersions `
+    -DependencyName $variant.FixedMathPackage
+
+$swiftCollectionsVersionDefineExpression = Get-DependencyVersionDefineExpression `
+    -PackageConfig $packageConfig `
+    -DependencyVersions $dependencyVersions `
+    -DependencyName $variant.SwiftCollectionsPackage
+
 $manifest = [ordered]@{
     dependencies = $manifestDependencies
 }
@@ -268,12 +326,12 @@ $asmdef = [ordered]@{
         },
         [ordered]@{
             name = $variant.FixedMathPackage
-            expression = "5.0.0"
+            expression = $fixedMathVersionDefineExpression
             define = "GRIDFORGE_CI_HAS_FIXEDMATHSHARP"
         },
         [ordered]@{
             name = $variant.SwiftCollectionsPackage
-            expression = "5.0.0"
+            expression = $swiftCollectionsVersionDefineExpression
             define = "GRIDFORGE_CI_HAS_SWIFTCOLLECTIONS"
         }
     )

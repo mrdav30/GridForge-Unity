@@ -125,39 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8908ae490e3208d4895731da28e0e90b, type: 3}
   m_Name:
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Blockers.BlockerComponent
-  _blockerType: 1
   _isActive: 1
   _cacheCoveredVoxels: 1
   _blockAreaSource: 1
-  _blockAreaMode: 1
   _includeChildrenInBlockArea: 0
-  _manualBlockArea:
-    Corner1:
-      X:
-        m_rawValue: 0
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: 0
-    Corner2:
-      X:
-        m_rawValue: 0
-      Y:
-        m_rawValue: 0
-      Z:
-        m_rawValue: 0
-  _manualXzBlockAreaMin:
-    X:
-      m_rawValue: 0
-    Y:
-      m_rawValue: 0
-  _manualXzBlockAreaMax:
-    X:
-      m_rawValue: 4294967296
-    Y:
-      m_rawValue: 4294967296
-  _layerY:
-    m_rawValue: 0
   _showCoveragePreview: 1
   _coveragePreviewColor: {r: 1, g: 0.35, b: 0.1, a: 0.8}
   _gridWorldComponent: {fileID: 0}
