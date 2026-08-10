@@ -40,6 +40,7 @@
       }
     ],
     "dest": "obj/_site",
+    "template": ["default", "modern"],
     "globalMetadata": {
       "_appName": "GridForge Unity API",
       "_appTitle": "GridForge Unity API",
