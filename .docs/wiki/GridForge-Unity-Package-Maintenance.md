@@ -41,7 +41,8 @@ package resolve before the main GridForge assemblies compile.
 
 Fresh-import validation should check the settled compile after the bootstrap
 updates the manifest. A first pass can log transient unresolved plugin
-references before dependency resolution completes; the second pass must be clean.
+references before dependency resolution completes; the second pass must be
+clean.
 
 CI uses `.assets/scripts/new-gridforge-ci-test-project.ps1` to build the
 temporary Unity smoke project for each package variant. Keep that generator in

@@ -57,17 +57,17 @@ namespace GridForge.Editor
             new(
                 "com.mrdav30.fixedmathsharp",
                 "https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp",
-                "v6.0.0"
+                "v7.0.0"
             ),
             new(
                 "com.mrdav30.swiftcollections",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections",
-                "v6.0.0"
+                "v7.0.0"
             ),
             new(
                 "com.mrdav30.swiftcollections.fixedmathsharp",
                 "https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp",
-                "v6.0.0"
+                "v7.0.0"
             )
         };
 

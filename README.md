@@ -1,8 +1,10 @@
 # GridForge-Unity
 
 [![Build](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml)
+[![Discord](https://img.shields.io/badge/discord-join%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/mhwK2QFNBA)
 
-Unity Package Manager host for [GridForge](https://github.com/mrdav30/GridForge).
+Unity Package Manager host for
+[GridForge](https://github.com/mrdav30/GridForge).
 
 GridForge remains an engine-agnostic deterministic grid library. This repository
 contains Unity adapters, samples, inspectors, package metadata, and embedded
@@ -13,9 +15,9 @@ GridForge runtime DLLs for Unity projects.
 Install one package variant only. The variants expose the same Unity-facing
 GridForge API surface and should not be installed together.
 
-| Package | Use it when | Install URL |
-| --- | --- | --- |
-| `com.mrdav30.gridforge` | You want the standard package and the default dependency chain. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge` |
+| Package                      | Use it when                                                                                                                                       | Install URL                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `com.mrdav30.gridforge`      | You want the standard package and the default dependency chain.                                                                                   | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge`      |
 | `com.mrdav30.gridforge.lean` | You want the same Unity integration without the `MemoryPack` dependency chain. Prefer this for Burst AOT projects or custom serialization stacks. | `https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean` |
 
 Both variants target Unity `2022.3+`.
@@ -38,8 +40,8 @@ Both variants target Unity `2022.3+`.
 - `GridWorldComponent` owns an explicit scene `GridWorld`.
 - `GridConfigurationSaver` authors rectangular, hex, dense, and sparse grid
   configurations.
-- `BlockerComponent` creates scene-authored blockers from transforms,
-  colliders, renderers, or manual fixed bounds.
+- `BlockerComponent` creates scene-authored blockers from transforms, colliders,
+  renderers, or manual fixed bounds.
 - `GridDebugger` visualizes active grids through `GridForge.Diagnostics`.
 - `Grid Trace Visualizer` displays topology-aware traced voxel coverage.
 - `GridForgeUnityLogger` optionally forwards core GridForge logs into Unity.

@@ -219,8 +219,8 @@ needed explicit sparse address bounds.
 ## Trace, Blockers, And Scene Tools
 
 `Grid Trace Visualizer` shows topology-aware line coverage in the Scene view.
-Use it to validate rectangular, hex, dense, sparse, and mixed-grid traces. Assign
-start and end transforms, then choose `World3D` or `XzLayer` tracing.
+Use it to validate rectangular, hex, dense, sparse, and mixed-grid traces.
+Assign start and end transforms, then choose `World3D` or `XzLayer` tracing.
 
 `BlockerComponent` creates scene-authored blockers. It can resolve bounds from:
 

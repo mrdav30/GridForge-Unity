@@ -7,7 +7,7 @@
 
 #if UNITY_EDITOR
 using FixedMathSharp;
-using FixedMathSharp.Bounds;
+using FixedMathSharp.Geometry;
 using UnityEditor;
 using UnityEngine;
 

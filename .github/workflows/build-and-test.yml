@@ -3,14 +3,14 @@ name: build-and-test
 on:
   push:
     branches-ignore:
-      - 'dependabot/**'
-      - 'gh-pages'
+      - "dependabot/**"
+      - "gh-pages"
     tags-ignore:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
-      - 'main'
-      - 'develop'
+      - "main"
+      - "develop"
 
 permissions:
   contents: read

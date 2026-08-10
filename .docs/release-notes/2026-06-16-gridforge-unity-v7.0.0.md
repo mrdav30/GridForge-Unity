@@ -10,8 +10,8 @@ and package validation workflow.
 - Added topology-aware authoring for rectangular-prism and hex-prism grids.
 - Added explicit dense and sparse grid authoring, including configured sparse
   cells backed by SwiftCollections-Unity serialization adapters.
-- Rebuilt the Unity debugger around `GridForge.Diagnostics` so rectangular,
-  hex, physical sparse, and missing sparse address diagnostics all use core
+- Rebuilt the Unity debugger around `GridForge.Diagnostics` so rectangular, hex,
+  physical sparse, and missing sparse address diagnostics all use core
   diagnostic geometry.
 - Modernized blockers and the trace visualizer around v7 coverage APIs,
   layer-locked XZ tracing, mixed-topology tracing, and diagnostic gizmos.

@@ -119,7 +119,7 @@ namespace GridForge.Unity
                     return parentWorld;
             }
 
-            return Object.FindFirstObjectByType<GridWorldComponent>();
+            return Object.FindAnyObjectByType<GridWorldComponent>();
         }
     }
 }

@@ -164,7 +164,6 @@ namespace GridForge.Utility.Debugging.Editor
                 EditorGUILayout.Toggle("Occupied", _debugger.SelectedVoxel.IsOccupied);
                 EditorGUILayout.Toggle("Blocked", _debugger.SelectedVoxel.IsBlocked);
                 EditorGUILayout.Toggle("Boundary", _debugger.SelectedVoxel.IsBoundaryVoxel);
-                EditorGUILayout.LabelField("Spawn Token", _debugger.SelectedVoxel.SpawnToken.ToString());
             }
         }
 

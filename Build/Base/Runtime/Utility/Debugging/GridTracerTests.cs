@@ -109,8 +109,8 @@ namespace GridForge.Utility
                 float adjustedY = (float)(ResolveLineLayerY(startPos, endPos) + _lineHeight + Fixed64.Half);
 
                 Gizmos.DrawLine(
-                    ResolveLineStart(startPos).ToVector3(adjustedY),
-                    ResolveLineEnd(endPos).ToVector3(adjustedY));
+                    ResolveLineStart(startPos).ToVector3XZ(adjustedY),
+                    ResolveLineEnd(endPos).ToVector3XZ(adjustedY));
             }
         }
 

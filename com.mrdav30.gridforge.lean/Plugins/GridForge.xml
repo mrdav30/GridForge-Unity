@@ -9,7 +9,7 @@
             A manually placed blocker that obstructs a two-dimensional XZ-plane area on one world Y layer.
             </summary>
         </member>
-        <member name="M:GridForge.Blockers.AreaBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,FixedMathSharp.Fixed64,System.Boolean,System.Boolean)">
+        <member name="M:GridForge.Blockers.AreaBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,FixedMathSharp.Fixed64,System.Boolean,System.Boolean)">
             <summary>
             Initializes a new area blocker bound to the supplied world.
             </summary>
@@ -61,7 +61,7 @@
             The maximum bounds of the blocker coverage.
             </summary>
         </member>
-        <member name="M:GridForge.Blockers.BlockageEventInfo.#ctor(System.Int32,GridForge.BoundsKey,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Blockers.BlockageEventInfo.#ctor(System.Int64,GridForge.ObstacleToken,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
             <summary>
             Initializes a new immutable blockage snapshot.
             </summary>
@@ -199,7 +199,7 @@
             A manually placed blocker that obstructs a defined world-space bounding box.
             </summary>
         </member>
-        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundBox,System.Boolean,System.Boolean)">
+        <member name="M:GridForge.Blockers.BoundsBlocker.#ctor(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundBox,System.Boolean,System.Boolean)">
             <summary>
             Initializes a new bounds blocker bound to the supplied world.
             </summary>
@@ -446,7 +446,7 @@
             potential identity and do not resolve to a physical voxel.
             </summary>
         </member>
-        <member name="M:GridForge.Diagnostics.GridDiagnosticCell.#ctor(GridForge.Diagnostics.GridDiagnosticCellKind,System.Int32,System.UInt16,System.Int32,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Storage.GridStorageKind,GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Diagnostics.GridDiagnosticCellState,GridForge.Spatial.WorldVoxelIndex)">
+        <member name="M:GridForge.Diagnostics.GridDiagnosticCell.#ctor(GridForge.Diagnostics.GridDiagnosticCellKind,System.Int64,System.UInt16,System.Int64,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Storage.GridStorageKind,GridForge.Grids.Topology.GridTopologyMetrics,GridForge.Diagnostics.GridDiagnosticCellState,GridForge.Spatial.WorldVoxelIndex)">
             <summary>
             Initializes a diagnostic cell descriptor.
             </summary>
@@ -553,7 +553,7 @@
             Maximum world-space bounds affected by grid or range-scoped changes.
             </summary>
         </member>
-        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.#ctor(GridForge.Diagnostics.GridDiagnosticChangeKind,System.Int32,System.UInt16,System.Int32,GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Diagnostics.GridDiagnosticChange.#ctor(GridForge.Diagnostics.GridDiagnosticChangeKind,System.Int64,System.UInt16,System.Int64,GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
             <summary>
             Initializes a diagnostic dirty-change descriptor.
             </summary>
@@ -941,74 +941,74 @@
         <member name="E:GridForge.Grids.GridObstacleManager.OnObstaclesCleared">
             <inheritdoc cref="F:GridForge.Grids.GridObstacleManager._onObstaclesCleared"/>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.ObstacleToken)">
             <summary>
             Attempts to add an obstacle at the given world-scoped voxel identity in the supplied world.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.ObstacleToken)">
             <summary>
             Attempts to add an obstacle at the given world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.ObstacleToken)">
             <summary>
             Attempts to add an obstacle at the given XZ-plane world position on the default world Y layer.
             </summary>
             <param name="grid">The grid to mutate.</param>
             <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
-            <param name="obstacleSpawnToken">The obstacle token to attach to the resolved voxel.</param>
+            <param name="obstacleToken">The obstacle token to attach to the resolved voxel.</param>
             <returns>True if an obstacle was added to the resolved voxel; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.ObstacleToken)">
             <summary>
             Attempts to add an obstacle at the given XZ-plane world position on the supplied world Y layer.
             </summary>
             <param name="grid">The grid to mutate.</param>
             <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
             <param name="layerY">The world Y layer to resolve.</param>
-            <param name="obstacleSpawnToken">The obstacle token to attach to the resolved voxel.</param>
+            <param name="obstacleToken">The obstacle token to attach to the resolved voxel.</param>
             <returns>True if an obstacle was added to the resolved voxel; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryAddObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken)">
             <summary>
             Adds an obstacle to this voxel.
             </summary>
             <param name="grid"></param>
             <param name="targetVoxel"></param>
-            <param name="obstacleSpawnToken"></param>
+            <param name="obstacleToken">The process-unique obstacle registration token.</param>
             <exception cref="T:System.Exception"></exception>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.ObstacleToken)">
             <summary>
             Attempts to remove an obstacle at the given world-scoped voxel identity in the supplied world.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.ObstacleToken)">
             <summary>
             Attempts to remove an obstacle from the specified world position.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,GridForge.ObstacleToken)">
             <summary>
             Attempts to remove an obstacle from the given XZ-plane world position on the default world Y layer.
             </summary>
             <param name="grid">The grid to mutate.</param>
             <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
-            <param name="obstacleSpawnToken">The obstacle token to remove from the resolved voxel.</param>
+            <param name="obstacleToken">The obstacle token to remove from the resolved voxel.</param>
             <returns>True if the obstacle was removed from the resolved voxel; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,GridForge.ObstacleToken)">
             <summary>
             Attempts to remove an obstacle from the given XZ-plane world position on the supplied world Y layer.
             </summary>
             <param name="grid">The grid to mutate.</param>
             <param name="position">The 2D position whose X component maps to world X and Y component maps to world Z.</param>
             <param name="layerY">The world Y layer to resolve.</param>
-            <param name="obstacleSpawnToken">The obstacle token to remove from the resolved voxel.</param>
+            <param name="obstacleToken">The obstacle token to remove from the resolved voxel.</param>
             <returns>True if the obstacle was removed from the resolved voxel; otherwise false.</returns>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey)">
+        <member name="M:GridForge.Grids.GridObstacleManager.TryRemoveObstacle(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken)">
             <summary>
             Removes an obstacle from a given voxel.
             </summary>
@@ -1020,12 +1020,12 @@
             <param name="grid"></param>
             <param name="targetVoxel"></param>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleAdded(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleAdded(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken,System.Byte,System.UInt32)">
             <summary>
             Notifies listeners that an obstacle was added.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleRemoved(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.BoundsKey,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleRemoved(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken,System.Byte,System.UInt32)">
             <summary>
             Notifies listeners that an obstacle was removed.
             </summary>
@@ -1095,7 +1095,7 @@
             <param name="occupant">The occupant whose tracked voxel indices should be returned.</param>
             <returns>A deterministic snapshot of the occupant's currently tracked voxel indices.</returns>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.TryGetOccupancyTicket(GridForge.Grids.GridWorld,GridForge.Spatial.IVoxelOccupant,GridForge.Spatial.WorldVoxelIndex,System.Int32@)">
+        <member name="M:GridForge.Grids.GridOccupantManager.TryGetOccupancyTicket(GridForge.Grids.GridWorld,GridForge.Spatial.IVoxelOccupant,GridForge.Spatial.WorldVoxelIndex,GridForge.OccupantTicket@)">
             <summary>
             Attempts to retrieve the scan-cell ticket for the occupant at a specific voxel in the supplied world.
             </summary>
@@ -1150,12 +1150,12 @@
             Removes an occupant from this grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantAdded(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantAdded(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,GridForge.OccupantTicket,System.Byte)">
             <summary>
             Notifies listeners that an occupant was added.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantRemoved(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
+        <member name="M:GridForge.Grids.GridOccupantManager.NotifyOccupantRemoved(GridForge.Grids.Voxel,GridForge.Spatial.IVoxelOccupant,GridForge.OccupantTicket,System.Byte)">
             <summary>
             Notifies listeners that an occupant was removed.
             </summary>
@@ -1246,22 +1246,22 @@
             Retrieves all occupants of a specific type at a given voxel.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
+        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Retrieves a specific occupant at a given world-scoped voxel identity using an occupant ticket in the supplied world.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
+        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,FixedMathSharp.Vector3d,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Retrieves a specific occupant at a given world position using an occupant ticket.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
+        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Retrieves a specific occupant at a given voxel coordinate using an occupant ticket.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
+        <member name="M:GridForge.Grids.GridScanManager.TryGetVoxelOccupant(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Retrieves a specific occupant from a given voxel using an occupant ticket.
             </summary>
@@ -1306,6 +1306,11 @@
             Retrieves occupants at a given voxel that match a specified group condition.
             </summary>
         </member>
+        <member name="T:GridForge.Grids.GridSpatialIndex">
+            <summary>
+            Owns deterministic top-level grid spatial classification and lookup.
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.GridWorld">
             <summary>
             Owns the mutable runtime state for one GridForge world.
@@ -1323,12 +1328,14 @@
         </member>
         <member name="F:GridForge.Grids.GridWorld.DefaultSpatialGridCellSize">
             <summary>
-            The default size of a spatial hash cell used for grid lookup.
+            The default cell size used to tune ordinary-grid lookup.
+            Oversized grids are indexed automatically outside this tier.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GridWorld.SpatialGridCellSize">
             <summary>
-            The size of a spatial hash cell used for grid lookup in this world.
+            The cell size used to tune ordinary-grid lookup in this world.
+            Oversized grids are indexed automatically outside this tier.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GridWorld.ActiveGrids">
@@ -1341,14 +1348,10 @@
             Dictionary mapping exact grid configuration keys to grid indices to prevent duplicate grids.
             </summary>
         </member>
-        <member name="P:GridForge.Grids.GridWorld.SpatialGridHash">
-            <summary>
-            Dictionary mapping spatial hash keys to grid indices for fast lookups.
-            </summary>
-        </member>
         <member name="P:GridForge.Grids.GridWorld.SpawnToken">
             <summary>
-            Runtime token identifying this specific world instance.
+            Nonzero process-unique 64-bit runtime allocation token for this active world.
+            Zero indicates an inactive world.
             </summary>
         </member>
         <member name="P:GridForge.Grids.GridWorld.Version">
@@ -1383,9 +1386,9 @@
         </member>
         <member name="M:GridForge.Grids.GridWorld.#ctor(System.Int32)">
             <summary>
-            Initializes a new world with the supplied spatial-hash settings.
+            Initializes a new world with optional ordinary-grid lookup tuning.
             </summary>
-            <param name="spatialGridCellSize">Optional spatial hash cell size for this world.</param>
+            <param name="spatialGridCellSize">Optional ordinary-grid lookup cell size for this world.</param>
         </member>
         <member name="M:GridForge.Grids.GridWorld.Reset(System.Boolean)">
             <summary>
@@ -1396,9 +1399,16 @@
         <member name="M:GridForge.Grids.GridWorld.Dispose">
             <inheritdoc />
         </member>
+        <member name="M:GridForge.Grids.GridWorld.AllocateObstacleToken">
+            <summary>
+            Allocates a nonzero process-unique identity for one obstacle registration lifetime.
+            </summary>
+            <returns>A fresh opaque obstacle token.</returns>
+            <exception cref="T:System.InvalidOperationException">The world is inactive or its token space is exhausted.</exception>
+        </member>
         <member name="M:GridForge.Grids.GridWorld.TryAddGrid(GridForge.Configuration.GridConfiguration,System.UInt16@)">
             <summary>
-            Adds a new grid to this world and registers it in the spatial hash.
+            Adds a new grid to this world and registers it in the spatial index.
             </summary>
             <param name="configuration">The grid configuration to normalize and register.</param>
             <param name="allocatedIndex">The allocated world-local grid slot on success.</param>
@@ -1640,24 +1650,21 @@
             Increments the version of the specified grid and optionally the world version.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridWorld.GetSpatialGridCells(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
-            <summary>
-            Enumerates the spatial-hash cells that intersect the supplied bounds.
-            </summary>
-        </member>
-        <member name="M:GridForge.Grids.GridWorld.GetSpatialGridCellBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
-            <summary>
-            Computes normalized spatial-hash cell bounds for the supplied world-space bounds.
-            </summary>
-        </member>
         <member name="M:GridForge.Grids.GridWorld.FindOverlappingGrids(GridForge.Grids.VoxelGrid)">
             <summary>
             Finds active grids in this world that overlap the supplied target grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridWorld.GetSpatialGridKey(FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GridWorld.FindOverlappingGridsInto(GridForge.Grids.VoxelGrid,SwiftCollections.SwiftList{GridForge.Grids.VoxelGrid})">
             <summary>
-            Computes the spatial-hash key for the supplied world-space position.
+            Clears and fills caller-owned storage with active grids that overlap the supplied target grid.
+            </summary>
+            <param name="targetGrid">The grid whose expanded topology bounds define the overlap query.</param>
+            <param name="results">Caller-owned storage cleared and filled in ascending grid-slot order.</param>
+        </member>
+        <member name="T:GridForge.Grids.OccupantEntry">
+            <summary>
+            Stores one occupant registration and the generation that owns its bucket slot.
             </summary>
         </member>
         <member name="T:GridForge.Grids.ScanCell">
@@ -1681,11 +1688,6 @@
             A unique identifier for this scan cell in the grid.
             </summary>
         </member>
-        <member name="P:GridForge.Grids.ScanCell.SpawnToken">
-            <summary>
-            Unique token identifying this scan cell instance.
-            </summary>
-        </member>
         <member name="F:GridForge.Grids.ScanCell._voxelOccupants">
             <summary>
             Maps a <see cref="P:GridForge.Grids.Voxel.WorldIndex"/> to a bucket of associated <see cref="T:GridForge.Spatial.IVoxelOccupant"/> instances.
@@ -1707,9 +1709,9 @@
             A scan cell is only considered occupied if it is allocated and contains at least one occupant.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.Initialize(GridForge.Grids.GridWorld,System.UInt16,System.Int32)">
+        <member name="M:GridForge.Grids.ScanCell.Initialize(GridForge.Grids.VoxelGrid,System.Int32)">
             <summary>
-            Initializes the scan cell with the specified grid index and unique cell key.
+            Initializes the scan cell with its owning grid and unique cell key.
             </summary>
         </member>
         <member name="M:GridForge.Grids.ScanCell.Reset">
@@ -1724,9 +1726,9 @@
             </summary>
             <param name="index">The global index of the voxel where the occupant resides.</param>
             <param name="occupant">The occupant instance to add.</param>
-            <returns>An integer ticket representing the occupant's position in the data structure.</returns>
+            <returns>A generation-aware ticket for the occupant's bucket slot.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.TryRemoveOccupant(GridForge.Spatial.WorldVoxelIndex,System.Int32)">
+        <member name="M:GridForge.Grids.ScanCell.TryRemoveOccupant(GridForge.Spatial.WorldVoxelIndex,GridForge.OccupantTicket)">
             <summary>
             Removes an occupant from this scan cell.
             </summary>
@@ -1772,7 +1774,7 @@
             <param name="index">The global index of the voxel.</param>
             <returns>An enumerable collection of occupants assigned to the voxel.</returns>
         </member>
-        <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(GridForge.Spatial.WorldVoxelIndex,System.Int32,GridForge.Spatial.IVoxelOccupant@)">
+        <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(GridForge.Spatial.WorldVoxelIndex,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
             Attempts to retrieve a specific occupant in this scan cell using a voxel's spawn key and occupant ticket.
             </summary>
@@ -1787,11 +1789,6 @@
         <member name="T:GridForge.Grids.Voxel">
             <summary>
             Represents a voxel within a 3D grid, handling spatial positioning, obstacles, occupants, and neighbor relationships.
-            </summary>
-        </member>
-        <member name="P:GridForge.Grids.Voxel.SpawnToken">
-            <summary>
-            Unique token identifying this voxel instance.
             </summary>
         </member>
         <member name="P:GridForge.Grids.Voxel.WorldIndex">
@@ -1821,7 +1818,7 @@
         </member>
         <member name="P:GridForge.Grids.Voxel.ObstacleTracker">
             <summary>
-            Stores a unique <see cref="T:GridForge.BoundsKey" /> for each obstacle added to this voxel to prevent adding duplicates
+            Stores the process-unique identity of each obstacle registration added to this voxel.
             </summary>
         </member>
         <member name="P:GridForge.Grids.Voxel.ObstacleCount">
@@ -2039,7 +2036,7 @@
         </member>
         <member name="F:GridForge.Grids.GridEventInfo.WorldSpawnToken">
             <summary>
-            The runtime token of the owning <see cref="T:GridForge.Grids.GridWorld"/> instance.
+            The process-unique 64-bit runtime allocation token of the owning <see cref="T:GridForge.Grids.GridWorld"/> instance.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridEventInfo.GridIndex">
@@ -2049,7 +2046,7 @@
         </member>
         <member name="F:GridForge.Grids.GridEventInfo.GridSpawnToken">
             <summary>
-            The unique spawn token for the specific grid instance occupying <see cref="F:GridForge.Grids.GridEventInfo.GridIndex"/>.
+            The 64-bit world-local allocation generation for the grid occupying <see cref="F:GridForge.Grids.GridEventInfo.GridIndex"/>.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridEventInfo.Configuration">
@@ -2092,7 +2089,7 @@
             The maximum snapped bounds of the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int32,System.UInt16,System.Int32,GridForge.Configuration.GridConfiguration,System.UInt32,GridForge.Grids.GridEventKind,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int64,System.UInt16,System.Int64,GridForge.Configuration.GridConfiguration,System.UInt32,GridForge.Grids.GridEventKind,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
             <summary>
             Initializes a new immutable grid event snapshot.
             </summary>
@@ -2217,7 +2214,7 @@
             The grid index containing <see cref="F:GridForge.Grids.ObstacleEventInfo.VoxelIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ObstacleEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.BoundsKey,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.ObstacleEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.ObstacleToken,System.Byte,System.UInt32)">
             <summary>
             Initializes a new immutable obstacle mutation snapshot.
             </summary>
@@ -2252,7 +2249,7 @@
             The grid index containing <see cref="F:GridForge.Grids.OccupantEventInfo.VoxelIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.OccupantEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.IVoxelOccupant,System.Int32,System.Byte)">
+        <member name="M:GridForge.Grids.OccupantEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.IVoxelOccupant,GridForge.OccupantTicket,System.Byte)">
             <summary>
             Initializes a new immutable occupant mutation snapshot.
             </summary>
@@ -2396,7 +2393,8 @@
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.SpawnToken">
             <summary>
-            Unique token identifying the grid instance.
+            Nonzero 64-bit world-local allocation generation identifying this active grid instance.
+            Zero indicates an inactive or unallocated grid.
             </summary>
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.GridIndex">
@@ -2536,12 +2534,13 @@
             Tracks the version of the grid, incremented when a <see cref="T:GridForge.Grids.Voxel"/> is modified.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.VoxelGrid.Initialize(GridForge.Grids.GridWorld,System.UInt16,GridForge.Configuration.GridConfiguration,GridForge.Grids.Topology.IGridTopology,GridForge.Spatial.VoxelIndex[])">
+        <member name="M:GridForge.Grids.VoxelGrid.Initialize(GridForge.Grids.GridWorld,System.UInt16,System.Int64,GridForge.Configuration.GridConfiguration,GridForge.Grids.Topology.IGridTopology,GridForge.Spatial.VoxelIndex[])">
             <summary>
             Initializes the grid with an explicit owning world and configured sparse voxel set.
             </summary>
             <param name="world">The world that will own this grid.</param>
             <param name="gridIndex">The unique index of this grid in the world.</param>
+            <param name="spawnToken">The world-local allocation generation for this grid.</param>
             <param name="configuration">The normalized configuration settings for the grid.</param>
             <param name="topology">The validated topology instance for this grid.</param>
             <param name="configuredVoxels">The validated sparse voxel indices to materialize.</param>
@@ -2589,16 +2588,6 @@
             <summary>
             Checks whether a given position falls within the grid bounds.
             </summary>
-        </member>
-        <member name="M:GridForge.Grids.VoxelGrid.IsGridOverlapValid(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid,System.Nullable{FixedMathSharp.Fixed64})">
-            <summary>
-            Checks if two grids are overlapping within a given tolerance threshold.
-            This is used to determine if grids should be linked as neighbors.
-            </summary>
-            <param name="a">The first grid.</param>
-            <param name="b">The second grid.</param>
-            <param name="tolerance">Optional tolerance to account for minor floating-point errors.</param>
-            <returns>True if the grids overlap within the tolerance, otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.VoxelGrid.GetAllGridNeighbors">
             <summary>
@@ -2798,9 +2787,6 @@
             <param name="max">The second world-space bounds corner.</param>
             <param name="padding">Optional non-negative padding applied before normalization.</param>
             <returns>Topology-aligned minimum and maximum bounds suitable for deterministic coverage scans.</returns>
-        </member>
-        <member name="M:GridForge.Grids.VoxelGrid.GetHashCode">
-            <inheritdoc/>
         </member>
         <member name="T:GridForge.Spatial.GridPlane2d">
             <summary>
@@ -3062,25 +3048,36 @@
             <summary>
             Provides efficient storage and retrieval of partitions keyed by their exact concrete <see cref="T:System.Type"/>.
             </summary>
+            <remarks>
+            The first two concrete types are stored inline. Additional types use provider-owned overflow
+            storage that is cleared and retained after compaction so a later promotion can reuse it.
+            Enumeration and compaction preserve registration order.
+            </remarks>
         </member>
-        <member name="F:GridForge.Spatial.PartitionProvider`1._singlePartitionType">
+        <member name="F:GridForge.Spatial.PartitionProvider`1._firstPartitionType">
             <summary>
-            The single inline partition used by the common one-partition-per-voxel path.
+            The first inline partition used by the common one- and two-partition paths.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.PartitionProvider`1._singlePartition">
+        <member name="F:GridForge.Spatial.PartitionProvider`1._firstPartition">
             <summary>
-            The single inline partition used by the common one-partition-per-voxel path.
+            The first inline partition used by the common one- and two-partition paths.
             </summary>
         </member>
-        <member name="F:GridForge.Spatial.PartitionProvider`1._partitions">
+        <member name="F:GridForge.Spatial.PartitionProvider`1._secondPartitionType">
             <summary>
-            Backing dictionary used only when a voxel hosts multiple concrete partition types.
+            The second inline partition used by the common two-partition-per-voxel path.
             </summary>
         </member>
-        <member name="P:GridForge.Spatial.PartitionProvider`1.Partitions">
+        <member name="F:GridForge.Spatial.PartitionProvider`1._secondPartition">
             <summary>
-            Returns an enumerable of all partitions currently stored in the provider.
+            The second inline partition used by the common two-partition-per-voxel path.
+            </summary>
+        </member>
+        <member name="F:GridForge.Spatial.PartitionProvider`1._overflowPartitions">
+            <summary>
+            Overflow storage used only when a voxel hosts more than two concrete partition types.
+            The dictionary remains owned by the provider after compaction so later promotions can reuse it.
             </summary>
         </member>
         <member name="P:GridForge.Spatial.PartitionProvider`1.IsEmpty">
@@ -3467,7 +3464,7 @@
         </member>
         <member name="F:GridForge.Spatial.WorldVoxelIndex.WorldSpawnToken">
             <summary>
-            The runtime token of the owning <see cref="T:GridForge.Grids.GridWorld"/> instance.
+            The process-unique 64-bit runtime allocation token of the owning <see cref="T:GridForge.Grids.GridWorld"/> instance.
             Used to reject stale or cross-world identities safely.
             </summary>
         </member>
@@ -3478,7 +3475,7 @@
         </member>
         <member name="F:GridForge.Spatial.WorldVoxelIndex.GridSpawnToken">
             <summary>
-            The unique identifier generated by the grid during initialization.
+            The 64-bit world-local allocation generation assigned to the grid during initialization.
             Used to ensure the correct instance is at the assigned <see cref="F:GridForge.Spatial.WorldVoxelIndex.GridIndex"/>.
             </summary>
         </member>
@@ -3487,7 +3484,7 @@
             The local coordinate of a voxel within the grid at <see cref="F:GridForge.Spatial.WorldVoxelIndex.GridIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Spatial.WorldVoxelIndex.#ctor(System.Int32,System.UInt16,System.Int32,GridForge.Spatial.VoxelIndex)">
+        <member name="M:GridForge.Spatial.WorldVoxelIndex.#ctor(System.Int64,System.UInt16,System.Int64,GridForge.Spatial.VoxelIndex)">
             <summary>
             Initializes a new instance of <see cref="T:GridForge.Spatial.WorldVoxelIndex"/>, linking a voxel to a specific world and grid instance.
             </summary>
@@ -3505,7 +3502,7 @@
         </member>
         <member name="M:GridForge.Spatial.WorldVoxelIndex.GetHashCode">
             <summary>
-            Computes a hash code for uniquely identifying this world-scoped voxel identity.
+            Computes a hash code for hash-based lookup. Exact equality remains authoritative.
             </summary>
         </member>
         <member name="M:GridForge.Spatial.WorldVoxelIndex.Equals(GridForge.Spatial.WorldVoxelIndex)">
@@ -3570,6 +3567,79 @@
             </summary>
             <param name="grid">The grid containing the matching voxels.</param>
             <param name="voxels">The matching voxels for the grid.</param>
+        </member>
+        <member name="T:GridForge.ObstacleToken">
+            <summary>
+            Opaque process-unique identity for one obstacle registration lifetime.
+            </summary>
+        </member>
+        <member name="P:GridForge.ObstacleToken.IsValid">
+            <summary>
+            Indicates whether this token identifies an allocated obstacle registration.
+            </summary>
+        </member>
+        <member name="M:GridForge.ObstacleToken.Equals(GridForge.ObstacleToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.ObstacleToken.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.ObstacleToken.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.ObstacleToken.ToString">
+            <summary>
+            Returns the runtime token value for diagnostics.
+            </summary>
+        </member>
+        <member name="M:GridForge.ObstacleToken.op_Equality(GridForge.ObstacleToken,GridForge.ObstacleToken)">
+            <summary>
+            Compares two obstacle registration tokens for equality.
+            </summary>
+        </member>
+        <member name="M:GridForge.ObstacleToken.op_Inequality(GridForge.ObstacleToken,GridForge.ObstacleToken)">
+            <summary>
+            Compares two obstacle registration tokens for inequality.
+            </summary>
+        </member>
+        <member name="T:GridForge.OccupantTicket">
+            <summary>
+            Identifies one occupant registration in a scan-cell bucket.
+            </summary>
+        </member>
+        <member name="P:GridForge.OccupantTicket.Slot">
+            <summary>
+            The O(1) lookup slot within the voxel's occupant bucket.
+            </summary>
+        </member>
+        <member name="P:GridForge.OccupantTicket.Generation">
+            <summary>
+            The process-unique generation assigned to this registration lifetime.
+            </summary>
+        </member>
+        <member name="P:GridForge.OccupantTicket.IsValid">
+            <summary>
+            Indicates whether this ticket identifies an allocated occupant registration.
+            </summary>
+        </member>
+        <member name="M:GridForge.OccupantTicket.Equals(GridForge.OccupantTicket)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.OccupantTicket.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.OccupantTicket.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.OccupantTicket.op_Equality(GridForge.OccupantTicket,GridForge.OccupantTicket)">
+            <summary>
+            Compares two occupant tickets for equality.
+            </summary>
+        </member>
+        <member name="M:GridForge.OccupantTicket.op_Inequality(GridForge.OccupantTicket,GridForge.OccupantTicket)">
+            <summary>
+            Compares two occupant tickets for inequality.
+            </summary>
         </member>
         <member name="T:GridForge.GridForgeLogger">
             <summary>
@@ -3642,6 +3712,14 @@
             Provides utilities for tracing lines or bounding areas in a grid, aligning them to grid voxels.
             Uses fixed-point calculations to ensure deterministic and accurate grid traversal.
             </summary>
+            <content>
+            Grid coverage utilities for resolving scan cells and voxels that intersect
+            a given world-space query bounds, including specialized handling for hex-prism topologies.
+            </content>
+            <content>
+            Provides line-tracing functionality for identifying voxels intersected
+            along a segment between two points across one or more grids.
+            </content>
         </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLine(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
             <summary>
@@ -3678,7 +3756,7 @@
             <param name="start">Starting position in world space.</param>
             <param name="end">Ending position in world space.</param>
             <param name="results">Caller-owned storage that receives traced voxels.</param>
-            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="scratch">Reusable scratch storage for grid candidates and duplicate-voxel guards.</param>
             <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
         </member>
@@ -3718,7 +3796,7 @@
             <param name="start">Starting XZ-plane position in world space.</param>
             <param name="end">Ending XZ-plane position in world space.</param>
             <param name="results">Caller-owned storage that receives traced voxels.</param>
-            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="scratch">Reusable scratch storage for grid candidates and duplicate-voxel guards.</param>
             <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
@@ -3739,7 +3817,7 @@
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the covered voxels.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all grid voxels covered by the given XZ-plane area on the supplied world Y layer.
             </summary>
@@ -3770,7 +3848,7 @@
             <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
             <param name="padding">Value applied to the min/max bounds before normalization.</param>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.Voxel},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.Voxel},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage with voxels covered by the supplied XZ-plane area.
             </summary>
@@ -3788,7 +3866,7 @@
             <param name="boundsMin">The minimum corner of the bounding area.</param>
             <param name="boundsMax">The maximum corner of the bounding area.</param>
             <param name="results">Caller-owned storage that receives covered voxels.</param>
-            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="scratch">Reusable scratch storage for grid candidates and duplicate-voxel guards.</param>
             <param name="padding">Value applied to the min/max bounds before normalization.</param>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
@@ -3799,18 +3877,18 @@
             <param name="boundsMin">The 2D minimum corner whose X component maps to world X and Y component maps to world Z.</param>
             <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
             <param name="results">Caller-owned storage that receives covered voxels.</param>
-            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="scratch">Reusable scratch storage for grid candidates and duplicate-voxel guards.</param>
             <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
             <param name="padding">Value applied to the min/max bounds before normalization.</param>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.Voxel},GridForge.Grids.GridTraceScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage using caller-owned scratch collections for an XZ-plane area.
             </summary>
             <param name="world">The world whose grids should be queried.</param>
             <param name="area">The 2D area whose X component maps to world X and Y component maps to world Z.</param>
             <param name="results">Caller-owned storage that receives covered voxels.</param>
-            <param name="scratch">Reusable scratch storage for processed-grid and duplicate-voxel guards.</param>
+            <param name="scratch">Reusable scratch storage for grid candidates and duplicate-voxel guards.</param>
             <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
             <param name="padding">Value applied to the min/max bounds before normalization.</param>
         </member>
@@ -3835,7 +3913,7 @@
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
             <returns>An enumerable of covered scan cells grouped by grid.</returns>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCells(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Retrieves all scan cells within the given XZ-plane area on the supplied world Y layer.
             </summary>
@@ -3855,7 +3933,7 @@
             Clears and fills caller-owned storage with scan cells covered by the supplied XZ-plane bounding area.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage with scan cells covered by the supplied XZ-plane area.
             </summary>
@@ -3870,7 +3948,7 @@
             Clears and fills caller-owned storage using caller-owned scratch collections for an XZ-plane bounding area.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Bounds.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
+        <member name="M:GridForge.Utility.GridTracer.GetCoveredScanCellsInto(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,SwiftCollections.SwiftList{GridForge.Grids.ScanCell},GridForge.Grids.GridScanScratch,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
             Clears and fills caller-owned storage using caller-owned scratch collections for an XZ-plane area.
             </summary>
@@ -3920,24 +3998,26 @@
             Initializes traversal state for one world and padding mode.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTraversalState.TryVisitUnique(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{System.Int32},FixedMathSharp.Fixed64@)">
+        <member name="M:GridForge.Utility.GridTraversalState.TryVisitUnique(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{GridForge.Spatial.WorldVoxelIndex},FixedMathSharp.Fixed64@)">
             <summary>
             Visits a voxel only once and returns the selected cell-edge measurement for its grid.
             </summary>
+            <returns>True when the voxel belongs to an active grid generation and was not already visited; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTraversalState.GetCellEdge(GridForge.Grids.Voxel)">
             <summary>
             Gets the selected cell-edge measurement for a voxel's grid, caching repeated grid lookups.
             </summary>
+            <exception cref="T:System.InvalidOperationException">The voxel does not belong to an active grid generation in this traversal's world.</exception>
         </member>
         <member name="T:GridForge.Utility.GridTraversal">
             <summary>
             Provides deterministic helpers for duplicate-safe voxel traversal.
             </summary>
         </member>
-        <member name="M:GridForge.Utility.GridTraversal.TryGetUniquePartition``1(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{System.Int32},``0@)">
+        <member name="M:GridForge.Utility.GridTraversal.TryGetUniquePartition``1(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{GridForge.Spatial.WorldVoxelIndex},``0@)">
             <summary>
-            Gets a voxel partition once per voxel spawn token.
+            Gets a voxel partition once per exact world-scoped voxel identity.
             </summary>
         </member>
         <member name="M:GridForge.Utility.GridTraversal.IsWorldPositionInPaddedBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">

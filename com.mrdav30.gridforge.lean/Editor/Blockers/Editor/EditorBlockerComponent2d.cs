@@ -7,7 +7,7 @@
 
 #if UNITY_EDITOR
 using FixedMathSharp;
-using FixedMathSharp.Bounds;
+using FixedMathSharp.Geometry;
 using UnityEditor;
 using UnityEngine;
 
@@ -109,8 +109,8 @@ namespace GridForge.Blockers.Editor
             using (new EditorGUI.DisabledScope(true))
             {
                 EditorGUILayout.EnumPopup("Resolved Source", resolvedSource);
-                EditorGUILayout.Vector3Field("Fixed Bound Area Min", blockArea.Min.ToVector3());
-                EditorGUILayout.Vector3Field("Fixed Bound Area Max", blockArea.Max.ToVector3());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Min", blockArea.Min.ToVector3XZ());
+                EditorGUILayout.Vector3Field("Fixed Bound Area Max", blockArea.Max.ToVector3XZ());
             }
 
             if (!string.IsNullOrEmpty(fallbackReason))

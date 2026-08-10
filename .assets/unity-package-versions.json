@@ -1,9 +1,9 @@
 {
   "packageRoot": ".",
-  "packageVersion": "8.0.0",
+  "packageVersion": "9.0.0",
   "dependencyVersions": {
-    "FixedMathSharpUnity": "v6.0.0",
-    "SwiftCollectionsUnity": "v6.0.0"
+    "FixedMathSharpUnity": "v7.0.0",
+    "SwiftCollectionsUnity": "v7.0.0"
   },
   "packages": [
     {
@@ -34,9 +34,7 @@
         "Editor/GridForge.Editor.asmdef",
         "Samples~/GridforgeDemo/GridForge.Samples.asmdef"
       ],
-      "optionalAsmdefs": [
-        "Samples/GridforgeDemo/GridForge.Samples.asmdef"
-      ]
+      "optionalAsmdefs": ["Samples/GridforgeDemo/GridForge.Samples.asmdef"]
     },
     {
       "path": "com.mrdav30.gridforge.lean",
@@ -66,9 +64,7 @@
         "Editor/GridForge.Lean.Editor.asmdef",
         "Samples~/GridforgeDemo/GridForge.Lean.Samples.asmdef"
       ],
-      "optionalAsmdefs": [
-        "Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef"
-      ]
+      "optionalAsmdefs": ["Samples/GridforgeDemo/GridForge.Lean.Samples.asmdef"]
     }
   ]
 }
