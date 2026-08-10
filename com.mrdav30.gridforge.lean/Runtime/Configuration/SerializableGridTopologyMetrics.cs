@@ -25,19 +25,32 @@ namespace GridForge.Configuration
         [SerializeField] private Fixed64 _hexLayerHeight;
         [SerializeField] private HexOrientation _hexOrientation;
 
+        /// <summary>Gets the rectangular cell width.</summary>
         public readonly Fixed64 RectangularCellWidth => ResolveUnsetMetric(_rectangularCellWidth);
+        /// <summary>Gets the rectangular layer height.</summary>
         public readonly Fixed64 RectangularLayerHeight => ResolveUnsetMetric(_rectangularLayerHeight);
+        /// <summary>Gets the rectangular cell length.</summary>
         public readonly Fixed64 RectangularCellLength => ResolveUnsetMetric(_rectangularCellLength);
+        /// <summary>Gets the hexagonal cell radius.</summary>
         public readonly Fixed64 HexRadius => ResolveUnsetMetric(_hexRadius);
+        /// <summary>Gets the hexagonal layer height.</summary>
         public readonly Fixed64 HexLayerHeight => ResolveUnsetMetric(_hexLayerHeight);
+        /// <summary>Gets the hexagonal cell orientation.</summary>
         public readonly HexOrientation HexOrientation => _hexOrientation;
 
+        /// <summary>Gets unit rectangular-prism metrics.</summary>
         public static SerializableGridTopologyMetrics DefaultRectangular =>
             Rectangular(Fixed64.One, Fixed64.One, Fixed64.One);
 
+        /// <summary>Gets unit pointy-top hex-prism metrics.</summary>
         public static SerializableGridTopologyMetrics DefaultHex =>
             Hex(Fixed64.One, Fixed64.One, HexOrientation.PointyTop);
 
+        /// <summary>Creates rectangular-prism topology metrics.</summary>
+        /// <param name="cellWidth">The cell width.</param>
+        /// <param name="layerHeight">The layer height.</param>
+        /// <param name="cellLength">The cell length.</param>
+        /// <returns>The serializable metrics.</returns>
         public static SerializableGridTopologyMetrics Rectangular(
             Fixed64 cellWidth,
             Fixed64 layerHeight,
@@ -54,6 +67,11 @@ namespace GridForge.Configuration
             };
         }
 
+        /// <summary>Creates hex-prism topology metrics.</summary>
+        /// <param name="radius">The hexagonal cell radius.</param>
+        /// <param name="layerHeight">The layer height.</param>
+        /// <param name="orientation">The hexagonal cell orientation.</param>
+        /// <returns>The serializable metrics.</returns>
         public static SerializableGridTopologyMetrics Hex(
             Fixed64 radius,
             Fixed64 layerHeight,
@@ -70,6 +88,10 @@ namespace GridForge.Configuration
             };
         }
 
+        /// <summary>Creates serializable metrics from runtime topology metrics.</summary>
+        /// <param name="topologyKind">The topology that determines which metrics are copied.</param>
+        /// <param name="metrics">The runtime metrics.</param>
+        /// <returns>The serializable metrics.</returns>
         public static SerializableGridTopologyMetrics FromGridTopologyMetrics(
             GridTopologyKind topologyKind,
             GridTopologyMetrics metrics)
@@ -79,6 +101,11 @@ namespace GridForge.Configuration
                 : Rectangular(metrics.CellWidth, metrics.LayerHeight, metrics.CellLength);
         }
 
+        /// <summary>Validates and converts these values to runtime topology metrics.</summary>
+        /// <param name="topologyKind">The topology to convert.</param>
+        /// <param name="metrics">Receives the runtime metrics.</param>
+        /// <param name="failureReason">Receives the validation failure reason.</param>
+        /// <returns><see langword="true"/> when conversion succeeds.</returns>
         public readonly bool TryToGridTopologyMetrics(
             GridTopologyKind topologyKind,
             out GridTopologyMetrics metrics,

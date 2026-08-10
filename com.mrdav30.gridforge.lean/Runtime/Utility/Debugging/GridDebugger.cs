@@ -75,35 +75,46 @@ namespace GridForge.Utility
         private GridWorld _sessionWorld;
         private bool _missingWorldWarningLogged;
 
+        /// <summary>Gets or sets the grid index used when debugging one grid.</summary>
         public ushort GridIndex
         {
             get => _gridIndex;
             set => _gridIndex = value;
         }
 
+        /// <summary>Gets or sets whether diagnostics include every active grid.</summary>
         public bool DebugAllGrids
         {
             get => _debugAllGrids;
             set => _debugAllGrids = value;
         }
 
+        /// <summary>Gets whether play-mode voxel selection is enabled.</summary>
         public bool EnableVoxelSelection => _enableVoxelSelection;
 
+        /// <summary>Gets the currently selected voxel.</summary>
         public Voxel SelectedVoxel { get; private set; }
 
+        /// <summary>Gets the status of the most recent diagnostic query.</summary>
         public GridDiagnosticQueryStatus LastQueryStatus { get; private set; } =
             GridDiagnosticQueryStatus.InactiveWorld;
 
+        /// <summary>Gets the cell count from the most recent diagnostic query.</summary>
         public int LastQueryCellCount { get; private set; }
 
+        /// <summary>Gets the skipped-cell count from the most recent diagnostic query.</summary>
         public int LastQuerySkippedCellCount { get; private set; }
 
+        /// <summary>Gets the number of cells visited by the most recent diagnostic query.</summary>
         public int LastVisitedCellCount { get; private set; }
 
+        /// <summary>Gets the number of dirty changes drained during the most recent draw.</summary>
         public int LastDirtyChangeCount { get; private set; }
 
+        /// <summary>Gets the explicitly related world component.</summary>
         public GridWorldComponent GridWorldComponent => ResolveGridWorldComponent();
 
+        /// <summary>Gets the runtime world hosted by the resolved world component.</summary>
         public GridWorld World
         {
             get
@@ -115,13 +126,13 @@ namespace GridForge.Utility
 
         #region Unity Lifecycle
 
-        public void Update()
+        private void Update()
         {
             if (_enableVoxelSelection && Application.isPlaying)
                 HandleVoxelSelection();
         }
 
-        public void OnDrawGizmos()
+        private void OnDrawGizmos()
         {
             if (!_showGrid || !Application.isPlaying)
                 return;
@@ -186,6 +197,8 @@ namespace GridForge.Utility
 
         #region Query
 
+        /// <summary>Builds a diagnostic query from the current inspector settings.</summary>
+        /// <returns>The configured diagnostic query.</returns>
         public GridDiagnosticQuery BuildDiagnosticQuery()
         {
             ushort? gridIndex = _debugAllGrids ? null : _gridIndex;
@@ -207,6 +220,10 @@ namespace GridForge.Utility
                 _allowFullSparseAddressScan);
         }
 
+        /// <summary>Tries to resolve a diagnostic descriptor to a physical voxel.</summary>
+        /// <param name="cell">The diagnostic cell descriptor.</param>
+        /// <param name="voxel">Receives the physical voxel.</param>
+        /// <returns><see langword="true"/> when the descriptor resolves in the active world.</returns>
         public bool TryResolveDiagnosticPhysicalCell(in GridDiagnosticCell cell, out Voxel voxel)
         {
             voxel = null;

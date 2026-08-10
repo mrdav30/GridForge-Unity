@@ -51,8 +51,10 @@ namespace GridForge.Blockers
         private bool _missingWorldWarningLogged;
         private BlockAreaSource _lastWarnedBlockAreaSource = InvalidBlockAreaSource;
 
-        public bool IsSet;
+        /// <summary>Gets whether this component has applied its blockage.</summary>
+        public bool IsSet { get; private set; }
 
+        /// <summary>Gets the resolved runtime world.</summary>
         public GridWorld World
         {
             get
@@ -62,13 +64,21 @@ namespace GridForge.Blockers
             }
         }
 
+        /// <summary>Gets whether the blocker marks covered voxels as active.</summary>
         public bool IsActive => _isActive;
+        /// <summary>Gets whether covered voxels are cached by the blocker.</summary>
         public bool CacheCoveredVoxels => _cacheCoveredVoxels;
+        /// <summary>Gets the source used to calculate blocker bounds.</summary>
         public BlockAreaSource BlockAreaSource => _blockAreaSource;
+        /// <summary>Gets whether child colliders or renderers contribute bounds.</summary>
         public bool IncludeChildrenInBlockArea => _includeChildrenInBlockArea;
+        /// <summary>Gets the explicitly authored minimum XZ coordinates.</summary>
         public Vector2d ManualXzBlockAreaMin => _manualXzBlockAreaMin;
+        /// <summary>Gets the explicitly authored maximum XZ coordinates.</summary>
         public Vector2d ManualXzBlockAreaMax => _manualXzBlockAreaMax;
+        /// <summary>Gets the world Y layer affected by the blocker.</summary>
         public Fixed64 LayerY => _layerY;
+        /// <summary>Gets the currently resolved XZ blocker area.</summary>
         public FixedBoundArea BlockArea => ResolveBlockArea();
 
         #endregion
@@ -78,26 +88,26 @@ namespace GridForge.Blockers
             _blockAreaSource = BlockAreaSource.Transform;
         }
 
-        public void Start()
+        private void Start()
         {
             _hasStarted = true;
             TryApplyBlockage();
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
             if (_hasStarted)
                 TryApplyBlockage();
         }
 
-        public void OnDisable()
+        private void OnDisable()
         {
             _blocker?.RemoveBlockage();
             IsSet = false;
         }
 
 #if UNITY_EDITOR
-        public void OnDrawGizmosSelected()
+        private void OnDrawGizmosSelected()
         {
             if (!_showCoveragePreview || !Application.isPlaying)
                 return;
@@ -117,25 +127,28 @@ namespace GridForge.Blockers
         }
 #endif
 
-        private void TryApplyBlockage()
+        /// <summary>Tries to apply this blocker's configured coverage to its resolved world.</summary>
+        /// <returns><see langword="true"/> when blockage is applied or was already applied.</returns>
+        public bool TryApplyBlockage()
         {
             GridWorld world = World;
             if (world == null || !world.IsActive)
             {
                 WarnMissingWorld();
-                return;
+                return false;
             }
 
             _missingWorldWarningLogged = false;
 
             if (IsSet && ReferenceEquals(_resolvedWorld, world))
-                return;
+                return true;
 
             if (!TryCreateBlocker(world))
-                return;
+                return false;
 
             _blocker.ApplyBlockage();
             IsSet = true;
+            return true;
         }
 
         private bool TryCreateBlocker(GridWorld world)
@@ -172,6 +185,10 @@ namespace GridForge.Blockers
             return _gridWorldComponent;
         }
 
+        /// <summary>Calculates the XZ blocker area and reports any fallback to transform bounds.</summary>
+        /// <param name="resolvedSource">Receives the source that produced the area.</param>
+        /// <param name="fallbackReason">Receives the reason the configured source could not be used.</param>
+        /// <returns>The calculated fixed-point XZ area.</returns>
         public FixedBoundArea CalculateXzBlockArea(
             out BlockAreaSource resolvedSource,
             out string fallbackReason)
@@ -373,23 +390,45 @@ namespace GridForge.Blockers
             _missingWorldWarningLogged = true;
         }
 
+        /// <summary>Configures the blocker state used when applying coverage.</summary>
+        /// <param name="isActive">Whether covered voxels are marked active.</param>
+        /// <param name="cacheCoveredVoxels">Whether the blocker caches its covered voxels.</param>
         public void ConfigureAreaBlocker(bool isActive = true, bool cacheCoveredVoxels = false)
         {
+            InvalidateBlocker();
             _isActive = isActive;
             _cacheCoveredVoxels = cacheCoveredVoxels;
         }
 
+        /// <summary>Uses an explicit fixed-point XZ area and layer for blockage.</summary>
+        /// <param name="min">The minimum XZ coordinates.</param>
+        /// <param name="max">The maximum XZ coordinates.</param>
+        /// <param name="layerY">The world Y layer to affect.</param>
         public void ConfigureManualXzArea(
             Vector2d min,
             Vector2d max,
             Fixed64 layerY = default)
         {
+            InvalidateBlocker();
             _blockAreaSource = BlockAreaSource.Manual;
             _manualXzBlockAreaMin = min;
             _manualXzBlockAreaMax = max;
             _layerY = layerY;
         }
 
+        private void InvalidateBlocker()
+        {
+            _blocker?.RemoveBlockage();
+            _blocker = null;
+            _resolvedWorld = null;
+            IsSet = false;
+        }
+
+        /// <summary>Counts the grids and voxels covered without applying blockage.</summary>
+        /// <param name="world">The active world to query.</param>
+        /// <param name="gridCount">Receives the number of covered grids.</param>
+        /// <param name="voxelCount">Receives the number of covered voxels.</param>
+        /// <returns><see langword="true"/> when an active world was queried.</returns>
         public bool TryCountPreviewCoverage(
             GridWorld world,
             out int gridCount,

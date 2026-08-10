@@ -50,5 +50,63 @@ namespace GridForge.Unity.Tests.EditMode
                 Object.DestroyImmediate(owner);
             }
         }
+
+        [Test]
+        public void ResolveReturnsNullWhenOnlyAnUnrelatedWorldExists()
+        {
+            GameObject unrelatedOwner = new GameObject("Unrelated grid world");
+            GameObject contextOwner = new GameObject("Grid world resolution context");
+
+            try
+            {
+                unrelatedOwner.AddComponent<GridWorldComponent>();
+
+                GridWorldComponent resolved = GridWorldComponentUtility.Resolve(
+                    contextOwner.transform,
+                    assignedComponent: null);
+
+                Assert.IsNull(resolved);
+            }
+            finally
+            {
+                Object.DestroyImmediate(contextOwner);
+                Object.DestroyImmediate(unrelatedOwner);
+            }
+        }
+
+        [Test]
+        public void ResolvePrefersAssignedThenLocalThenParentWorld()
+        {
+            GameObject parentOwner = new GameObject("Parent grid world");
+            GameObject contextOwner = new GameObject("Local grid world");
+            GameObject assignedOwner = new GameObject("Assigned grid world");
+            contextOwner.transform.SetParent(parentOwner.transform);
+
+            try
+            {
+                GridWorldComponent parentWorld = parentOwner.AddComponent<GridWorldComponent>();
+                GridWorldComponent localWorld = contextOwner.AddComponent<GridWorldComponent>();
+                GridWorldComponent assignedWorld = assignedOwner.AddComponent<GridWorldComponent>();
+
+                Assert.AreSame(
+                    assignedWorld,
+                    GridWorldComponentUtility.Resolve(contextOwner.transform, assignedWorld));
+                Assert.AreSame(
+                    localWorld,
+                    GridWorldComponentUtility.Resolve(contextOwner.transform, assignedComponent: null));
+
+                Object.DestroyImmediate(localWorld);
+
+                Assert.AreSame(
+                    parentWorld,
+                    GridWorldComponentUtility.Resolve(contextOwner.transform, assignedComponent: null));
+            }
+            finally
+            {
+                Object.DestroyImmediate(assignedOwner);
+                Object.DestroyImmediate(contextOwner);
+                Object.DestroyImmediate(parentOwner);
+            }
+        }
     }
 }

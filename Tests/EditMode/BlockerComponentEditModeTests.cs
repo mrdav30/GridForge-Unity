@@ -30,9 +30,44 @@ namespace GridForge.Unity.Tests.EditMode
                     new Vector3d(0, 0, 0),
                     new Vector3d(3, 0, 3)));
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
                 Assert.Greater(CountBlockedVoxels(grid), 0);
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+            }
+        }
+
+        [Test]
+        public void BoundsBlockerReappliesChangedManualBounds()
+        {
+            GameObject owner = CreateBlockerOwnerWithGrid(
+                RectangularConfig(new Vector3d(0, 0, 0), new Vector3d(3, 1, 3), GridStorageKind.Dense),
+                configuredVoxels: null,
+                out _,
+                out VoxelGrid grid);
+
+            try
+            {
+                BlockerComponent blocker = owner.AddComponent<BlockerComponent>();
+                blocker.ConfigureBoundsBlocker();
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
+                    new Vector3d(0, 0, 0),
+                    new Vector3d(3, 0, 3)));
+
+                Assert.IsTrue(blocker.TryApplyBlockage());
+                Assert.Greater(CountBlockedVoxelsOnLayer(grid, 0), 0);
+                Assert.AreEqual(0, CountBlockedVoxelsOnLayer(grid, 1));
+
+                blocker.ConfigureManualFixedBoundBox(FixedBoundBox.FromMinMax(
+                    new Vector3d(0, 1, 0),
+                    new Vector3d(3, 1, 3)));
+
+                Assert.IsTrue(blocker.TryApplyBlockage());
+                Assert.AreEqual(0, CountBlockedVoxelsOnLayer(grid, 0));
+                Assert.Greater(CountBlockedVoxelsOnLayer(grid, 1), 0);
             }
             finally
             {
@@ -57,7 +92,7 @@ namespace GridForge.Unity.Tests.EditMode
                     new Vector3d(0, 0, 0),
                     new Vector3d(12, 0, 12)));
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
                 Assert.Greater(CountBlockedVoxels(grid), 0);
             }
@@ -88,7 +123,7 @@ namespace GridForge.Unity.Tests.EditMode
                     new Vector3d(0, 0, 0),
                     new Vector3d(3, 0, 3)));
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
                 Assert.AreEqual(2, CountBlockedVoxels(grid));
                 Assert.IsFalse(grid.ContainsVoxel(new VoxelIndex(1, 0, 1)));
@@ -120,7 +155,7 @@ namespace GridForge.Unity.Tests.EditMode
                     Vector3d.FromDouble(1.5, 0, 1.5),
                     new Vector3d(3, 0, 3)));
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
                 Assert.AreEqual(2, CountBlockedVoxels(grid));
                 Assert.IsFalse(grid.ContainsVoxel(new VoxelIndex(1, 0, 1)));
@@ -152,7 +187,7 @@ namespace GridForge.Unity.Tests.EditMode
                     new Vector3d(0, 0, 0),
                     new Vector3d(12, 0, 12)));
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
                 Assert.AreEqual(2, CountBlockedVoxels(grid));
                 Assert.IsFalse(grid.ContainsVoxel(new VoxelIndex(2, 0, 0)));
@@ -178,8 +213,39 @@ namespace GridForge.Unity.Tests.EditMode
                 blocker.ConfigureAreaBlocker();
                 blocker.ConfigureManualXzArea(new Vector2d(0, 0), new Vector2d(3, 3), layerY: Fixed64.One);
 
-                blocker.Start();
+                Assert.IsTrue(blocker.TryApplyBlockage());
 
+                Assert.AreEqual(0, CountBlockedVoxelsOnLayer(grid, 0));
+                Assert.Greater(CountBlockedVoxelsOnLayer(grid, 1), 0);
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+            }
+        }
+
+        [Test]
+        public void XzLayerBlockerReappliesChangedLayer()
+        {
+            GameObject owner = CreateBlockerOwnerWithGrid(
+                RectangularConfig(new Vector3d(0, 0, 0), new Vector3d(3, 1, 3), GridStorageKind.Dense),
+                configuredVoxels: null,
+                out _,
+                out VoxelGrid grid);
+
+            try
+            {
+                BlockerComponent2d blocker = owner.AddComponent<BlockerComponent2d>();
+                blocker.ConfigureAreaBlocker();
+                blocker.ConfigureManualXzArea(new Vector2d(0, 0), new Vector2d(3, 3), layerY: Fixed64.Zero);
+
+                Assert.IsTrue(blocker.TryApplyBlockage());
+                Assert.Greater(CountBlockedVoxelsOnLayer(grid, 0), 0);
+                Assert.AreEqual(0, CountBlockedVoxelsOnLayer(grid, 1));
+
+                blocker.ConfigureManualXzArea(new Vector2d(0, 0), new Vector2d(3, 3), layerY: Fixed64.One);
+
+                Assert.IsTrue(blocker.TryApplyBlockage());
                 Assert.AreEqual(0, CountBlockedVoxelsOnLayer(grid, 0));
                 Assert.Greater(CountBlockedVoxelsOnLayer(grid, 1), 0);
             }

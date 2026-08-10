@@ -20,12 +20,23 @@ namespace GridForge.Utility
     /// </summary>
     public static class GridDiagnosticGizmoDrawer
     {
+        /// <summary>Gets the vertex count required to draw a diagnostic cell.</summary>
+        /// <param name="cell">The diagnostic cell.</param>
+        /// <returns>The required vertex count.</returns>
         public static int GetVertexCount(in GridDiagnosticCell cell) =>
             GridDiagnosticGeometry.GetVertexCount(cell.TopologyKind);
 
+        /// <summary>Gets the edge count required to draw a diagnostic cell.</summary>
+        /// <param name="cell">The diagnostic cell.</param>
+        /// <returns>The required edge count.</returns>
         public static int GetEdgeCount(in GridDiagnosticCell cell) =>
             GridDiagnosticGeometry.GetEdgeCount(cell.TopologyKind);
 
+        /// <summary>Creates a physical-cell diagnostic descriptor for a voxel.</summary>
+        /// <param name="world">The owning world.</param>
+        /// <param name="grid">The owning grid.</param>
+        /// <param name="voxel">The voxel to describe.</param>
+        /// <returns>The physical-cell descriptor.</returns>
         public static GridDiagnosticCell CreatePhysicalCell(
             GridWorld world,
             VoxelGrid grid,
@@ -45,6 +56,10 @@ namespace GridForge.Utility
                 voxel.WorldIndex);
         }
 
+        /// <summary>Writes the diagnostic cell geometry as Unity vertices.</summary>
+        /// <param name="cell">The diagnostic cell.</param>
+        /// <param name="vertices">The destination span.</param>
+        /// <returns>The number of vertices written, or zero when the destination is too small.</returns>
         public static int WriteUnityVertices(in GridDiagnosticCell cell, Span<Vector3> vertices)
         {
             int expectedVertexCount = GridDiagnosticGeometry.GetVertexCount(cell.TopologyKind);
@@ -59,6 +74,9 @@ namespace GridForge.Utility
             return vertexCount;
         }
 
+        /// <summary>Draws a diagnostic cell as a Unity wire gizmo.</summary>
+        /// <param name="cell">The diagnostic cell.</param>
+        /// <param name="color">The gizmo color.</param>
         public static void DrawWireCell(in GridDiagnosticCell cell, Color color)
         {
             Span<Vector3d> vertices = stackalloc Vector3d[GridDiagnosticGeometry.HexPrismVertexCount];

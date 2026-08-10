@@ -7,50 +7,71 @@ fixes can proceed directly through a pull request.
 Please note we have a code of conduct, please follow it in all your interactions
 with the project.
 
-## Source of Truth
+## Package Variants
 
-Edit shared Unity runtime code under `Build/Base` or `Build/FixedMathSharp`,
-then run the package sync. Do not hand-edit synchronized runtime copies inside
-the four `com.mrdav30.swiftcollections*` package folders.
+Install and contribute to one package variant at a time:
 
-Package manifests, package READMEs, asmdefs, plugins, and other package-specific
-assets remain in their package folders.
+- `com.mrdav30.gridforge` is the standard Unity integration with the default
+  dependency chain.
+- `com.mrdav30.gridforge.lean` provides the same Unity integration without the
+  `MemoryPack` dependency chain.
+
+The variants expose overlapping assemblies and must not be installed together.
+
+## Source Ownership
+
+Shared Unity adapter source belongs in `Build/Base`. Edit it there; do not
+hand-edit the synchronized copies under either package folder. Package
+manifests, READMEs, asmdefs, plugins, and serialized sample assets remain owned
+by their respective `com.mrdav30.gridforge*` package folder.
+
+`Build/Base/CHANGELOG.md` is the canonical package changelog and syncs to both
+package variants. Do not maintain separate changelog copies. Unity `.meta` files
+are Unity-owned and must not be created or edited by hand.
 
 ## Pull Request Process
 
 1. Keep changes focused and preserve package-variant boundaries.
 2. Add or update Unity tests for behavior changes.
-3. Add concise XML documentation for public runtime APIs and update the relevant
-   package changelog when behavior changes.
+3. Add concise XML documentation for changed public runtime APIs and update the
+   canonical changelog when behavior changes.
 4. Sync canonical Build files into the package variants before review.
-5. Exclude generated Unity, DocFX, test, and package-export artifacts.
+5. Exclude generated Unity, DocFX, test, and package-export artifacts from the
+   pull request.
 
 ## Validation
 
-From this repository root, run the package sync through the parent Unity
-project:
+From this repository root, run the GridForge package sync through the parent
+Unity project:
 
-```bash
-"$UNITY_EDITOR" \
-  -batchmode -quit \
-  -projectPath "$(cd ../.. && pwd)" \
-  -executeMethod SwiftCollections.Build.Editor.SwiftCollectionsPackageSync.SyncPackagesBatchMode \
-  -logFile -
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/sync-gridforge-unity-packages.ps1
 ```
 
-Set `UNITY_EDITOR` to the Unity executable. Run the command a second time when
-the first pass copied files; a clean sync reports `Copied 0 files`.
+Provide `-UnityPath` or set `UNITY_EDITOR` when Unity is not discoverable. Run
+the command again when the first pass copies files; a clean sync reports
+`Copied 0 files`.
 
-Useful lightweight checks:
+Run the relevant checks from the repository root:
 
-```bash
-dotnet tool restore
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/test-update-unity-package-versions.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/update-unity-package-versions.ps1 -ValidateOnly
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/test-gridforge-package-sync.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/run-gridforge-unity-editmode-tests.ps1
+dotnet tool restore --tool-manifest dotnet-tools.json
+dotnet tool run docfx .docs/api/docfx.json
 git diff --check
 ```
 
-The `build-and-test` workflow is the canonical validation for all four Unity
-package variants, sample import, and the hosted API site because it stages the
-required Unity and package reference assemblies.
+DocFX documents only `Build/Base/Runtime/**/*.cs`. Its generated API metadata
+and site output are disposable. CI stages the required Unity and package
+reference assemblies in `.docs/api/obj/references`; contributors must not add
+those binary references to source control.
+
+The `build-and-test` workflow is the canonical validation for both package
+variants, sample import, and the hosted API site. Keep DocFX configuration and
+documentation changes compatible with that workflow.
 
 ## Code of Conduct
 

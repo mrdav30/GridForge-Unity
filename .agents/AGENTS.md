@@ -6,7 +6,7 @@
   Unity project root.
 - This repo ships two Unity Package Manager variants: `com.mrdav30.gridforge`
   and `com.mrdav30.gridforge.lean`.
-- Both package variants are currently using GridForge `v7.1.4`.
+- Both package variants are currently using GridForge `v9.0.0`.
 - The old `.variants/` workflow is retired and should not be reintroduced.
 
 ## Source Of Truth
@@ -27,6 +27,7 @@
 
 - `Build/Base/` is for shared managed code only.
 - The sync tool currently manages these shared paths into both package variants:
+  - `CHANGELOG.md`
   - `Editor/Blockers`
   - `Editor/Configuration`
   - `Editor/Utility/Debugging`
@@ -109,6 +110,21 @@
   package version and dependency installer drift.
 - Use `.assets/scripts/test-gridforge-package-sync.ps1` to verify `Build/Base`
   managed files match both package variants.
+
+## Documentation And Changelog
+
+- `Build/Base/CHANGELOG.md` is the canonical package changelog. Update it for
+  package-visible changes; package copies are produced by the sync tool.
+- DocFX metadata documents only `Build/Base/Runtime/**/*.cs`. Do not feed
+  `Build/Base/Editor`, `Tests`, package copies, or `Plugins/GridForge.dll` to
+  DocFX as source.
+- Keep the external GridForge, FixedMathSharp, and SwiftCollections xrefs in
+  `.docs/api/docfx.json`. CI stages required binary references in
+  `.docs/api/obj/references`; generated metadata and staged binaries stay out of
+  source control.
+- Public runtime APIs need concise XML documentation that explains their Unity
+  adapter contract. Keep details in the hosted guide and API reference rather
+  than duplicating them in package READMEs.
 
 ## Package Layout Notes
 

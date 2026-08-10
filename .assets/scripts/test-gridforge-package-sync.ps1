@@ -11,6 +11,7 @@ $PackageRoots = @(
 )
 
 $ManagedEntries = @(
+    "CHANGELOG.md",
     "COPYRIGHT",
     "LICENSE",
     "NOTICE",

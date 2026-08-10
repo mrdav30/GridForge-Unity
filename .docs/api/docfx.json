@@ -1,0 +1,54 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../../Build/Base/Runtime",
+          "files": ["**/*.cs"]
+        }
+      ],
+      "dest": "obj/api",
+      "properties": {
+        "DefineConstants": "UNITY_EDITOR"
+      },
+      "references": [
+        {
+          "src": "obj/references",
+          "files": ["*.dll"]
+        }
+      ]
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "src": "obj/api",
+        "files": ["**/*.yml"],
+        "dest": "api"
+      },
+      {
+        "files": ["index.md", "toc.yml"]
+      },
+      {
+        "files": ["GridForge.md"],
+        "dest": "api"
+      },
+      {
+        "src": "../wiki",
+        "files": ["GridForge-Unity-User-Guide.md"],
+        "dest": "guide"
+      }
+    ],
+    "dest": "obj/_site",
+    "globalMetadata": {
+      "_appName": "GridForge Unity API",
+      "_appTitle": "GridForge Unity API",
+      "_enableSearch": true
+    },
+    "xref": [
+      "https://mrdav30.github.io/GridForge/xrefmap.yml",
+      "https://mrdav30.github.io/FixedMathSharp/xrefmap.yml",
+      "https://mrdav30.github.io/SwiftCollections/xrefmap.yml"
+    ]
+  }
+}

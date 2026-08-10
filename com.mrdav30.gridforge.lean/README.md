@@ -43,14 +43,8 @@ Unity logging.
 
 ## Docs
 
-- Unity guide:
-  [../.docs/wiki/GridForge-Unity-User-Guide.md](../.docs/wiki/GridForge-Unity-User-Guide.md)
+- [Hosted Unity guide and API reference](https://mrdav30.github.io/GridForge-Unity/)
+- [Package changelog](CHANGELOG.md)
 - Package selection and maintenance: [../README.md](../README.md)
-- Core GridForge wiki:
-  [Getting Started](https://github.com/mrdav30/GridForge/wiki/Getting-Started),
-  [Common Workflows](https://github.com/mrdav30/GridForge/wiki/Common-Workflows),
-  [Sparse Grid Storage](https://github.com/mrdav30/GridForge/wiki/Sparse-Grid-Storage),
-  [Grid Diagnostics and Geometry](https://github.com/mrdav30/GridForge/wiki/Grid-Diagnostics-and-Geometry),
-  [Diagnostics and Logging](https://github.com/mrdav30/GridForge/wiki/Diagnostics-and-Logging)
 
 Unity compatibility: `2022.3+`

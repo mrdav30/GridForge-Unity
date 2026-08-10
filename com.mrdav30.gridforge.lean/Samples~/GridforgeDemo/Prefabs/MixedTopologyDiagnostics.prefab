@@ -222,7 +222,6 @@ MonoBehaviour:
   _showCoveragePreview: 1
   _coveragePreviewColor: {r: 1, g: 0.35, b: 0.1, a: 0.8}
   _gridWorldComponent: {fileID: 6897902078440886492}
-  IsSet: 0
 --- !u!1 &5193029904052137923
 GameObject:
   m_ObjectHideFlags: 0
@@ -457,6 +456,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 16
+  _gridWorldComponent: {fileID: 0}
   _savedGridConfigurations:
     _items:
     - _boundsMin:
@@ -694,7 +694,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94c3f5e59c5e1ef40b7a9592d65e5f56, type: 3}
   m_Name:
-  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Utility.GridTracerTests
+  m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Utility.GridTraceVisualizer
   _showVoxelTrail: 1
   _showLine: 1
   _traceMode: 1
@@ -705,8 +705,8 @@ MonoBehaviour:
   _includeEnd: 1
   _lineHeight:
     m_rawValue: 4294967296
-  startTransform: {fileID: 4201046465571306407}
-  endTransform: {fileID: 5873144879134175511}
+  _startTransform: {fileID: 4201046465571306407}
+  _endTransform: {fileID: 5873144879134175511}
   _gridWorldComponent: {fileID: 6897902078440886492}
   _traceCellColor: {r: 1, g: 0, b: 0, a: 1}
   _traceLineColor: {r: 1, g: 1, b: 1, a: 1}

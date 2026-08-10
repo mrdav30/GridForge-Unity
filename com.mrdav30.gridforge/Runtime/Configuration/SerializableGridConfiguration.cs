@@ -30,14 +30,25 @@ namespace GridForge.Configuration
         [SerializeField] private GridStorageKind _storageKind;
         [SerializeField] private SerializableSparseVoxelSet _configuredSparseVoxels;
 
+        /// <summary>Gets the inclusive minimum world bounds.</summary>
         public readonly Vector3d BoundsMin => _boundsMin;
+        /// <summary>Gets the inclusive maximum world bounds.</summary>
         public readonly Vector3d BoundsMax => _boundsMax;
+        /// <summary>Gets the scan cell size.</summary>
         public readonly int ScanCellSize => _scanCellSize;
+        /// <summary>Gets the grid topology kind.</summary>
         public readonly GridTopologyKind TopologyKind => _topologyKind;
+        /// <summary>Gets the serialized topology metrics.</summary>
         public readonly SerializableGridTopologyMetrics TopologyMetrics => _topologyMetrics;
+        /// <summary>Gets the grid storage kind.</summary>
         public readonly GridStorageKind StorageKind => _storageKind;
+        /// <summary>Gets the configured sparse voxel indices.</summary>
         public readonly SerializableSparseVoxelSet ConfiguredSparseVoxels => _configuredSparseVoxels;
 
+        /// <summary>Creates a dense rectangular-prism configuration with default metrics.</summary>
+        /// <param name="boundsMin">The inclusive minimum world bounds.</param>
+        /// <param name="boundsMax">The inclusive maximum world bounds.</param>
+        /// <param name="scanCellSize">The scan cell size.</param>
         public SerializableGridConfiguration(Vector3d boundsMin, Vector3d boundsMax, int scanCellSize)
             : this(
                   boundsMin,
@@ -50,6 +61,14 @@ namespace GridForge.Configuration
         {
         }
 
+        /// <summary>Creates a serializable grid configuration.</summary>
+        /// <param name="boundsMin">The inclusive minimum world bounds.</param>
+        /// <param name="boundsMax">The inclusive maximum world bounds.</param>
+        /// <param name="scanCellSize">The scan cell size.</param>
+        /// <param name="topologyKind">The grid topology kind.</param>
+        /// <param name="topologyMetrics">The topology metrics.</param>
+        /// <param name="storageKind">The grid storage kind.</param>
+        /// <param name="configuredSparseVoxels">The configured sparse voxel indices.</param>
         public SerializableGridConfiguration(
             Vector3d boundsMin,
             Vector3d boundsMax,
@@ -71,6 +90,7 @@ namespace GridForge.Configuration
         /// <summary>
         /// Converts this Unity-serializable struct to the GridForge <see cref="GridConfiguration"/>.
         /// </summary>
+        /// <returns>The converted configuration.</returns>
         public readonly GridConfiguration ToGridConfiguration()
         {
             if (!TryToGridConfiguration(out GridConfiguration config, out string failureReason))
@@ -82,6 +102,9 @@ namespace GridForge.Configuration
         /// <summary>
         /// Tries to convert this Unity-serializable struct to the GridForge <see cref="GridConfiguration"/>.
         /// </summary>
+        /// <param name="config">Receives the converted configuration.</param>
+        /// <param name="failureReason">Receives the validation failure reason.</param>
+        /// <returns><see langword="true"/> when conversion succeeds.</returns>
         public readonly bool TryToGridConfiguration(out GridConfiguration config, out string failureReason)
         {
             config = default;
@@ -120,6 +143,9 @@ namespace GridForge.Configuration
         /// <summary>
         /// Converts configured sparse authoring data to topology-local voxel indices.
         /// </summary>
+        /// <param name="configuredVoxels">Receives the topology-local voxel indices.</param>
+        /// <param name="failureReason">Receives the validation failure reason.</param>
+        /// <returns><see langword="true"/> when the sparse data is valid.</returns>
         public readonly bool TryGetConfiguredSparseVoxels(out VoxelIndex[] configuredVoxels, out string failureReason)
         {
             if (_storageKind != GridStorageKind.Sparse)
@@ -135,6 +161,8 @@ namespace GridForge.Configuration
         /// <summary>
         /// Creates a serializable version from a <see cref="GridConfiguration"/>.
         /// </summary>
+        /// <param name="config">The runtime configuration to serialize.</param>
+        /// <returns>The serializable configuration.</returns>
         public static SerializableGridConfiguration FromGridConfiguration(GridConfiguration config)
         {
             return new SerializableGridConfiguration(

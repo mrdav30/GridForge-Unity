@@ -24,13 +24,27 @@ namespace GridForge.Utility
         private readonly Color _partitionedCellColor;
         private readonly Color _missingSparseAddressColor;
 
+        /// <summary>Gets the total number of visited diagnostic cells.</summary>
         public int VisitedCellCount { get; private set; }
+        /// <summary>Gets the number of visited physical cells.</summary>
         public int PhysicalCellCount { get; private set; }
+        /// <summary>Gets the number of visited missing sparse addresses.</summary>
         public int MissingSparseAddressCellCount { get; private set; }
+        /// <summary>Gets the vertex count of the last visited cell.</summary>
         public int LastVertexCount { get; private set; }
+        /// <summary>Gets the edge count of the last visited cell.</summary>
         public int LastEdgeCount { get; private set; }
+        /// <summary>Gets the last visited diagnostic cell.</summary>
         public GridDiagnosticCell LastCell { get; private set; }
 
+        /// <summary>Creates a Unity diagnostic visitor.</summary>
+        /// <param name="drawGizmos">Whether visited cells are drawn as gizmos.</param>
+        /// <param name="emptyCellColor">The color for empty cells.</param>
+        /// <param name="occupiedCellColor">The color for occupied cells.</param>
+        /// <param name="blockedCellColor">The color for blocked cells.</param>
+        /// <param name="boundaryCellColor">The color for boundary cells.</param>
+        /// <param name="partitionedCellColor">The color for partitioned cells.</param>
+        /// <param name="missingSparseAddressColor">The color for missing sparse addresses.</param>
         public GridDiagnosticUnityVisitor(
             bool drawGizmos,
             Color emptyCellColor,
@@ -56,6 +70,8 @@ namespace GridForge.Utility
             LastCell = default;
         }
 
+        /// <summary>Creates a visitor that counts cells without drawing gizmos.</summary>
+        /// <returns>The counting-only visitor.</returns>
         public static GridDiagnosticUnityVisitor CreateCountingOnly() =>
             new(
                 drawGizmos: false,
@@ -66,6 +82,9 @@ namespace GridForge.Utility
                 Color.green,
                 new Color(1f, 0.56f, 0.1f, 0.42f));
 
+        /// <summary>Visits, counts, and optionally draws a diagnostic cell.</summary>
+        /// <param name="cell">The diagnostic cell.</param>
+        /// <returns><see langword="true"/> to continue enumeration.</returns>
         public bool Visit(in GridDiagnosticCell cell)
         {
             VisitedCellCount++;

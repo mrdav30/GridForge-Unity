@@ -23,6 +23,9 @@ concurrency:
 jobs:
   unity-editmode:
     name: Unity EditMode (${{ matrix.package_display_name }})
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
 
     strategy:
@@ -72,7 +75,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .ci/unity-project/Library
-          key: unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('Tests/EditMode/**/*.cs', 'Tests/EditMode/**/*.asmdef', '.assets/unity-package-versions.json', '.assets/scripts/new-gridforge-ci-test-project.ps1', 'com.mrdav30.gridforge/**/*.cs', 'com.mrdav30.gridforge/**/*.asmdef', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge.lean/**/*.cs', 'com.mrdav30.gridforge.lean/**/*.asmdef', 'com.mrdav30.gridforge.lean/package.json') }}
+          key: unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('.assets/unity-package-versions.json', '.assets/scripts/new-gridforge-ci-test-project.ps1', 'Tests/EditMode/**/*.cs', 'Tests/EditMode/**/*.asmdef', 'com.mrdav30.gridforge/Plugins/**', 'com.mrdav30.gridforge/Runtime/**', 'com.mrdav30.gridforge/Editor/**', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge.lean/Plugins/**', 'com.mrdav30.gridforge.lean/Runtime/**', 'com.mrdav30.gridforge.lean/Editor/**', 'com.mrdav30.gridforge.lean/package.json') }}
           restore-keys: |
             unity-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-
 
@@ -99,6 +102,114 @@ jobs:
         with:
           name: unity-editmode-${{ matrix.artifact_suffix }}
           path: artifacts/${{ matrix.artifact_suffix }}
+
+      - name: Setup .NET for API documentation
+        if: matrix.artifact_suffix == 'standard'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Prepare API documentation references
+        if: matrix.artifact_suffix == 'standard'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          image="unityci/editor:ubuntu-6000.5.0f1-base-3"
+          container="$(docker create "$image")"
+          trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+
+          mkdir -p .docs/api/obj/references
+          for reference in UnityEngine.CoreModule UnityEngine.PhysicsModule UnityEngine.InputLegacyModule; do
+            docker cp \
+              "$container:/opt/unity/Editor/Data/Managed/UnityEngine/$reference.dll" \
+              ".docs/api/obj/references/$reference.dll"
+          done
+
+          cp com.mrdav30.gridforge/Plugins/GridForge.dll \
+            .docs/api/obj/references/GridForge.dll
+
+          fixedmathsharp_package="$(find .ci/unity-project/Library/PackageCache \
+            -mindepth 1 -maxdepth 1 -type d \
+            -name 'com.mrdav30.fixedmathsharp@*' -print -quit)"
+          test -n "$fixedmathsharp_package"
+          cp "$fixedmathsharp_package/Plugins/FixedMathSharp.dll" \
+            .docs/api/obj/references/FixedMathSharp.dll
+
+          swiftcollections_package="$(find .ci/unity-project/Library/PackageCache \
+            -mindepth 1 -maxdepth 1 -type d \
+            -name 'com.mrdav30.swiftcollections@*' -print -quit)"
+          test -n "$swiftcollections_package"
+          cp "$swiftcollections_package/Plugins/SwiftCollections.dll" \
+            .docs/api/obj/references/SwiftCollections.dll
+
+          cp .ci/unity-project/Library/ScriptAssemblies/FixedMathSharp.Runtime.dll \
+            .docs/api/obj/references/FixedMathSharp.Runtime.dll
+          cp .ci/unity-project/Library/ScriptAssemblies/SwiftCollections.Runtime.dll \
+            .docs/api/obj/references/SwiftCollections.Runtime.dll
+
+      - name: Build API documentation
+        if: matrix.artifact_suffix == 'standard'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          dotnet tool restore
+          dotnet tool run docfx .docs/api/docfx.json --warningsAsErrors
+
+          test -f .docs/api/obj/_site/index.html
+          test -f .docs/api/obj/_site/guide/GridForge-Unity-User-Guide.html
+          test -f .docs/api/obj/_site/api/GridForge.html
+          test -f .docs/api/obj/_site/api/GridForge.Unity.html
+          test -f .docs/api/obj/_site/api/GridForge.Unity.GridWorldComponent.html
+          test -f .docs/api/obj/_site/api/GridForge.Blockers.BlockerComponent.html
+          test -f .docs/api/obj/_site/api/GridForge.Configuration.SerializableGridConfiguration.html
+          test -f .docs/api/obj/_site/api/GridForge.Utility.GridDebugger.html
+
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import unquote, urlsplit
+
+          site = Path(".docs/api/obj/_site").resolve()
+          broken = []
+
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.hrefs = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag == "a":
+                      href = dict(attrs).get("href")
+                      if href:
+                          self.hrefs.append(href)
+
+          for page in site.rglob("*.html"):
+              parser = Links()
+              parser.feed(page.read_text(encoding="utf-8"))
+              for href in parser.hrefs:
+                  parsed = urlsplit(href)
+                  if parsed.scheme or parsed.netloc or not parsed.path:
+                      continue
+
+                  path = unquote(parsed.path)
+                  target = site / path.lstrip("/") if path.startswith("/") else page.parent / path
+                  target = target.resolve()
+                  if target.is_dir():
+                      target /= "index.html"
+                  if not target.exists():
+                      broken.append(f"{page.relative_to(site)} -> {href}")
+
+          if broken:
+              raise SystemExit("Broken local links:\n" + "\n".join(sorted(broken)))
+          PY
+
+      - name: Upload API documentation site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.artifact_suffix == 'standard'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: .docs/api/obj/_site
 
   unity-sample-import-smoke:
     name: Unity Sample Import Smoke (${{ matrix.package_display_name }})
@@ -142,7 +253,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .ci/unity-sample-import-${{ matrix.artifact_suffix }}/Library
-          key: unity-sample-import-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('.assets/ci/scripts/prepare-unity-sample-import-smoke.ps1', '.assets/ci/unity-sample-import-smoke/**', '.assets/unity-package-versions.json', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge/Samples~/**', 'com.mrdav30.gridforge.lean/package.json', 'com.mrdav30.gridforge.lean/Samples~/**') }}
+          key: unity-sample-import-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-${{ hashFiles('.assets/unity-package-versions.json', '.assets/ci/scripts/prepare-unity-sample-import-smoke.ps1', '.assets/ci/unity-sample-import-smoke/**', 'com.mrdav30.gridforge/Plugins/**', 'com.mrdav30.gridforge/Runtime/**', 'com.mrdav30.gridforge/Editor/**', 'com.mrdav30.gridforge/package.json', 'com.mrdav30.gridforge/Samples~/**', 'com.mrdav30.gridforge.lean/Plugins/**', 'com.mrdav30.gridforge.lean/Runtime/**', 'com.mrdav30.gridforge.lean/Editor/**', 'com.mrdav30.gridforge.lean/package.json', 'com.mrdav30.gridforge.lean/Samples~/**') }}
           restore-keys: |
             unity-sample-import-library-${{ runner.os }}-${{ matrix.artifact_suffix }}-
 
@@ -189,3 +300,24 @@ jobs:
         with:
           name: unity-sample-import-${{ matrix.artifact_suffix }}
           path: artifacts/sample-import-${{ matrix.artifact_suffix }}
+
+  deploy-docs:
+    name: Deploy API documentation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: unity-editmode
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Deploy API documentation
+        id: deployment
+        uses: actions/deploy-pages@v5

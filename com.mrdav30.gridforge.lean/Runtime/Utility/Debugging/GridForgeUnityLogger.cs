@@ -32,16 +32,20 @@ namespace GridForge.Utility
         private DiagnosticLevel _previousMinimumLevel = DiagnosticLevel.Warning;
         private bool _isLoggingEnabled;
 
+        /// <summary>Gets the component currently forwarding GridForge messages.</summary>
         public static GridForgeUnityLogger ActiveLogger => _activeLogger;
 
+        /// <summary>Gets whether a Unity logger is currently active.</summary>
         public static bool HasActiveLogger => _activeLogger != null;
 
+        /// <summary>Gets or sets whether logging starts when the component is enabled.</summary>
         public bool EnableOnComponentEnable
         {
             get => _enableOnComponentEnable;
             set => _enableOnComponentEnable = value;
         }
 
+        /// <summary>Gets or sets the minimum diagnostic level forwarded to Unity.</summary>
         public DiagnosticLevel MinimumLevel
         {
             get => _minimumLevel;
@@ -54,6 +58,7 @@ namespace GridForge.Utility
             }
         }
 
+        /// <summary>Gets whether this component currently owns GridForge logging.</summary>
         public bool IsLoggingEnabled => _isLoggingEnabled;
 
         private void OnEnable()
@@ -130,6 +135,9 @@ namespace GridForge.Utility
             _isLoggingEnabled = false;
         }
 
+        /// <summary>Maps a GridForge diagnostic level to a Unity log type.</summary>
+        /// <param name="level">The GridForge diagnostic level.</param>
+        /// <returns>The corresponding Unity log type.</returns>
         public static LogType GetUnityLogType(DiagnosticLevel level)
         {
             return level switch
@@ -140,6 +148,11 @@ namespace GridForge.Utility
             };
         }
 
+        /// <summary>Formats a GridForge diagnostic message for Unity logging.</summary>
+        /// <param name="level">The diagnostic level.</param>
+        /// <param name="message">The message text.</param>
+        /// <param name="source">The optional diagnostic source.</param>
+        /// <returns>The formatted Unity log message.</returns>
         public static string FormatUnityLogMessage(DiagnosticLevel level, string message, string source)
         {
             string levelTag = level switch

@@ -23,7 +23,7 @@ namespace GridForge.Utility.Debugging.Editor
         private SerializedProperty _enableOnComponentEnableProperty;
         private SerializedProperty _minimumLevelProperty;
 
-        public void OnEnable()
+        private void OnEnable()
         {
             _logger = (GridForgeUnityLogger)target;
             _enableOnComponentEnableProperty = serializedObject.FindProperty("_enableOnComponentEnable");

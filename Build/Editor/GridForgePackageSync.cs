@@ -26,6 +26,7 @@ namespace GridForge.Build.Editor
         // shared code without being deleted during sync.
         private static readonly ManagedEntry[] ManagedEntries =
         {
+            ManagedEntry.File("CHANGELOG.md"),
             ManagedEntry.File("COPYRIGHT"),
             ManagedEntry.File("LICENSE"),
             ManagedEntry.File("NOTICE"),

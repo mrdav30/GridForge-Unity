@@ -121,6 +121,35 @@ namespace GridForge.Unity.Tests.EditMode
         }
 
         [Test]
+        public void ParameterlessEarlyApplyUsesExplicitlyAssignedWorldComponent()
+        {
+            GameObject saverOwner = new("Explicit grid configuration saver");
+            GameObject worldOwner = new("Explicit grid world");
+
+            try
+            {
+                GridConfigurationSaver saver = saverOwner.AddComponent<GridConfigurationSaver>();
+                GridWorldComponent assignedWorld = worldOwner.AddComponent<GridWorldComponent>();
+                saver.Save(Vector3d.Zero, new Vector3d(2, 0, 2), scanCellSize: 2);
+
+                SerializedObject serializedSaver = new(saver);
+                SerializedProperty worldProperty = serializedSaver.FindProperty("_gridWorldComponent");
+                Assert.IsNotNull(worldProperty, "GridConfigurationSaver should expose an explicit serialized world assignment.");
+                worldProperty.objectReferenceValue = assignedWorld;
+                serializedSaver.ApplyModifiedPropertiesWithoutUndo();
+
+                saver.EarlyApply();
+
+                Assert.AreEqual(1, assignedWorld.World.ActiveGrids.Count);
+            }
+            finally
+            {
+                Object.DestroyImmediate(worldOwner);
+                Object.DestroyImmediate(saverOwner);
+            }
+        }
+
+        [Test]
         public void SparseHexAuthoringRegistersAxialConfiguredIndices()
         {
             using GridWorld world = new();

@@ -30,7 +30,10 @@ namespace GridForge.Configuration
         /// </summary>
         [SerializeField] private int _spatialGridCellSize = 50;
 
-        /// <inheritdoc cref="_spatialGridCellSize"/>
+        [Tooltip("Optional world host. When unset, resolution is limited to this GameObject and its parents.")]
+        [SerializeField] private GridWorldComponent _gridWorldComponent;
+
+        /// <summary>Gets the spatial hash cell size used when creating a world.</summary>
         public int SpatialGridCellSize => _spatialGridCellSize;
 
         /// <summary>
@@ -38,6 +41,7 @@ namespace GridForge.Configuration
         /// </summary>
         [SerializeField] private SerializedSwiftList<SerializableGridConfiguration> _savedGridConfigurations = new();
 
+        /// <summary>Gets the runtime list of saved grid configurations.</summary>
         public SwiftList<SerializableGridConfiguration> SavedGridConfigurations => SavedConfigurationAdapter.Runtime;
 
         /// <summary>
@@ -67,6 +71,9 @@ namespace GridForge.Configuration
         /// <summary>
         /// Saves the current grid configuration into the list.
         /// </summary>
+        /// <param name="boundsMin">The inclusive minimum world bounds.</param>
+        /// <param name="boundsMax">The inclusive maximum world bounds.</param>
+        /// <param name="scanCellSize">The scan cell size used by the grid.</param>
         public void Save(Vector3d boundsMin, Vector3d boundsMax, int scanCellSize)
         {
             Save(new SerializableGridConfiguration(boundsMin, boundsMax, scanCellSize));
@@ -75,6 +82,7 @@ namespace GridForge.Configuration
         /// <summary>
         /// Saves the supplied grid configuration into the list.
         /// </summary>
+        /// <param name="configuration">The serializable configuration to append.</param>
         public void Save(SerializableGridConfiguration configuration)
         {
             SavedConfigurationAdapter.Add(configuration);
@@ -85,7 +93,7 @@ namespace GridForge.Configuration
         /// </summary>
         public void EarlyApply()
         {
-            GridWorldComponent worldComponent = GridWorldComponentUtility.Resolve(this, null);
+            GridWorldComponent worldComponent = GridWorldComponentUtility.Resolve(this, _gridWorldComponent);
             if (worldComponent == null)
             {
                 Debug.LogWarning($"Unable to resolve a {nameof(GridWorldComponent)} for {nameof(GridConfigurationSaver)} on {name}.", this);
@@ -98,6 +106,7 @@ namespace GridForge.Configuration
         /// <summary>
         /// Applies all saved grid configurations to the supplied <see cref="GridWorld"/>.
         /// </summary>
+        /// <param name="world">The active world that receives the saved grids.</param>
         public void EarlyApply(GridWorld world)
         {
             if (world == null || !world.IsActive)
@@ -159,7 +168,7 @@ namespace GridForge.Configuration
 
         #region Editor Visualization
 
-        public void OnDrawGizmos()
+        private void OnDrawGizmos()
         {
             if (!Show || Application.isPlaying)
                 return;

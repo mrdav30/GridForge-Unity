@@ -138,6 +138,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: GridForge.Lean.Runtime::GridForge.Configuration.GridConfigurationSaver
   _spatialGridCellSize: 16
+  _gridWorldComponent: {fileID: 0}
   _savedGridConfigurations:
     _items:
     - _boundsMin:

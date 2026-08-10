@@ -1,5 +1,5 @@
 //=======================================================================
-// GridTracerTests.cs
+// GridTraceVisualizer.cs
 //=======================================================================
 // MIT License, Copyright (c) 2024–present David Oravsky (mrdav30)
 // See LICENSE file in the project root for full license information.
@@ -12,12 +12,16 @@ using GridForge.Grids;
 using GridForge.Unity;
 using SwiftCollections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GridForge.Utility
 {
+    /// <summary>Trace projections supported by <see cref="GridTraceVisualizer"/>.</summary>
     public enum GridTraceMode
     {
+        /// <summary>Traces through the full three-dimensional world.</summary>
         World3D = 0,
+        /// <summary>Projects the trace onto a fixed XZ layer.</summary>
         XzLayer = 1
     }
 
@@ -26,7 +30,7 @@ namespace GridForge.Utility
     /// </summary>
     [ExecuteAlways]
     [AddComponentMenu("GridForge/Debugging/Grid Trace Visualizer")]
-    public class GridTracerTests : MonoBehaviour
+    public class GridTraceVisualizer : MonoBehaviour
     {
         #region Inspector Fields
 
@@ -50,10 +54,12 @@ namespace GridForge.Utility
         [SerializeField] private Fixed64 _lineHeight = Fixed64.One;
 
         [Tooltip("Starting position of the traced line.")]
-        public Transform startTransform;
+        [FormerlySerializedAs("startTransform")]
+        [SerializeField] private Transform _startTransform;
 
         [Tooltip("Ending position of the traced line.")]
-        public Transform endTransform;
+        [FormerlySerializedAs("endTransform")]
+        [SerializeField] private Transform _endTransform;
 
         [SerializeField] private GridWorldComponent _gridWorldComponent;
 
@@ -62,29 +68,47 @@ namespace GridForge.Utility
         [SerializeField] private Color _traceCellColor = Color.red;
         [SerializeField] private Color _traceLineColor = Color.white;
 
+        /// <summary>Gets the active trace projection mode.</summary>
         public GridTraceMode TraceMode => _traceMode;
+        /// <summary>Gets the Y layer used for XZ tracing.</summary>
         public Fixed64 LayerY => _layerY;
+        /// <summary>Gets the grid count from the most recent gizmo trace.</summary>
         public int LastTracedGridCount { get; private set; }
+        /// <summary>Gets the voxel count from the most recent gizmo trace.</summary>
         public int LastTracedVoxelCount { get; private set; }
+
+        /// <summary>Gets or sets the trace start transform.</summary>
+        public Transform StartTransform
+        {
+            get => _startTransform;
+            set => _startTransform = value;
+        }
+
+        /// <summary>Gets or sets the trace end transform.</summary>
+        public Transform EndTransform
+        {
+            get => _endTransform;
+            set => _endTransform = value;
+        }
 
         #region Gizmo Rendering
 
-        public void OnDrawGizmos()
+        private void OnDrawGizmos()
         {
             GridWorld world = ResolveWorld();
 
             if (!Application.isPlaying
                 || world == null
                 || !world.IsActive
-                || !startTransform
-                || !endTransform
-                || startTransform == endTransform)
+                || !_startTransform
+                || !_endTransform
+                || _startTransform == _endTransform)
             {
                 return;
             }
 
-            Vector3d startPos = startTransform.position.ToVector3d();
-            Vector3d endPos = endTransform.position.ToVector3d();
+            Vector3d startPos = _startTransform.position.ToVector3d();
+            Vector3d endPos = _endTransform.position.ToVector3d();
 
             if (_showVoxelTrail)
             {
@@ -122,12 +146,21 @@ namespace GridForge.Utility
 
         #endregion
 
+        /// <summary>Configures the trace projection and optional XZ layer.</summary>
+        /// <param name="mode">The trace projection mode.</param>
+        /// <param name="layerY">The Y layer used by XZ tracing.</param>
         public void ConfigureTraceMode(GridTraceMode mode, Fixed64 layerY = default)
         {
             _traceMode = mode;
             _layerY = layerY;
         }
 
+        /// <summary>Collects the voxels covered by a trace into an existing list.</summary>
+        /// <param name="world">The active world to trace.</param>
+        /// <param name="start">The trace start position.</param>
+        /// <param name="end">The trace end position.</param>
+        /// <param name="results">The destination list, which is cleared before use.</param>
+        /// <returns>The number of collected voxels.</returns>
         public int GetTraceVoxelsInto(
             GridWorld world,
             Vector3d start,
@@ -150,6 +183,12 @@ namespace GridForge.Utility
             return results.Count;
         }
 
+        /// <summary>Tries to create a diagnostic descriptor for the first traced voxel.</summary>
+        /// <param name="world">The active world to trace.</param>
+        /// <param name="start">The trace start position.</param>
+        /// <param name="end">The trace end position.</param>
+        /// <param name="cell">Receives the first diagnostic cell.</param>
+        /// <returns><see langword="true"/> when the trace covers a voxel.</returns>
         public bool TryGetFirstTraceDiagnosticCell(
             GridWorld world,
             Vector3d start,

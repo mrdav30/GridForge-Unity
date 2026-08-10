@@ -31,7 +31,7 @@ namespace GridForge.Blockers.Editor
         private SerializedProperty _showCoveragePreview;
         private SerializedProperty _coveragePreviewColor;
 
-        public void OnEnable()
+        private void OnEnable()
         {
             _gridWorldComponent = serializedObject.FindProperty("_gridWorldComponent");
             _isActive = serializedObject.FindProperty("_isActive");

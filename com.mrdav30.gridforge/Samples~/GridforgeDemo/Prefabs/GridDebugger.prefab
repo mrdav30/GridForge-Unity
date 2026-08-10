@@ -84,7 +84,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6dbe62fda8688e438dd745c5abd8905, type: 3}
   m_Name:
-  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Utility.GridTracerTests
+  m_EditorClassIdentifier: GridForge.Runtime::GridForge.Utility.GridTraceVisualizer
   _showVoxelTrail: 1
   _showLine: 1
   _traceMode: 1
@@ -95,8 +95,8 @@ MonoBehaviour:
   _includeEnd: 1
   _lineHeight:
     m_rawValue: 4294967296
-  startTransform: {fileID: 8581035953050788173}
-  endTransform: {fileID: 2415824520891575456}
+  _startTransform: {fileID: 8581035953050788173}
+  _endTransform: {fileID: 2415824520891575456}
   _gridWorldComponent: {fileID: 0}
   _traceCellColor: {r: 1, g: 0, b: 0, a: 1}
   _traceLineColor: {r: 1, g: 1, b: 1, a: 1}

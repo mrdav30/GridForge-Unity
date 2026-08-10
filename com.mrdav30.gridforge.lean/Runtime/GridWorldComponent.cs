@@ -23,10 +23,13 @@ namespace GridForge.Unity
 
         [SerializeField] private bool _disposeOnDestroy = true;
 
+        /// <summary>Gets the runtime grid world owned by this component.</summary>
         public GridWorld World { get; private set; }
 
+        /// <summary>Gets the configured spatial grid cell size.</summary>
         public int SpatialGridCellSize => World?.SpatialGridCellSize ?? _spatialGridCellSize;
 
+        /// <summary>Gets whether the owned grid world is active.</summary>
         public bool IsWorldActive => World?.IsActive ?? false;
 
         private void Awake()
@@ -50,6 +53,7 @@ namespace GridForge.Unity
         /// <summary>
         /// Creates the runtime world if it does not already exist or is inactive.
         /// </summary>
+        /// <returns>The active runtime world.</returns>
         public GridWorld EnsureWorld()
         {
             if (World != null && World.IsActive)
@@ -63,6 +67,8 @@ namespace GridForge.Unity
         /// <summary>
         /// Recreates the runtime world with a new configuration.
         /// </summary>
+        /// <param name="spatialGridCellSize">The spatial hash cell size, clamped to at least one.</param>
+        /// <returns>The rebuilt active runtime world.</returns>
         public GridWorld RebuildWorld(int spatialGridCellSize)
         {
             _spatialGridCellSize = Mathf.Max(1, spatialGridCellSize);
@@ -75,6 +81,7 @@ namespace GridForge.Unity
         /// <summary>
         /// Resets the current world instance.
         /// </summary>
+        /// <param name="deactivate">Whether to deactivate and release the current world reference.</param>
         public void ResetWorld(bool deactivate = false)
         {
             if (World == null)
@@ -104,6 +111,10 @@ namespace GridForge.Unity
     /// </summary>
     public static class GridWorldComponentUtility
     {
+        /// <summary>Resolves an assigned, local, or parent world component in that order.</summary>
+        /// <param name="context">The component whose GameObject hierarchy is searched.</param>
+        /// <param name="assignedComponent">An explicitly assigned world component.</param>
+        /// <returns>The resolved component, or <see langword="null"/> when none is explicitly related.</returns>
         public static GridWorldComponent Resolve(Component context, GridWorldComponent assignedComponent)
         {
             if (assignedComponent != null)
@@ -119,7 +130,7 @@ namespace GridForge.Unity
                     return parentWorld;
             }
 
-            return Object.FindAnyObjectByType<GridWorldComponent>();
+            return null;
         }
     }
 }

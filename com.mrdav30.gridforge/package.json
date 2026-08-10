@@ -3,6 +3,7 @@
   "version": "9.0.0",
   "displayName": "GridForge",
   "description": "A high-performance, deterministic spatial grid management system for simulations and game development.",
+  "documentationUrl": "https://mrdav30.github.io/GridForge-Unity/",
   "unity": "2022.3",
   "author": {
     "name": "David Oravsky",

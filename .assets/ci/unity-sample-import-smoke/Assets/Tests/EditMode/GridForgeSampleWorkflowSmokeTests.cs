@@ -98,7 +98,7 @@ public sealed class GridForgeSampleWorkflowSmokeTests
         Assert.IsTrue(serializedDebugger.FindProperty("_limitQueryBounds").boolValue);
         Assert.AreEqual(512, serializedDebugger.FindProperty("_maxCells").intValue);
 
-        AssertComponent(prefab, "GridForge.Utility.GridTracerTests");
+        AssertComponent(prefab, "GridForge.Utility.GridTraceVisualizer");
         AssertComponent(prefab, "GridForge.Utility.GridForgeUnityLogger");
     }
 

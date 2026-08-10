@@ -204,7 +204,7 @@ namespace GridForge.Build.Editor
         {
             GameObject root = new("GridDebugger");
             Component debugger = AddRequiredComponent(root, types.GridDebugger);
-            Component tracer = AddRequiredComponent(root, types.GridTracerTests);
+            Component tracer = AddRequiredComponent(root, types.GridTraceVisualizer);
             AddRequiredComponent(root, types.GridForgeUnityLogger);
 
             Transform start = CreateMarker(
@@ -273,7 +273,7 @@ namespace GridForge.Build.Editor
             Component world)
         {
             Component debugger = AddRequiredComponent(root, types.GridDebugger);
-            Component tracer = AddRequiredComponent(root, types.GridTracerTests);
+            Component tracer = AddRequiredComponent(root, types.GridTraceVisualizer);
             AddRequiredComponent(root, types.GridForgeUnityLogger);
 
             Transform start = CreateMarker(
@@ -364,8 +364,8 @@ namespace GridForge.Build.Editor
             RequiredProperty(serialized, "_showVoxelTrail").boolValue = true;
             RequiredProperty(serialized, "_showLine").boolValue = true;
             RequiredProperty(serialized, "_traceMode").enumValueIndex = XzLayer;
-            RequiredProperty(serialized, "startTransform").objectReferenceValue = start;
-            RequiredProperty(serialized, "endTransform").objectReferenceValue = end;
+            RequiredProperty(serialized, "_startTransform").objectReferenceValue = start;
+            RequiredProperty(serialized, "_endTransform").objectReferenceValue = end;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             SetFixed64Field(tracer, "_layerY", 0);
@@ -706,7 +706,7 @@ namespace GridForge.Build.Editor
             public readonly Type GridConfigurationSaver;
             public readonly Type GridWorldComponent;
             public readonly Type GridDebugger;
-            public readonly Type GridTracerTests;
+            public readonly Type GridTraceVisualizer;
             public readonly Type GridForgeUnityLogger;
             public readonly Type BlockerComponent;
 
@@ -715,7 +715,7 @@ namespace GridForge.Build.Editor
                 Type gridConfigurationSaver,
                 Type gridWorldComponent,
                 Type gridDebugger,
-                Type gridTracerTests,
+                Type gridTraceVisualizer,
                 Type gridForgeUnityLogger,
                 Type blockerComponent)
             {
@@ -723,7 +723,7 @@ namespace GridForge.Build.Editor
                 GridConfigurationSaver = gridConfigurationSaver;
                 GridWorldComponent = gridWorldComponent;
                 GridDebugger = gridDebugger;
-                GridTracerTests = gridTracerTests;
+                GridTraceVisualizer = gridTraceVisualizer;
                 GridForgeUnityLogger = gridForgeUnityLogger;
                 BlockerComponent = blockerComponent;
             }
@@ -735,7 +735,7 @@ namespace GridForge.Build.Editor
                     RequireType(variant.RuntimeAssemblyName, "GridForge.Configuration.GridConfigurationSaver"),
                     RequireType(variant.RuntimeAssemblyName, "GridForge.Unity.GridWorldComponent"),
                     RequireType(variant.RuntimeAssemblyName, "GridForge.Utility.GridDebugger"),
-                    RequireType(variant.RuntimeAssemblyName, "GridForge.Utility.GridTracerTests"),
+                    RequireType(variant.RuntimeAssemblyName, "GridForge.Utility.GridTraceVisualizer"),
                     RequireType(variant.RuntimeAssemblyName, "GridForge.Utility.GridForgeUnityLogger"),
                     RequireType(variant.RuntimeAssemblyName, "GridForge.Blockers.BlockerComponent"));
             }

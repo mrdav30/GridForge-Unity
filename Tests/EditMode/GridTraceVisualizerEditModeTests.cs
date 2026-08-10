@@ -1,3 +1,4 @@
+using System.IO;
 using FixedMathSharp;
 using GridForge.Configuration;
 using GridForge.Diagnostics;
@@ -8,6 +9,7 @@ using GridForge.Spatial;
 using GridForge.Utility;
 using NUnit.Framework;
 using SwiftCollections;
+using UnityEditor;
 using UnityEngine;
 
 namespace GridForge.Unity.Tests.EditMode
@@ -33,6 +35,48 @@ namespace GridForge.Unity.Tests.EditMode
         };
 
         [Test]
+        public void LegacySerializedTypeAndTransformFieldsMigrate()
+        {
+            const string prefabPath = "Assets/__GridTraceVisualizerLegacySerialization.prefab";
+            GameObject source = new("Legacy grid trace visualizer");
+
+            try
+            {
+                Transform start = new GameObject("Legacy trace start").transform;
+                Transform end = new GameObject("Legacy trace end").transform;
+                start.SetParent(source.transform);
+                end.SetParent(source.transform);
+
+                GridTraceVisualizer visualizer = source.AddComponent<GridTraceVisualizer>();
+                visualizer.StartTransform = start;
+                visualizer.EndTransform = end;
+                PrefabUtility.SaveAsPrefabAsset(source, prefabPath);
+
+                string absolutePath = Path.GetFullPath(prefabPath);
+                string legacyYaml = File.ReadAllText(absolutePath)
+                    .Replace("GridForge.Utility.GridTraceVisualizer", "GridForge.Utility.GridTracerTests")
+                    .Replace("  _startTransform:", "  startTransform:")
+                    .Replace("  _endTransform:", "  endTransform:");
+                File.WriteAllText(absolutePath, legacyYaml);
+                AssetDatabase.ImportAsset(
+                    prefabPath,
+                    ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+
+                GameObject migratedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                GridTraceVisualizer migrated = migratedPrefab.GetComponent<GridTraceVisualizer>();
+
+                Assert.IsNotNull(migrated);
+                Assert.AreEqual("Legacy trace start", migrated.StartTransform.name);
+                Assert.AreEqual("Legacy trace end", migrated.EndTransform.name);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(prefabPath);
+                Object.DestroyImmediate(source);
+            }
+        }
+
+        [Test]
         public void XzLayerTraceUsesVector2dOverloadWithExplicitLayerY()
         {
             using GridWorld world = CreateWorldWithGrid(
@@ -43,7 +87,7 @@ namespace GridForge.Unity.Tests.EditMode
 
             try
             {
-                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                GridTraceVisualizer visualizer = owner.AddComponent<GridTraceVisualizer>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer, layerY: Fixed64.One);
 
                 SwiftList<Voxel> traced = new();
@@ -92,7 +136,7 @@ namespace GridForge.Unity.Tests.EditMode
 
             try
             {
-                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                GridTraceVisualizer visualizer = owner.AddComponent<GridTraceVisualizer>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
                 SwiftList<Voxel> traced = new();
@@ -152,7 +196,7 @@ namespace GridForge.Unity.Tests.EditMode
 
                 Assert.IsTrue(hexGrid.TryGetClosestVoxel(expectedHexEntry, out Voxel expectedFirstHexVoxel));
 
-                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                GridTraceVisualizer visualizer = owner.AddComponent<GridTraceVisualizer>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
                 SwiftList<Voxel> traced = new();
@@ -193,7 +237,7 @@ namespace GridForge.Unity.Tests.EditMode
                 Assert.IsTrue(grid.TryGetVoxel(originIndex, out Voxel originVoxel));
                 Assert.IsTrue(grid.TryGetVoxel(boundaryIndex, out Voxel boundaryVoxel));
 
-                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                GridTraceVisualizer visualizer = owner.AddComponent<GridTraceVisualizer>();
                 visualizer.ConfigureTraceMode(GridTraceMode.XzLayer);
 
                 Vector3d end = boundaryVoxel.WorldPosition + (boundaryVoxel.WorldPosition - originVoxel.WorldPosition);
@@ -227,7 +271,7 @@ namespace GridForge.Unity.Tests.EditMode
                 Assert.IsTrue(grid.TryGetVoxel(new VoxelIndex(0, 0, 0), out Voxel startVoxel));
                 Assert.IsTrue(grid.TryGetVoxel(new VoxelIndex(1, 0, 0), out Voxel endVoxel));
 
-                GridTracerTests visualizer = owner.AddComponent<GridTracerTests>();
+                GridTraceVisualizer visualizer = owner.AddComponent<GridTraceVisualizer>();
                 visualizer.ConfigureTraceMode(GridTraceMode.World3D);
 
                 Assert.IsTrue(visualizer.TryGetFirstTraceDiagnosticCell(

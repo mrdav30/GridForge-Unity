@@ -250,12 +250,14 @@ namespace GridForge.Configuration.Editor
     public class EditorGridConfigurationSaver : UnityEditor.Editor
     {
         private SerializedProperty _spatialGridCellSize;
+        private SerializedProperty _gridWorldComponent;
         private SerializedProperty _savedGridConfigurations;
         private SerializedProperty _show;
 
         private void OnEnable()
         {
             _spatialGridCellSize = serializedObject.FindProperty("_spatialGridCellSize");
+            _gridWorldComponent = serializedObject.FindProperty("_gridWorldComponent");
             _savedGridConfigurations = serializedObject.FindProperty("_savedGridConfigurations");
             _show = serializedObject.FindProperty("Show");
         }
@@ -265,6 +267,7 @@ namespace GridForge.Configuration.Editor
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(_spatialGridCellSize);
+            EditorGUILayout.PropertyField(_gridWorldComponent);
             EditorGUILayout.PropertyField(_savedGridConfigurations, true);
 
             if (!EditorApplication.isPlaying)

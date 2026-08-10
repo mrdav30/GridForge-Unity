@@ -132,4 +132,3 @@ MonoBehaviour:
   _showCoveragePreview: 1
   _coveragePreviewColor: {r: 1, g: 0.35, b: 0.1, a: 0.8}
   _gridWorldComponent: {fileID: 0}
-  IsSet: 0

@@ -30,7 +30,7 @@ namespace GridForge.Utility.Debugging.Editor
         private ushort[] _availableGridIndexes = Array.Empty<ushort>();
         private string[] _gridIndexLabels = Array.Empty<string>();
 
-        public void OnEnable()
+        private void OnEnable()
         {
             _debugger = (GridDebugger)target;
         }
