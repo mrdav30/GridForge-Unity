@@ -21,35 +21,33 @@
   ],
   "build": {
     "content": [
+      { "src": "obj/api", "files": ["**/*.yml"], "dest": "api" },
+      { "files": ["index.md", "toc.yml"] },
+      { "files": ["GridForge.md"], "dest": "api" },
+      { "files": ["guides/**.md"] }
+    ],
+    "resource": [
       {
-        "src": "obj/api",
-        "files": ["**/*.yml"],
-        "dest": "api"
-      },
-      {
-        "files": ["index.md", "toc.yml"]
-      },
-      {
-        "files": ["GridForge.md"],
-        "dest": "api"
-      },
-      {
-        "src": "../wiki",
-        "files": ["GridForge-Unity-User-Guide.md"],
-        "dest": "guide"
+        "files": ["icon.png"],
+        "src": "../../.assets",
+        "dest": "assets"
       }
     ],
+    "overwrite": [{ "files": ["overrides/*.md"] }],
     "dest": "obj/_site",
-    "template": ["default", "modern"],
-    "globalMetadata": {
-      "_appName": "GridForge Unity API",
-      "_appTitle": "GridForge Unity API",
-      "_enableSearch": true
-    },
+    "template": ["default", "modern", "templates/gridforge"],
     "xref": [
       "https://mrdav30.github.io/GridForge/xrefmap.yml",
       "https://mrdav30.github.io/FixedMathSharp/xrefmap.yml",
       "https://mrdav30.github.io/SwiftCollections/xrefmap.yml"
-    ]
+    ],
+    "globalMetadata": {
+      "_appName": "GridForge for Unity",
+      "_appTitle": "GridForge Unity API",
+      "_enableSearch": true,
+      "_enableNewTab": true,
+      "_appLogoPath": "assets/icon.png",
+      "_appFaviconPath": "assets/icon.png"
+    }
   }
 }

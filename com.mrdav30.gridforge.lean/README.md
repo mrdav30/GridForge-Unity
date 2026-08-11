@@ -1,50 +1,53 @@
-# GridForge For Unity Lean
+# GridForge for Unity Lean
 
-Lean Unity adapter package for GridForge.
+The Lean Unity adapter package: the same scene-owned worlds, serialized grid
+authoring, blockers, diagnostics, logging, and Demo Scene without the MemoryPack
+runtime dependency chain.
 
-Install through Unity Package Manager:
+Requires Unity 2022.3 or newer.
 
-```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean
-```
+[Documentation](https://mrdav30.github.io/GridForge-Unity/) ·
+[Getting started](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html) ·
+[Changelog](CHANGELOG.md)
 
-Install this package when you want the same Unity integration as the standard
-package without the `MemoryPack` dependency chain. Prefer it for Burst AOT
-projects or projects that provide their own serialization stack. Do not install
-it with `com.mrdav30.gridforge`.
+## Install
 
-## Dependencies
-
-On first editor load, the included dependency bootstrapper attempts to add the
-required lean git dependencies to `Packages/manifest.json`. If Unity does not
-resolve them automatically, use `Tools > GridForge.Lean > Repair Dependencies`
-or install these URLs manually:
+In **Window → Package Manager**, choose **+ → Install package from git URL…**:
 
 ```text
-https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean#v9.0.0
 ```
 
-## Quick Setup
+Do not install the Standard variant in the same project. In a custom asmdef,
+reference `GridForge.Lean.Runtime`.
 
-1. Add `GridWorldComponent` to the scene object that owns the runtime world.
-2. Add `GridConfigurationSaver` to author saved grid configurations.
-3. Add rectangular, hex, dense, or sparse configurations in the inspector.
-4. Apply the saved configurations at startup with
-   `GridConfigurationSaver.EarlyApply(world)`, or use the sample
-   `SceneGridManager`.
-5. Assign the intended `GridWorldComponent` on `BlockerComponent`,
-   `GridDebugger`, and `Grid Trace Visualizer` when a scene has multiple worlds.
+## First scene
 
-The package sample named `Demo Scene` shows the workflows in Unity: rectangular
-grids, hex grids, sparse grids, diagnostics, blockers, tracing, and optional
-Unity logging.
+1. Add `GridWorldComponent` to the GameObject that owns the runtime world.
+2. Add `GridConfigurationSaver` and author a rectangular or hex, dense or sparse
+   configuration.
+3. From a bootstrap `MonoBehaviour`, apply the saved configurations after the
+   world component initializes:
 
-## Docs
+   ```csharp
+   _configurationSaver.EarlyApply(
+       _gridWorldComponent.RebuildWorld(_configurationSaver.SpatialGridCellSize));
+   ```
 
-- [Hosted Unity guide and API reference](https://mrdav30.github.io/GridForge-Unity/)
-- [Package changelog](CHANGELOG.md)
-- Package selection and maintenance: [../README.md](../README.md)
+   The
+   [getting-started guide](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html)
+   includes the complete component.
+4. Import **Demo Scene** from this package's Samples tab for working examples of
+   configuration, blockers, diagnostics, tracing, and logging.
 
-Unity compatibility: `2022.3+`
+The dependency bootstrapper installs the matching Lean FixedMathSharp-Unity and
+SwiftCollections-Unity packages on first editor load. If resolution was
+interrupted, choose **Tools → GridForge.Lean → Repair Dependencies**.
+
+Manual dependency URLs, when needed:
+
+```text
+https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp.lean#v7.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.lean#v7.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp.lean#v7.0.0
+```

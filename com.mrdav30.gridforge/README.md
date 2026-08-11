@@ -1,49 +1,53 @@
-# GridForge For Unity
+# GridForge for Unity
 
-Default Unity adapter package for GridForge.
+The Standard Unity adapter package: scene-owned worlds, serialized grid
+authoring, blockers, diagnostics, logging, and the Demo Scene. This variant uses
+the Standard MemoryPack-enabled GridForge dependency family.
 
-Install through Unity Package Manager:
+Requires Unity 2022.3 or newer.
 
-```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge
-```
+[Documentation](https://mrdav30.github.io/GridForge-Unity/) ·
+[Getting started](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html) ·
+[Changelog](CHANGELOG.md)
 
-Install this package when you want the standard GridForge Unity integration and
-the default dependency chain. Do not install it with
-`com.mrdav30.gridforge.lean`.
+## Install
 
-## Dependencies
-
-On first editor load, the included dependency bootstrapper attempts to add the
-required git dependencies to `Packages/manifest.json`. If Unity does not resolve
-them automatically, use `Tools > GridForge > Repair Dependencies` or install
-these URLs manually:
+In **Window → Package Manager**, choose **+ → Install package from git URL…**:
 
 ```text
-https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v9.0.0
 ```
 
-## Quick Setup
+Do not install the Lean variant in the same project. In a custom asmdef,
+reference `GridForge.Runtime`.
 
-1. Add `GridWorldComponent` to the scene object that owns the runtime world.
-2. Add `GridConfigurationSaver` to author saved grid configurations.
-3. Add rectangular, hex, dense, or sparse configurations in the inspector.
-4. Apply the saved configurations at startup with
-   `GridConfigurationSaver.EarlyApply(world)`, or use the sample
-   `SceneGridManager`.
-5. Assign the intended `GridWorldComponent` on `BlockerComponent`,
-   `GridDebugger`, and `Grid Trace Visualizer` when a scene has multiple worlds.
+## First scene
 
-The package sample named `Demo Scene` shows the workflows in Unity: rectangular
-grids, hex grids, sparse grids, diagnostics, blockers, tracing, and optional
-Unity logging.
+1. Add `GridWorldComponent` to the GameObject that owns the runtime world.
+2. Add `GridConfigurationSaver` and author a rectangular or hex, dense or sparse
+   configuration.
+3. From a bootstrap `MonoBehaviour`, apply the saved configurations after the
+   world component initializes:
 
-## Docs
+   ```csharp
+   _configurationSaver.EarlyApply(
+       _gridWorldComponent.RebuildWorld(_configurationSaver.SpatialGridCellSize));
+   ```
 
-- [Hosted Unity guide and API reference](https://mrdav30.github.io/GridForge-Unity/)
-- [Package changelog](CHANGELOG.md)
-- Package selection and maintenance: [../README.md](../README.md)
+   The
+   [getting-started guide](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html)
+   includes the complete component.
+4. Import **Demo Scene** from this package's Samples tab for working examples of
+   configuration, blockers, diagnostics, tracing, and logging.
 
-Unity compatibility: `2022.3+`
+The dependency bootstrapper installs the matching FixedMathSharp-Unity and
+SwiftCollections-Unity packages on first editor load. If resolution was
+interrupted, choose **Tools → GridForge → Repair Dependencies**.
+
+Manual dependency URLs, when needed:
+
+```text
+https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp#v7.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections#v7.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp#v7.0.0
+```

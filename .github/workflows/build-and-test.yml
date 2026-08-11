@@ -158,13 +158,23 @@ jobs:
           dotnet tool run docfx .docs/api/docfx.json --warningsAsErrors
 
           test -f .docs/api/obj/_site/index.html
-          test -f .docs/api/obj/_site/guide/GridForge-Unity-User-Guide.html
+          test -f .docs/api/obj/_site/guides/getting-started.html
+          test -f .docs/api/obj/_site/guides/grid-authoring.html
+          test -f .docs/api/obj/_site/guides/scene-tools.html
+          test -f .docs/api/obj/_site/guides/package-maintenance.html
           test -f .docs/api/obj/_site/api/GridForge.html
           test -f .docs/api/obj/_site/api/GridForge.Unity.html
           test -f .docs/api/obj/_site/api/GridForge.Unity.GridWorldComponent.html
           test -f .docs/api/obj/_site/api/GridForge.Blockers.BlockerComponent.html
           test -f .docs/api/obj/_site/api/GridForge.Configuration.SerializableGridConfiguration.html
           test -f .docs/api/obj/_site/api/GridForge.Utility.GridDebugger.html
+          test -f .docs/api/obj/_site/assets/icon.png
+          test -f .docs/api/obj/_site/public/main.css
+          test -f .docs/api/obj/_site/public/main.js
+          grep -Fq 'gf-hero' .docs/api/obj/_site/index.html
+          grep -Fq -- '--gf-cyan-rgb' .docs/api/obj/_site/public/main.css
+          grep -Fq 'github.com/mrdav30/GridForge-Unity' .docs/api/obj/_site/public/main.js
+          grep -Fq 'mrdav30.github.io/GridForge/' .docs/api/obj/_site/api/GridForge.html
 
           python3 - <<'PY'
           from html.parser import HTMLParser

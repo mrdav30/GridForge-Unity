@@ -1,8 +1,26 @@
 items:
   - name: Home
     href: index.md
-  - name: User Guide
-    href: xref:GridForge.Unity.UserGuide
-  - name: API Reference
+  - name: Guides
+    items:
+      - name: Getting Started
+        href: guides/getting-started.md
+      - name: Grid Authoring
+        href: guides/grid-authoring.md
+      - name: Scene Tools and Diagnostics
+        href: guides/scene-tools.md
+  - name: Unity API
     href: obj/api/
     homepage: obj/api/GridForge.Unity.yml
+  - name: Resources
+    items:
+      - name: GridForge Core API
+        href: https://mrdav30.github.io/GridForge/
+      - name: FixedMathSharp Core API
+        href: https://mrdav30.github.io/FixedMathSharp/
+      - name: SwiftCollections Core API
+        href: https://mrdav30.github.io/SwiftCollections/
+      - name: Package Maintenance
+        href: guides/package-maintenance.md
+      - name: Unity Package Source
+        href: https://github.com/mrdav30/GridForge-Unity

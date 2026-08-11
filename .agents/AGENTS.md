@@ -122,6 +122,13 @@
   `.docs/api/docfx.json`. CI stages required binary references in
   `.docs/api/obj/references`; generated metadata and staged binaries stay out of
   source control.
+- Authored user and maintainer documentation lives under
+  `.docs/api/guides`. This repository does not publish a GitHub Wiki; do not
+  recreate the retired `.docs/wiki` source split.
+- Keep the DocFX GridForge icon, blue/cyan custom template, GitHub header link,
+  namespace overviews, core-library links, and guide routes intact. The root and
+  package READMEs should stay concise and point deeper guidance to the hosted
+  site.
 - Public runtime APIs need concise XML documentation that explains their Unity
   adapter contract. Keep details in the hosted guide and API reference rather
   than duplicating them in package READMEs.

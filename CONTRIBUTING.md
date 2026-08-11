@@ -60,7 +60,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/update-unity-packa
 pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/test-gridforge-package-sync.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File .assets/scripts/run-gridforge-unity-editmode-tests.ps1
 dotnet tool restore --tool-manifest dotnet-tools.json
-dotnet tool run docfx .docs/api/docfx.json
+dotnet tool run docfx .docs/api/docfx.json --warningsAsErrors
 git diff --check
 ```
 
@@ -68,6 +68,12 @@ DocFX documents only `Build/Base/Runtime/**/*.cs`. Its generated API metadata
 and site output are disposable. CI stages the required Unity and package
 reference assemblies in `.docs/api/obj/references`; contributors must not add
 those binary references to source control.
+
+Authored user and maintainer guides live under `.docs/api/guides`; this
+repository does not publish a GitHub Wiki. Keep the landing page, guide routes,
+namespace overrides, GridForge theme, repository header link, and core-library
+links aligned when changing the documentation surface. See
+`.docs/api/guides/package-maintenance.md` for the complete package workflow.
 
 The `build-and-test` workflow is the canonical validation for both package
 variants, sample import, and the hosted API site. Keep DocFX configuration and
