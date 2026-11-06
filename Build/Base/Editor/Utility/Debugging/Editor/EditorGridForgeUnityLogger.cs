@@ -7,7 +7,7 @@
 
 #if UNITY_EDITOR
 using GridForge;
-using SwiftCollections.Diagnostics;
+using Chronicler.Diagnostics;
 using UnityEditor;
 using UnityEngine;
 

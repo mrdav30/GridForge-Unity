@@ -21,7 +21,7 @@ param(
 
     [string]$ConfigPath,
 
-    [string]$UnityVersion = "6000.5.0f1",
+    [string]$UnityVersion = "6000.3.9f1",
 
     [string]$UnityVersionWithRevision = ""
 )
@@ -310,6 +310,7 @@ $asmdef = [ordered]@{
         "GridForge.dll",
         "FixedMathSharp.dll",
         "Chronicler.dll",
+        "Chronicler.Diagnostics.dll",
         "SwiftCollections.dll"
     )
     autoReferenced = $false

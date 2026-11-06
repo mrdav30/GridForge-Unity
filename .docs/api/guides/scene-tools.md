@@ -71,7 +71,7 @@ In multi-world scenes, assign the intended `GridWorldComponent` explicitly.
 
 ```csharp
 using GridForge.Utility;
-using SwiftCollections.Diagnostics;
+using Chronicler.Diagnostics;
 using UnityEngine;
 
 public sealed class GridLogging : MonoBehaviour

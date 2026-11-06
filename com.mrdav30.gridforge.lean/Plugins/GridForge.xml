@@ -103,7 +103,7 @@
         </member>
         <member name="P:GridForge.Blockers.Blocker.CacheCoveredVoxels">
             <summary>
-            Flags whether or not to hold onto a reference of the voxels this blocker covers.
+            Whether to cache world-scoped voxel identities for covered voxels.
             </summary>
         </member>
         <member name="F:GridForge.Blockers.Blocker._cachedCoveredVoxels">
@@ -142,9 +142,8 @@
         </member>
         <member name="M:GridForge.Blockers.Blocker.ToggleStatus(System.Boolean)">
             <summary>
-            Toggles the blocker from inactive to active or active to inactive state
-            If object is currently blocking, the blocker will be removed.
-            If object is not active and not blocking, the blocker will be applied.
+            Sets the requested blocker state. False removes the blockage and deactivates
+            the blocker; true applies the blockage if it is not already blocking.
             </summary>
         </member>
         <member name="M:GridForge.Blockers.Blocker.ApplyBlockage">
@@ -184,8 +183,8 @@
         </member>
         <member name="M:GridForge.Blockers.Blocker.SetCacheCoveredVoxels(System.Boolean)">
             <summary>
-            Sets whether or not to cache covered voxels for this blocker. 
-            If enabled, the blocker will store references to the voxels it covers when applying blockage, 
+            Sets whether or not to cache covered voxels for this blocker.
+            If enabled, the blocker will store references to the voxels it covers when applying blockage,
             which can improve performance when removing blockage at the cost of increased memory usage.
             </summary>
         </member>
@@ -305,13 +304,27 @@
         </member>
         <member name="M:GridForge.Configuration.GridConfiguration.ToBoundsKey">
             <summary>
-            Creates an exact identity key for this configuration's snapped bounds.
+            Creates an exact identity key for this configuration's current bounds.
             </summary>
+            <remarks>Use <see cref="M:GridForge.Configuration.GridConfiguration.TryNormalize(GridForge.Configuration.NormalizedGridConfiguration@)"/> before deriving a normalized bounds key.</remarks>
         </member>
         <member name="M:GridForge.Configuration.GridConfiguration.ToGridKey">
             <summary>
-            Creates an exact identity key for this configuration's snapped bounds and topology.
+            Creates an exact identity key for this configuration's current bounds and topology.
             </summary>
+            <remarks>Use the descriptor from <see cref="M:GridForge.Configuration.GridConfiguration.TryNormalize(GridForge.Configuration.NormalizedGridConfiguration@)"/> for normalized registration identity.</remarks>
+        </member>
+        <member name="M:GridForge.Configuration.GridConfiguration.TryNormalize(GridForge.Configuration.NormalizedGridConfiguration@)">
+            <summary>
+            Validates and normalizes this configuration without registering a live grid.
+            </summary>
+            <param name="descriptor">
+            The normalized configuration, exact binding key, dimensions, and local-index validator.
+            </param>
+            <returns>
+            True when the topology and dimensions are supported; otherwise false and
+            <paramref name="descriptor"/> is default.
+            </returns>
         </member>
         <member name="M:GridForge.Configuration.GridConfiguration.GetHashCode">
             <inheritdoc/>
@@ -360,6 +373,74 @@
         </member>
         <member name="M:GridForge.Configuration.GridConfigurationKey.op_Inequality(GridForge.Configuration.GridConfigurationKey,GridForge.Configuration.GridConfigurationKey)">
             <inheritdoc/>
+        </member>
+        <member name="T:GridForge.Configuration.NormalizedGridConfiguration">
+            <summary>
+            Describes a validated grid configuration after topology-specific bounds
+            normalization, without registering a live grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.Configuration">
+            <summary>
+            The normalized configuration. Its bounds are topology-aligned, while
+            scan-cell and storage settings retain the caller's requested values.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.Key">
+            <summary>
+            The exact normalized bounds-and-topology key used to bind equivalent grids.
+            Storage kind and scan-cell size are deliberately excluded from this identity.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.Width">
+            <summary>
+            The number of valid topology-local X or axial-Q addresses.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.Height">
+            <summary>
+            The number of valid topology-local vertical layers.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.Length">
+            <summary>
+            The number of valid topology-local Z or axial-R addresses.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.AddressCount">
+            <summary>
+            The total number of topology-local addresses in the normalized grid.
+            Sparse storage may materialize only a subset of these addresses.
+            </summary>
+        </member>
+        <member name="P:GridForge.Configuration.NormalizedGridConfiguration.IsValid">
+            <summary>
+            Indicates whether this descriptor contains a valid normalized address space.
+            </summary>
+        </member>
+        <member name="M:GridForge.Configuration.NormalizedGridConfiguration.IsValidIndex(GridForge.Spatial.VoxelIndex)">
+            <summary>
+            Determines whether an index belongs to this topology-local address space.
+            Validation is independent of sparse physical-voxel presence.
+            </summary>
+            <remarks>
+            Validation uses coordinate values only; <see cref="P:GridForge.Spatial.VoxelIndex.IsAllocated"/>
+            does not change whether the address is in range.
+            </remarks>
+            <param name="index">The topology-local index to validate.</param>
+            <returns>True when each coordinate is inside the normalized dimensions.</returns>
+        </member>
+        <member name="M:GridForge.Configuration.NormalizedGridConfiguration.TryGetCellPrism(GridForge.Spatial.VoxelIndex,GridForge.Grids.Topology.GridCellPrism@)">
+            <summary>
+            Attempts to derive the exact offline prism for a topology-local address.
+            </summary>
+            <remarks>
+            The returned prism has no runtime world/grid identity. It is suitable for
+            authoring validation before a matching physical grid exists.
+            </remarks>
+            <param name="index">The topology-local address.</param>
+            <param name="prism">The exact cell prism when the address and metrics are representable.</param>
+            <returns>True when the address is valid and its prism is exactly representable.</returns>
         </member>
         <member name="T:GridForge.Diagnostics.GridDiagnosticAddressMode">
             <summary>
@@ -1020,17 +1101,17 @@
             <param name="grid"></param>
             <param name="targetVoxel"></param>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleAdded(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleAdded(GridForge.Grids.ObstacleEventInfo)">
             <summary>
             Notifies listeners that an obstacle was added.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleRemoved(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,GridForge.ObstacleToken,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstacleRemoved(GridForge.Grids.ObstacleEventInfo)">
             <summary>
             Notifies listeners that an obstacle was removed.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstaclesCleared(GridForge.Grids.VoxelGrid,GridForge.Grids.Voxel,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.GridObstacleManager.NotifyObstaclesCleared(GridForge.Grids.ObstacleClearEventInfo)">
             <summary>
             Notifies listeners that all obstacles on a voxel were cleared.
             </summary>
@@ -1061,21 +1142,6 @@
         </member>
         <member name="E:GridForge.Grids.GridOccupantManager.OnOccupantRemoved">
             <inheritdoc cref="F:GridForge.Grids.GridOccupantManager._onOccupantRemoved"/>
-        </member>
-        <member name="F:GridForge.Grids.GridOccupantManager._occupancyRegistries">
-            <summary>
-            Tracks occupant registrations independently for each world.
-            </summary>
-        </member>
-        <member name="T:GridForge.Grids.GridOccupantManager.OccupancyRecord">
-            <summary>
-            Tracks all voxel registrations for a single occupant.
-            </summary>
-        </member>
-        <member name="T:GridForge.Grids.GridOccupantManager.WorldOccupancyRegistry">
-            <summary>
-            Synchronizes one world's tracked occupant registrations.
-            </summary>
         </member>
         <member name="T:GridForge.Grids.GridOccupantManager.TrackedOccupancy">
             <summary>
@@ -1316,6 +1382,49 @@
             Owns the mutable runtime state for one GridForge world.
             </summary>
         </member>
+        <member name="M:GridForge.Grids.GridWorld.TryBeginCoveredAddresses(GridForge.Grids.Topology.GridCoveredAddressCursor,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Int32)">
+            <summary>
+            Begins a bounded covered-address query for a declared number of exact eligible grid generations.
+            </summary>
+            <param name="cursor">The caller-owned cursor and preallocated generation storage.</param>
+            <param name="boundsMin">One world-space corner of the coverage bounds.</param>
+            <param name="boundsMax">The opposite world-space corner of the coverage bounds.</param>
+            <param name="eligibleGenerationCount">The exact number of canonical generation inputs that will follow.</param>
+            <returns>True when the declared count fits the cursor; otherwise false and the cursor is stale.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryBeginCoveredAddresses(GridForge.Grids.Topology.GridCoveredAddressCursor,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,System.Int32,GridForge.Configuration.GridConfigurationKey)">
+            <summary>
+            Begins a bounded covered-address query filtered to one durable grid configuration before address yield.
+            </summary>
+            <param name="cursor">The caller-owned cursor and preallocated generation storage.</param>
+            <param name="boundsMin">One world-space corner of the coverage bounds.</param>
+            <param name="boundsMax">The opposite world-space corner of the coverage bounds.</param>
+            <param name="eligibleGenerationCount">The exact number of canonical generation inputs that will follow.</param>
+            <param name="configurationFilter">The only configuration eligible to produce addresses.</param>
+            <returns>True when the declared count fits the cursor; otherwise false and the cursor is stale.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.AdvanceCoveredAddresses(GridForge.Grids.Topology.GridCoveredAddressCursor,System.ReadOnlySpan{GridForge.Grids.Topology.GridCoveredAddressGeneration},System.Span{GridForge.Grids.Topology.GridCoveredAddress},System.Int32,System.Int32,System.Int32,System.Int32@,System.Int32@,System.Int32@,System.Int32@)">
+            <summary>
+            Advances generation binding and covered topology-address enumeration under one maintenance snapshot.
+            </summary>
+            <param name="cursor">The cursor previously begun through this world.</param>
+            <param name="generationInputs">The next strictly ascending remaining generation slice, or empty after binding completes.</param>
+            <param name="results">Caller-owned output storage.</param>
+            <param name="lookupProbeLimit">Maximum generation-validation and spatial lookup probes for this chunk.</param>
+            <param name="addressProbeLimit">Maximum topology-address probes for this chunk.</param>
+            <param name="outputLimit">Maximum covered addresses to write for this chunk.</param>
+            <param name="lookupProbesConsumed">Exact lookup probes consumed by this chunk.</param>
+            <param name="addressProbesConsumed">Exact topology-address probes consumed by this chunk.</param>
+            <param name="generationInputsConsumed">Generation values consumed from the supplied slice.</param>
+            <param name="outputCount">Covered addresses written to <paramref name="results"/>.</param>
+            <returns>The resulting cursor state.</returns>
+            <remarks>
+            No address can be emitted until every declared generation has been validated and copied. A stale
+            result writes no output, clears the run stamp, and requires every prior result from the run to be discarded.
+            Address enumeration does not resolve physical voxel presence or obstacle state. Hex-prism coverage
+            includes cells touching the inclusive query bounds at either vertical face.
+            </remarks>
+        </member>
         <member name="F:GridForge.Grids.GridWorld.MaxGrids">
             <summary>
             Maximum number of grids that can be managed within a world.
@@ -1359,6 +1468,11 @@
             The current version of the world, incremented on major changes.
             </summary>
         </member>
+        <member name="P:GridForge.Grids.GridWorld.ChangeSequence">
+            <summary>
+            The most recent world-local committed change sequence.
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.GridWorld.IsActive">
             <summary>
             Indicates whether this world is currently active.
@@ -1377,6 +1491,12 @@
         <member name="E:GridForge.Grids.GridWorld.OnActiveGridChange">
             <summary>
             Event triggered when a grid in this world undergoes a significant change.
+            </summary>
+        </member>
+        <member name="E:GridForge.Grids.GridWorld.OnChangeCommitted">
+            <summary>
+            Receives every committed grid lifecycle, sparse-presence, and obstacle mutation in
+            ascending <see cref="P:GridForge.Grids.GridEventInfo.ChangeSequence"/> order.
             </summary>
         </member>
         <member name="E:GridForge.Grids.GridWorld.OnReset">
@@ -1405,6 +1525,78 @@
             </summary>
             <returns>A fresh opaque obstacle token.</returns>
             <exception cref="T:System.InvalidOperationException">The world is inactive or its token space is exhausted.</exception>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryCaptureNavigationBaseline(GridForge.Configuration.GridConfigurationKey,System.ReadOnlySpan{GridForge.Spatial.VoxelIndex},GridForge.Grids.GridNavigationBaseline@)">
+            <summary>
+            Captures presence and obstacle state for a sorted requested address span without
+            enumerating unrelated grids or unrequested physical voxels.
+            </summary>
+            <param name="configurationKey">The exact normalized configuration identity to resolve.</param>
+            <param name="requestedVoxels">Strictly ascending, unique, in-bounds topology-local addresses.</param>
+            <param name="baseline">The atomic baseline on success.</param>
+            <returns>True when the requested active grid generation was captured; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.ExecuteNavigationMaintenanceSnapshot(System.Action)">
+            <summary>
+            Executes one short navigation maintenance snapshot while grid mutations are frozen.
+            Committed-change prefix detachment and all required navigation baseline captures can
+            therefore observe one deterministic world state.
+            </summary>
+            <param name="maintenance">The non-mutating maintenance callback to execute.</param>
+            <remarks>
+            The callback may call <see cref="M:GridForge.Grids.GridWorld.TryCaptureNavigationBaseline(GridForge.Configuration.GridConfigurationKey,System.ReadOnlySpan{GridForge.Spatial.VoxelIndex},GridForge.Grids.GridNavigationBaseline@)"/> without lock recursion.
+            It must not mutate this world, wait for code that may mutate this world, or retain live
+            grid/voxel references beyond the callback. This method must not be called from a committed-
+            change notification handler. Those handlers remain outside the mutation lock and may enqueue
+            represented events after this snapshot completes.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.BeginBoundaryContacts(GridForge.Grids.Topology.GridBoundaryContactCursor)">
+            <summary>
+            Begins or restarts a bounded exact boundary-contact query against the current committed world state.
+            </summary>
+            <param name="cursor">The caller-owned cursor to reset and bind.</param>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.TryBeginBoundaryContacts(GridForge.Configuration.GridConfigurationKey,GridForge.Grids.Topology.GridBoundaryContactCursor)">
+            <summary>
+            Begins or restarts a bounded exact boundary-contact query restricted to one active grid.
+            </summary>
+            <param name="configurationKey">The exact normalized configuration identity to resolve.</param>
+            <param name="cursor">The caller-owned cursor to reset and bind.</param>
+            <returns>True when the requested active grid was bound; otherwise false.</returns>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.AdvanceBoundaryContacts(GridForge.Grids.Topology.GridBoundaryContactCursor,System.Span{GridForge.Grids.Topology.VoxelContactManifold},System.Int32,System.Int32,System.Int32@,System.Int32@)">
+            <summary>
+            Advances a bounded exact boundary-contact query under one short navigation-maintenance snapshot.
+            </summary>
+            <param name="cursor">The caller-owned cursor previously begun through this world.</param>
+            <param name="results">Caller-owned storage for contacts emitted by this chunk.</param>
+            <param name="candidateProbeLimit">The maximum pair, source-address, and target probes for this chunk.</param>
+            <param name="outputLimit">The maximum contacts to write during this chunk.</param>
+            <param name="candidateProbesConsumed">The exact number of candidate probes consumed by this chunk.</param>
+            <param name="outputCount">The number of contacts written to <paramref name="results"/>.</param>
+            <returns>The resulting cursor state.</returns>
+            <remarks>
+            A <see cref="F:GridForge.Grids.Topology.GridBoundaryContactCursorStatus.Stale"/> result writes no contacts and resets the
+            cursor ordinal. The caller must discard every contact returned since the preceding begin.
+            Completed cursors remain bound and are revalidated on every later call, including zero-budget calls.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.GridWorld.AdvanceBoundaryContacts(GridForge.Grids.Topology.GridBoundaryContactCursor,System.Span{GridForge.Grids.Topology.GridBoundaryContact},System.Int32,System.Int32,System.Int32@,System.Int32@)">
+            <summary>
+            Advances a bounded exact boundary-contact query and emits durable grid identities with each contact.
+            </summary>
+            <param name="cursor">The caller-owned cursor previously begun through this world.</param>
+            <param name="results">Caller-owned storage for contacts and their normalized grid identities.</param>
+            <param name="candidateProbeLimit">The maximum pair, source-address, and target probes for this chunk.</param>
+            <param name="outputLimit">The maximum contacts to write during this chunk.</param>
+            <param name="candidateProbesConsumed">The exact number of candidate probes consumed by this chunk.</param>
+            <param name="outputCount">The number of contacts written to <paramref name="results"/>.</param>
+            <returns>The resulting cursor state.</returns>
+            <remarks>
+            Every emitted identity belongs to <see cref="P:GridForge.Grids.Topology.GridBoundaryContactCursor.RunStamp"/>.
+            A stale result writes no contacts and resets that stamp to its default value.
+            </remarks>
         </member>
         <member name="M:GridForge.Grids.GridWorld.TryAddGrid(GridForge.Configuration.GridConfiguration,System.UInt16@)">
             <summary>
@@ -1536,7 +1728,7 @@
             <param name="layerY">The world Y layer to resolve. Defaults to zero when omitted by paired overloads.</param>
             <param name="outGrid">The resolved grid, if found.</param>
             <param name="outVoxel">The resolved voxel, if found.</param>
-            <returns>True if both the grid and voxel were resolved; otherwise false.</returns>  
+            <returns>True if both the grid and voxel were resolved; otherwise false.</returns>
         </member>
         <member name="M:GridForge.Grids.GridWorld.TryGetClosestGridAndVoxel(FixedMathSharp.Vector3d,GridForge.Grids.VoxelGrid@,GridForge.Grids.Voxel@,System.Nullable{GridForge.Grids.Topology.GridTopologyKind})">
             <summary>
@@ -1662,6 +1854,16 @@
             <param name="targetGrid">The grid whose expanded topology bounds define the overlap query.</param>
             <param name="results">Caller-owned storage cleared and filled in ascending grid-slot order.</param>
         </member>
+        <member name="T:GridForge.Grids.OccupancyRecord">
+            <summary>
+            Tracks all voxel registrations for a single occupant.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.WorldOccupancyRegistry">
+            <summary>
+            Synchronizes one world's tracked occupant registrations.
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.OccupantEntry">
             <summary>
             Stores one occupant registration and the generation that owns its bucket slot.
@@ -1769,16 +1971,16 @@
         </member>
         <member name="M:GridForge.Grids.ScanCell.GetOccupantsFor(GridForge.Spatial.WorldVoxelIndex)">
             <summary>
-            Retrieves all occupants associated with a specific voxel spawn token within this scan cell.
+            Retrieves all occupants associated with a world-scoped voxel identity within this scan cell.
             </summary>
-            <param name="index">The global index of the voxel.</param>
+            <param name="index">The voxel identity including world and grid generations and its local index.</param>
             <returns>An enumerable collection of occupants assigned to the voxel.</returns>
         </member>
         <member name="M:GridForge.Grids.ScanCell.TryGetOccupantAt(GridForge.Spatial.WorldVoxelIndex,GridForge.OccupantTicket,GridForge.Spatial.IVoxelOccupant@)">
             <summary>
-            Attempts to retrieve a specific occupant in this scan cell using a voxel's spawn key and occupant ticket.
+            Attempts to retrieve a specific occupant in this scan cell using a world-scoped voxel identity and occupant ticket.
             </summary>
-            <param name="index">The global index of the voxel the occupant belongs to.</param>
+            <param name="index">The world-scoped identity of the voxel the occupant belongs to.</param>
             <param name="occupantTicket">The unique ticket identifying the occupant.</param>
             <param name="voxelOccupant">The retrieved occupant if found.</param>
             <returns>True if the occupant was found, otherwise false.</returns>
@@ -2029,9 +2231,57 @@
             Only explicitly configured topology-local voxel indices are physically allocated.
             </summary>
         </member>
+        <member name="T:GridForge.Grids.GridChangeStamp">
+            <summary>
+            Identifies the committed order and logical cause of a GridForge world mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChangeStamp.Sequence">
+            <summary>
+            The world-local commit order. Zero is reserved for an invalid or default value.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridChangeStamp.CauseId">
+            <summary>
+            The world-local logical cause shared by notifications emitted for one mutation.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridChangeStamp.IsValid">
+            <summary>
+            Whether this value identifies a committed world mutation.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.#ctor(System.UInt64,System.UInt64)">
+            <summary>
+            Initializes a change stamp.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.Equals(GridForge.Grids.GridChangeStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.op_Equality(GridForge.Grids.GridChangeStamp,GridForge.Grids.GridChangeStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.GridChangeStamp.op_Inequality(GridForge.Grids.GridChangeStamp,GridForge.Grids.GridChangeStamp)">
+            <inheritdoc />
+        </member>
         <member name="T:GridForge.Grids.GridEventInfo">
             <summary>
             Immutable snapshot describing a grid at the time a world grid notification is raised.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.ChangeStamp">
+            <summary>
+            The world-owned ordering and cause identity for this committed mutation.
             </summary>
         </member>
         <member name="F:GridForge.Grids.GridEventInfo.WorldSpawnToken">
@@ -2079,6 +2329,31 @@
             The maximum world-space bounds affected by this event.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.GridEventInfo.HasVoxelState">
+            <summary>
+            Whether this event contains an exact post-mutation voxel state.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.IsVoxelPresent">
+            <summary>
+            Whether the addressed physical voxel exists after the mutation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventInfo.ObstacleCount">
+            <summary>
+            The addressed voxel's obstacle count after the mutation.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridEventInfo.ChangeSequence">
+            <summary>
+            The world-local commit order of this event.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridEventInfo.CauseId">
+            <summary>
+            The logical cause shared with exact notifications for the same mutation.
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.GridEventInfo.BoundsMin">
             <summary>
             The minimum snapped bounds of the grid.
@@ -2089,7 +2364,7 @@
             The maximum snapped bounds of the grid.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int64,System.UInt16,System.Int64,GridForge.Configuration.GridConfiguration,System.UInt32,GridForge.Grids.GridEventKind,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d)">
+        <member name="M:GridForge.Grids.GridEventInfo.#ctor(System.Int64,System.UInt16,System.Int64,GridForge.Configuration.GridConfiguration,System.UInt32,GridForge.Grids.GridEventKind,GridForge.Spatial.VoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,GridForge.Grids.GridChangeStamp,System.Boolean,System.Boolean,System.Byte)">
             <summary>
             Initializes a new immutable grid event snapshot.
             </summary>
@@ -2134,6 +2409,158 @@
             A sparse voxel was removed at runtime.
             </summary>
         </member>
+        <member name="F:GridForge.Grids.GridEventKind.ObstacleAdded">
+            <summary>
+            An obstacle token was added to a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.ObstacleRemoved">
+            <summary>
+            An obstacle token was removed from a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.ObstaclesCleared">
+            <summary>
+            All obstacle tokens were cleared from a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridEventKind.WorldReset">
+            <summary>
+            The owning world cleared every active grid.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBaseline">
+            <summary>
+            Atomic requested-address snapshot for initializing an external navigation overlay.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.CapturedChangeSequence">
+            <summary>
+            The world-local committed change sequence captured with the state.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.WorldSpawnToken">
+            <summary>
+            The exact process-unique identity of the source world.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.GridSpawnToken">
+            <summary>
+            The exact world-local generation of the active grid.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.GridLastChangeSequence">
+            <summary>
+            The last world-local change sequence applied to this exact grid generation.
+            Unrelated grids do not advance this value.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.GridIndex">
+            <summary>
+            The active grid's recyclable world-local slot.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.ConfigurationKey">
+            <summary>
+            The requested normalized configuration identity.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBaseline.VoxelStates">
+            <summary>
+            Requested address states in the caller's validated ascending order.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBodyTraceCell">
+            <summary>Identifies one topology cell and its physical generation evidence.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceCell.Cell">
+            <summary>The exact world, grid-generation, and topology-local address.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceCell.ConfigurationKey">
+            <summary>The normalized grid binding key, independent of its recyclable runtime slot.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceCell.IsPhysicallyPresent">
+            <summary>Whether physical storage contained this address during the trace.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceCell.GridLastChangeSequence">
+            <summary>The last committed sequence applied to the owning grid generation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceCell.Role">
+            <summary>How this identity participates in the physical coverage proof.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBodyTraceCellRole">
+            <summary>Describes how one published trace cell participates in coverage validation.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceCellRole.RequiredCoverage">
+            <summary>The cell identity contributes directly to the required physical coverage.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceCellRole.PhysicalAlternativeDependency">
+            <summary>
+            The missing cell is an OR alternative whose mutation invalidates the negative proof without
+            making the cell an additional physical requirement.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBodyTraceReport">
+            <summary>Summarizes one bounded swept navigation-body trace.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.Status">
+            <summary>The completion status.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.GridCandidateCount">
+            <summary>The number of candidate grids examined.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.AddressCandidateCount">
+            <summary>The number of candidate addresses examined.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.CandidateWorkCount">
+            <summary>The exact combined grid and address work completed.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.CellCount">
+            <summary>The number of required and dependency-evidence cells written.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.RunStamp">
+            <summary>The exact committed world revision observed by the trace.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridNavigationBodyTraceReport.IsComplete">
+            <summary>Whether the complete physical prism union was written.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBodyTraceScratch">
+            <summary>Owns reusable caller-side storage for allocation-free warmed navigation-body traces.</summary>
+            <remarks>Instances retain capacity and are not thread-safe.</remarks>
+        </member>
+        <member name="M:GridForge.Grids.GridNavigationBodyTraceScratch.#ctor(System.Int32,System.Int32)">
+            <summary>Creates scratch with expected grid and address counts.</summary>
+        </member>
+        <member name="M:GridForge.Grids.GridNavigationBodyTraceScratch.Clear">
+            <summary>Clears temporary values while retaining capacity.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridNavigationBodyTraceStatus">
+            <summary>Reports the outcome of a bounded swept navigation-body trace.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.Complete">
+            <summary>The complete physical prism union was written.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.IncompletePhysicalCoverage">
+            <summary>The complete canonical set was written, but at least one required cell is physically absent.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.InvalidOrUnrepresentableGeometry">
+            <summary>The inputs or an exact topology prism could not be represented.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.AddressLimitExceeded">
+            <summary>The candidate-address ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.OutputLimitExceeded">
+            <summary>The complete required and dependency-evidence output ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.CandidateWorkLimitExceeded">
+            <summary>The combined grid and address work ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.GridCandidateLimitExceeded">
+            <summary>The candidate-grid ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridNavigationBodyTraceStatus.ArithmeticOverflow">
+            <summary>Checked body-top or query-bounds arithmetic overflowed.</summary>
+        </member>
         <member name="T:GridForge.Grids.GridScanScratch">
             <summary>
             Reusable temporary storage for allocation-sensitive grid scan operations.
@@ -2143,6 +2570,111 @@
             <summary>
             Clears all temporary scan state while retaining allocated backing storage.
             </summary>
+        </member>
+        <member name="T:GridForge.Grids.GridTraceInterval">
+            <summary>
+            Describes the exact closed parameter interval where a segment intersects one grid address.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.Cell">
+            <summary>The exact world, grid-generation, and topology-local address.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.ConfigurationKey">
+            <summary>The normalized grid binding key, independent of the recyclable runtime slot.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.IsPhysicallyPresent">
+            <summary>Whether physical storage currently contains the addressed voxel.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.GridLastChangeSequence">
+            <summary>The last committed sequence applied to the traced grid generation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.TEnter">
+            <summary>The first inclusive segment parameter in the cell prism.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.TExit">
+            <summary>The last inclusive segment parameter in the cell prism.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.TieGroupId">
+            <summary>
+            Stable group for peers whose interval interiors overlap, or point peers at one exact parameter.
+            </summary>
+            <remarks>
+            Closed intervals that merely hand off at one endpoint remain successive groups. Group membership
+            expresses simultaneous geometric coverage only; it does not imply voxel adjacency.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceInterval.TieOrder">
+            <summary>The canonical identity order within <see cref="P:GridForge.Grids.GridTraceInterval.TieGroupId"/>.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridTraceIntervalReport">
+            <summary>
+            Summarizes one bounded trace, canonically ordered only on complete output.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.Status">
+            <summary>The completion status.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.GridCandidateCount">
+            <summary>The number of candidate grids discovered.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.AddressCandidateCount">
+            <summary>The number of candidate addresses charged at original-range admission, including omitted planar misses.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.IntervalCount">
+            <summary>The number of intervals written.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.TieGroupCount">
+            <summary>The number of simultaneous-coverage groups; zero for an explicit partial stop.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.HasContinuousAddressCoverage">
+            <summary>Whether all parameters from zero through one are covered by grid addresses.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.HasContinuousPhysicalCoverage">
+            <summary>Whether all parameters from zero through one are covered by physically present voxels.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceIntervalReport.IsComplete">
+            <summary>Whether the complete trace was written.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridTraceIntervalScratch">
+            <summary>
+            Owns reusable caller-side storage for allocation-free warmed interval traces.
+            </summary>
+            <remarks>
+            Instances retain capacity and are not thread-safe. Reentrant tracing or clearing an active instance
+            throws before caller output is modified. Completed traces release temporary grid references.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.GridTraceIntervalScratch.#ctor(System.Int32,System.Int32)">
+            <summary>Creates trace scratch with optional expected grid and address counts.</summary>
+        </member>
+        <member name="M:GridForge.Grids.GridTraceIntervalScratch.Clear">
+            <summary>Clears temporary values while retaining capacity.</summary>
+        </member>
+        <member name="T:GridForge.Grids.GridTraceIntervalStatus">
+            <summary>
+            Reports completion, a deterministic trace ceiling, geometry failure, or an explicit partial stop.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.Complete">
+            <summary>The complete trace was written.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.AddressCandidateLimitExceeded">
+            <summary>The candidate-address ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.OutputLimitExceeded">
+            <summary>The output interval ceiling was exceeded.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.UnrepresentableGeometry">
+            <summary>A candidate grid cell could not be represented exactly.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.GridCandidateLimitExceeded">
+            <summary>The candidate-grid ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.CandidateWorkLimitExceeded">
+            <summary>The combined candidate-grid and candidate-address work ceiling was exhausted.</summary>
+        </member>
+        <member name="F:GridForge.Grids.GridTraceIntervalStatus.StoppedAfterCompleteSlab">
+            <summary>The caller stopped after a complete slab; retained intervals are not canonical or tied.</summary>
         </member>
         <member name="T:GridForge.Grids.GridTraceScratch">
             <summary>
@@ -2154,9 +2686,63 @@
             Clears all temporary trace state while retaining allocated backing storage.
             </summary>
         </member>
+        <member name="T:GridForge.Grids.GridTraceSlab">
+            <summary>Describes one completed X slab of an original rectangular segment trace.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.XIndex">
+            <summary>The topology-local X index.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.IntervalStart">
+            <summary>The first newly appended interval.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.IntervalCount">
+            <summary>The number of newly appended intervals, possibly zero.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.SeparatesEndpoints">
+            <summary>Whether the original endpoints strictly straddle the slab with a one-raw-parameter margin.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.WorldSpawnToken">
+            <summary>The captured world allocation identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.WorldChangeSequence">
+            <summary>The original world change sequence, captured before generation qualification.</summary>
+        </member>
+        <member name="P:GridForge.Grids.GridTraceSlab.Generation">
+            <summary>The exact qualified grid generation.</summary>
+        </member>
+        <member name="T:GridForge.Grids.NavigationBaselineVoxelState">
+            <summary>
+            Immutable post-mutation state for one requested topology-local address.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.NavigationBaselineVoxelState.VoxelIndex">
+            <summary>
+            The requested topology-local address.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.NavigationBaselineVoxelState.IsPresent">
+            <summary>
+            Whether a physical voxel is present at the requested address.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.NavigationBaselineVoxelState.ObstacleCount">
+            <summary>
+            The physical voxel obstacle count, or zero when no voxel is present.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.NavigationBaselineVoxelState.#ctor(GridForge.Spatial.VoxelIndex,System.Boolean,System.Byte)">
+            <summary>
+            Initializes a navigation baseline address state.
+            </summary>
+        </member>
         <member name="T:GridForge.Grids.ObstacleClearEventInfo">
             <summary>
             Immutable snapshot describing a bulk obstacle clear operation on a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleClearEventInfo.ChangeStamp">
+            <summary>
+            The world-owned ordering and cause identity for this committed mutation.
             </summary>
         </member>
         <member name="F:GridForge.Grids.ObstacleClearEventInfo.VoxelIndex">
@@ -2174,12 +2760,22 @@
             The grid version recorded after the clear operation completes.
             </summary>
         </member>
+        <member name="P:GridForge.Grids.ObstacleClearEventInfo.ChangeSequence">
+            <summary>
+            The world-local commit order of this event.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ObstacleClearEventInfo.CauseId">
+            <summary>
+            The logical cause shared with the corresponding grid notification.
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.ObstacleClearEventInfo.GridIndex">
             <summary>
             The grid index containing <see cref="F:GridForge.Grids.ObstacleClearEventInfo.VoxelIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ObstacleClearEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.ObstacleClearEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,System.Byte,System.UInt32,GridForge.Grids.GridChangeStamp)">
             <summary>
             Initializes a new immutable obstacle clear snapshot.
             </summary>
@@ -2187,6 +2783,11 @@
         <member name="T:GridForge.Grids.ObstacleEventInfo">
             <summary>
             Immutable snapshot describing a single obstacle mutation on a voxel.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.ObstacleEventInfo.ChangeStamp">
+            <summary>
+            The world-owned ordering and cause identity for this committed mutation.
             </summary>
         </member>
         <member name="F:GridForge.Grids.ObstacleEventInfo.VoxelIndex">
@@ -2209,12 +2810,22 @@
             The grid version recorded after the mutation completes.
             </summary>
         </member>
+        <member name="P:GridForge.Grids.ObstacleEventInfo.ChangeSequence">
+            <summary>
+            The world-local commit order of this event.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.ObstacleEventInfo.CauseId">
+            <summary>
+            The logical cause shared with the corresponding grid notification.
+            </summary>
+        </member>
         <member name="P:GridForge.Grids.ObstacleEventInfo.GridIndex">
             <summary>
             The grid index containing <see cref="F:GridForge.Grids.ObstacleEventInfo.VoxelIndex"/>.
             </summary>
         </member>
-        <member name="M:GridForge.Grids.ObstacleEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.ObstacleToken,System.Byte,System.UInt32)">
+        <member name="M:GridForge.Grids.ObstacleEventInfo.#ctor(GridForge.Spatial.WorldVoxelIndex,GridForge.ObstacleToken,System.Byte,System.UInt32,GridForge.Grids.GridChangeStamp)">
             <summary>
             Initializes a new immutable obstacle mutation snapshot.
             </summary>
@@ -2223,6 +2834,10 @@
             <summary>
             Immutable snapshot describing an occupant mutation on a voxel.
             </summary>
+            <remarks>
+            Occupant notifications are not part of the world's committed navigation-change stream and
+            therefore do not carry a <see cref="T:GridForge.Grids.GridChangeStamp"/>.
+            </remarks>
         </member>
         <member name="F:GridForge.Grids.OccupantEventInfo.VoxelIndex">
             <summary>
@@ -2268,6 +2883,552 @@
             <summary>
             Object pool for reusing <see cref="T:GridForge.Grids.ScanCell"/> instances.
             </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridBoundaryContact">
+            <summary>
+            Pairs an exact cell-contact manifold with both durable normalized grid identities.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContact.SourceConfigurationKey">
+            <summary>The canonical source grid identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContact.TargetConfigurationKey">
+            <summary>The canonical target grid identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContact.Contact">
+            <summary>The exact contact between the source and target cells.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridBoundaryContactCursor">
+            <summary>
+            Stores caller-owned scalar progress for a bounded exact boundary-contact query.
+            </summary>
+            <remarks>
+            Create and reuse one instance, begin it through <see cref="M:GridForge.Grids.GridWorld.BeginBoundaryContacts(GridForge.Grids.Topology.GridBoundaryContactCursor)"/>,
+            and advance it through a <c>GridWorld.AdvanceBoundaryContacts(...)</c> overload. The cursor retains no
+            live grid or voxel reference. If it becomes <see cref="F:GridForge.Grids.Topology.GridBoundaryContactCursorStatus.Stale"/>,
+            discard every contact returned since the last begin and restart the cursor.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactCursor.Status">
+            <summary>The current query state.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactCursor.CandidateOrdinal">
+            <summary>The cumulative number of canonical pair, source-address, and target probes.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactCursor.RunStamp">
+            <summary>The exact committed world revision bound by this cursor.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridBoundaryContactCursorStatus">
+            <summary>
+            Describes the state of a resumable exact boundary-contact query.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridBoundaryContactCursorStatus.Stale">
+            <summary>The bound world or grid generation changed and all prior output must be discarded.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridBoundaryContactCursorStatus.More">
+            <summary>More bounded candidate work is required.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridBoundaryContactCursorStatus.Complete">
+            <summary>All bound spatial pairs and topology addresses were examined.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridBoundaryContactRunStamp">
+            <summary>
+            Identifies the exact committed world revision bound by a boundary-contact cursor.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactRunStamp.WorldSpawnToken">
+            <summary>The process-unique world allocation identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactRunStamp.WorldVersion">
+            <summary>The world-local structural generation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridBoundaryContactRunStamp.ChangeSequence">
+            <summary>The committed world-local change sequence.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridBoundaryContactRunStamp.Equals(GridForge.Grids.Topology.GridBoundaryContactRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridBoundaryContactRunStamp.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridBoundaryContactRunStamp.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridBoundaryContactRunStamp.op_Equality(GridForge.Grids.Topology.GridBoundaryContactRunStamp,GridForge.Grids.Topology.GridBoundaryContactRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridBoundaryContactRunStamp.op_Inequality(GridForge.Grids.Topology.GridBoundaryContactRunStamp,GridForge.Grids.Topology.GridBoundaryContactRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCellGeometry">
+            <summary>
+            Builds exact topology-owned cell prisms and contact manifolds without floating-point conversion.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryGetPrism(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,GridForge.Grids.Topology.GridCellPrism@)">
+            <summary>
+            Attempts to build the exact prism for one physical voxel in an active grid.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryCreatePrism(GridForge.Grids.Topology.GridTopologyKind,GridForge.Grids.Topology.GridTopologyMetrics,FixedMathSharp.Vector3d,GridForge.Spatial.WorldVoxelIndex,GridForge.Grids.Topology.GridCellPrism@)">
+            <summary>
+            Attempts to build an exact prism from normalized topology metrics and a world-space cell center.
+            </summary>
+            <remarks>
+            This overload permits offline geometry construction. The supplied identity is copied verbatim.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.GetContact(GridForge.Grids.Topology.GridCellPrism@,GridForge.Grids.Topology.GridCellPrism@)">
+            <summary>
+            Computes the exact closed-set contact between two cell prisms.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryGetPrimaryFace(GridForge.Grids.VoxelGrid,GridForge.Spatial.VoxelIndex,GridForge.Spatial.VoxelIndex,GridForge.Grids.Topology.VoxelContactManifold@)">
+            <summary>
+            Attempts to get exact face geometry for a safe same-grid primary adjacency.
+            </summary>
+            <remarks>
+            Rectangular diagonals and hex vertical-diagonal offsets are deliberately rejected.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.GetExactBoundaryContactsInto(GridForge.Grids.VoxelGrid,GridForge.Grids.VoxelGrid,SwiftCollections.SwiftList{GridForge.Grids.Topology.VoxelContactManifold},GridForge.Grids.Topology.GridContactQueryScratch)">
+            <summary>
+            Builds exact contacts between physical voxels in a candidate grid pair into caller-owned output.
+            </summary>
+            <remarks>
+            Source and target cells are processed in canonical local-index order. The supplied scratch retains
+            broad-phase capacity so warmed calls allocate no managed memory. Separated AABB candidates are omitted.
+            </remarks>
+            <returns>The number of manifolds written to <paramref name="results"/>.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.IsNavigationBodyAnchorValid(GridForge.Grids.Topology.GridCellPrism@,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,GridForge.Grids.Topology.GridNavigationPortal@)">
+            <summary>
+            Determines whether one cylindrical body anchor fits an exact cell prism, optionally through
+            one selected navigation portal.
+            </summary>
+            <remarks>
+            This is the degenerate-segment form of <see cref="M:GridForge.Grids.Topology.GridCellGeometry.IsNavigationBodySegmentValid(GridForge.Grids.Topology.GridCellPrism@,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,GridForge.Grids.Topology.GridNavigationPortal@,GridForge.Grids.Topology.GridNavigationPortal@,GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance)"/>. The
+            shared swept-body authority therefore owns all wall, opening, height, and equality behavior.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryGetNavigationPortalTraversalParameters(GridForge.Grids.Topology.GridCellPrism@,GridForge.Grids.Topology.GridCellPrism@,GridForge.Grids.Topology.GridNavigationPortal@,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64@,FixedMathSharp.Fixed64@)">
+            <summary>
+            Attempts to certify where one straight body-foot segment traverses an exact directed portal.
+            </summary>
+            <remarks>
+            Vertical portals return a directed source/target enclosure around the exact crossing.
+            Horizontal portals return the ordered parameters of the exact profile anchors. Both forms
+            certify the body against the authored source/target prism pair.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.IsNavigationBodySegmentValid(GridForge.Grids.Topology.GridCellPrism@,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,GridForge.Grids.Topology.GridNavigationPortal@,GridForge.Grids.Topology.GridNavigationPortal@,GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance)">
+            <summary>
+            Determines whether a cylindrical body can sweep one straight foot segment through an exact
+            cell prism, optionally approaching an incoming and outgoing vertical portal.
+            </summary>
+            <remarks>
+            The horizontal capsule is compared exactly with every blocked wall span. Selected portal
+            openings retain their own vertical authority and apply only while the sweep overlaps that
+            opening. Each selected portal must cover its complete possible overlap; a segment that would
+            need to switch height authority between two same-wall openings is rejected. A non-default
+            endpoint allowance clips one exact directed footprint-edge crossing inside GridForge before
+            validating the retained in-prism segment. The method retains no state and allocates nothing.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryValidateNavigationCorridor(System.ReadOnlySpan{GridForge.Grids.Topology.GridCellPrism},FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,System.Span{FixedMathSharp.Vector3d},System.Int32@,FixedMathSharp.Fixed64@)">
+            <summary>
+            Validates a canonical, clearance-bearing corridor through an ordered chain of exact cell prisms.
+            </summary>
+            <remarks>
+            Consecutive cells must share a positive-area face. Vertical faces contribute one portal-center
+            waypoint. Horizontal faces contribute the last point wholly contained by the source cell and the
+            first point wholly contained by the target cell. The resulting polyline and checked length are
+            deterministic and independent of runtime grid identity.
+            </remarks>
+            <param name="orderedCells">Source cell, zero or more witness cells, and destination cell.</param>
+            <param name="entryAnchor">Foot position inside the source cell.</param>
+            <param name="exitAnchor">Foot position inside the destination cell.</param>
+            <param name="radiusClearance">Required horizontal body radius.</param>
+            <param name="heightClearance">Required positive body height.</param>
+            <param name="portalWaypoints">Caller-owned storage with capacity for twice the portal count.</param>
+            <param name="portalWaypointCount">The number of canonical portal waypoints written.</param>
+            <param name="geometricCost">The checked fixed-point length of the canonical polyline.</param>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellGeometry.TryCreateNavigationPortal(GridForge.Grids.Topology.GridCellPrism@,GridForge.Grids.Topology.GridCellPrism@,GridForge.Grids.Topology.GridNavigationPortal@)">
+            <summary>
+            Attempts to compile one exact, directed navigation portal from two cell prisms.
+            </summary>
+            <remarks>
+            Contact discovery and convex clipping occur only during compilation. The resulting value
+            contains no live grid references and resolves body profiles in constant time.
+            </remarks>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCellPrism">
+            <summary>
+            Describes one exact topology cell as an ordered convex XZ footprint and a closed vertical interval.
+            </summary>
+            <remarks>
+            Construction fails when a metric cannot be bisected exactly in the fixed-point scalar domain.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.Cell">
+            <summary>
+            The exact runtime cell identity represented by this prism.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.TopologyKind">
+            <summary>
+            The topology that produced the footprint.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.Center">
+            <summary>
+            The world-space cell center.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.VerticalMin">
+            <summary>
+            The inclusive lower Y bound.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.VerticalMax">
+            <summary>
+            The inclusive upper Y bound.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.PlanarInradius">
+            <summary>
+            The largest radius that can be inset from every horizontal footprint edge.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCellPrism.FootprintVertexCount">
+            <summary>
+            The number of boundary-ordered footprint vertices.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellPrism.GetFootprintVertex(System.Int32)">
+            <summary>
+            Gets one boundary-ordered XZ footprint vertex.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellPrism.CopyFootprintTo(System.Span{FixedMathSharp.Vector2d})">
+            <summary>
+            Copies the boundary-ordered XZ footprint into caller-owned storage.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCellPrism.Contains(FixedMathSharp.Vector3d)">
+            <summary>
+            Determines whether a world-space point lies inside or on this closed prism.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridContactQueryScratch">
+            <summary>
+            Owns reusable temporary storage for allocation-free warmed exact-contact queries.
+            </summary>
+            <remarks>
+            Instances are caller-owned, retain capacity between calls, and are not thread-safe.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridContactQueryScratch.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes scratch storage with optional expected source and per-source candidate counts.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridContactQueryScratch.Clear">
+            <summary>
+            Clears retained references without releasing reusable capacity.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridConvexPolygon2d">
+            <summary>
+            Stores a boundary-ordered convex polygon produced by exact grid-cell contact clipping.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridConvexPolygon2d.MaxVertexCount">
+            <summary>
+            Maximum vertices in the intersection of two rectangular or hexagonal cell footprints.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridConvexPolygon2d.VertexCount">
+            <summary>
+            Number of boundary-ordered vertices in this polygon.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridConvexPolygon2d.GetVertex(System.Int32)">
+            <summary>
+            Gets one boundary-ordered polygon vertex.
+            </summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridConvexPolygon2d.CopyTo(System.Span{FixedMathSharp.Vector2d})">
+            <summary>
+            Copies the boundary-ordered vertices into caller-owned storage.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCoveredAddress">
+            <summary>
+            Identifies one topology-local address covered by a query and its exact grid generation.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddress.ConfigurationKey">
+            <summary>The durable normalized grid identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddress.GridIndex">
+            <summary>The recyclable world-local grid slot.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddress.GridSpawnToken">
+            <summary>The exact process-unique grid allocation identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddress.GridLastChangeSequence">
+            <summary>The grid's last committed change sequence captured for this result.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddress.VoxelIndex">
+            <summary>The topology-local address, whether or not a physical voxel currently exists.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCoveredAddressCursor">
+            <summary>Stores caller-owned bounded progress for a value-only covered-address query.</summary>
+            <remarks>
+            Construct with the maximum eligible generation count, begin through <see cref="T:GridForge.Grids.GridWorld"/>, then
+            supply the next canonical generation-input slice to each advance call until it is consumed. Once all
+            declared generations are bound, pass an empty input span. The cursor retains no live grid or voxel.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressCursor.#ctor(System.Int32)">
+            <summary>Initializes reusable storage for at most <paramref name="generationCapacity"/> eligible grids.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.GenerationCapacity">
+            <summary>The maximum eligible generation count accepted by this cursor.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.RetainedBytes">
+            <summary>The deterministic logical bytes retained by this cursor and its owned generation storage.</summary>
+            <remarks>Shared empty-array storage is not charged.</remarks>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.Status">
+            <summary>The current query state.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.LookupProbeOrdinal">
+            <summary>The cumulative number of generation validation and spatial lookup probes.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.AddressProbeOrdinal">
+            <summary>The cumulative number of topology-address probes.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.OutputOrdinal">
+            <summary>The cumulative number of covered addresses emitted.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressCursor.RunStamp">
+            <summary>The exact committed world revision bound by this cursor.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCoveredAddressCursorStatus">
+            <summary>Describes the state of a resumable covered-address query.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridCoveredAddressCursorStatus.Stale">
+            <summary>The bound revision or an eligible grid generation changed; discard the run.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridCoveredAddressCursorStatus.More">
+            <summary>More generation-input, lookup, address, or output work is required.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridCoveredAddressCursorStatus.Complete">
+            <summary>Every eligible covered topology address was examined.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCoveredAddressGeneration">
+            <summary>
+            Identifies one exact active grid generation eligible for a covered-address query.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressGeneration.ConfigurationKey">
+            <summary>The durable normalized grid identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressGeneration.GridIndex">
+            <summary>The recyclable world-local grid slot.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressGeneration.GridSpawnToken">
+            <summary>The exact process-unique grid allocation identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressGeneration.GridLastChangeSequence">
+            <summary>The last committed sequence applied to this grid generation.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressGeneration.#ctor(GridForge.Configuration.GridConfigurationKey,System.UInt16,System.Int64,System.UInt64)">
+            <summary>Initializes an exact eligible grid-generation identity.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressGeneration.CompareTo(GridForge.Grids.Topology.GridCoveredAddressGeneration)">
+            <summary>
+            Compares durable configuration identity only. Eligible inputs must be strictly ascending by this order.
+            </summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridCoveredAddressRunStamp">
+            <summary>Identifies the exact committed world revision bound by a covered-address cursor.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressRunStamp.WorldSpawnToken">
+            <summary>The process-unique world allocation identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressRunStamp.WorldVersion">
+            <summary>The world-local structural generation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridCoveredAddressRunStamp.ChangeSequence">
+            <summary>The committed world-local change sequence.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressRunStamp.Equals(GridForge.Grids.Topology.GridCoveredAddressRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressRunStamp.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressRunStamp.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressRunStamp.op_Equality(GridForge.Grids.Topology.GridCoveredAddressRunStamp,GridForge.Grids.Topology.GridCoveredAddressRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridCoveredAddressRunStamp.op_Inequality(GridForge.Grids.Topology.GridCoveredAddressRunStamp,GridForge.Grids.Topology.GridCoveredAddressRunStamp)">
+            <inheritdoc />
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance">
+            <summary>Identifies one footprint boundary that a swept segment may cross.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance.None">
+            <summary>Both segment endpoints must lie within the prism.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance.StartFootprintEdge">
+            <summary>The segment must enter through one exact footprint edge at its start.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationBodySegmentEndpointAllowance.EndFootprintEdge">
+            <summary>The segment must leave through one exact footprint edge at its end.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor">
+            <summary>
+            Resumably validates one deterministic navigation corridor into caller-owned storage.
+            </summary>
+            <remarks>
+            The ordered cell and waypoint spans are not retained. Their lengths and contents must remain
+            stable between calls. A successful corridor of N cells consumes exactly 2N+1 work units.
+            Advance one work unit at a time and call <see cref="M:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.TryGetCurrentPortal(GridForge.Grids.Topology.GridNavigationPortal@)"/> after each call to
+            consume every portal certificate in order.
+            </remarks>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.Status">
+            <summary>The current validation state.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.PortalWaypointCount">
+            <summary>The number of canonical waypoints written, or zero after failure.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.GeometricCost">
+            <summary>The checked canonical polyline length accumulated so far.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.TryGetCurrentPortal(GridForge.Grids.Topology.GridNavigationPortal@)">
+            <summary>
+            Attempts to get the portal certificate produced by the last completed work unit.
+            </summary>
+            <remarks>
+            The value is available only when the final work unit completed by the most recent advance
+            was successful portal work. Use a one-unit budget to consume every certificate in order.
+            </remarks>
+            <param name="portal">The produced portal, or <see langword="default"/> when unavailable.</param>
+            <returns><see langword="true"/> when a portal certificate is available.</returns>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.#ctor(System.Int32,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64)">
+            <summary>
+            Creates a cursor for one ordered source, witness, and destination cell chain.
+            </summary>
+            <param name="cellCount">The stable number of ordered cells supplied to every advance.</param>
+            <param name="entryAnchor">The source-cell foot anchor.</param>
+            <param name="exitAnchor">The destination-cell foot anchor.</param>
+            <param name="radiusClearance">The required nonnegative horizontal body radius.</param>
+            <param name="heightClearance">The required positive body height.</param>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridNavigationCorridorValidationCursor.Advance(System.ReadOnlySpan{GridForge.Grids.Topology.GridCellPrism},System.Span{FixedMathSharp.Vector3d},System.Int32)">
+            <summary>
+            Performs at most <paramref name="maxWork"/> bounded validation units.
+            </summary>
+            <param name="orderedCells">The unchanged ordered cells supplied for this cursor.</param>
+            <param name="portalWaypoints">Caller-owned storage for twice the portal count.</param>
+            <param name="maxWork">The nonnegative maximum number of work units to perform.</param>
+            <returns>The resulting validation state.</returns>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridNavigationCorridorValidationStatus">
+            <summary>
+            Describes the state of a resumable navigation-corridor validation.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationCorridorValidationStatus.Invalid">
+            <summary>The input or corridor geometry is invalid.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationCorridorValidationStatus.InProgress">
+            <summary>More bounded work is required.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationCorridorValidationStatus.Complete">
+            <summary>The corridor certificate is complete.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationCorridorValidationStatus.CostOverflow">
+            <summary>The canonical geometric cost is not representable.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridNavigationPortal">
+            <summary>
+            Stores one exact, agent-independent navigation crossing compiled from two cell prisms.
+            </summary>
+            <remarks>
+            The value retains no live grid state. Profile resolution uses only the stored face geometry,
+            direction, and conservative fixed-point capacities.
+            </remarks>
+        </member>
+        <member name="F:GridForge.Grids.Topology.GridNavigationPortal.SizeInBytes">
+            <summary>The stable retained value size used by exact byte-accounted storage.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.FaceKind">
+            <summary>The orientation of the shared positive-area face.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.SourceToTarget">
+            <summary>The exact target-center displacement from the source center.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.CanonicalFacePoint">
+            <summary>The canonical foot crossing on the shared face.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.MaximumHorizontalRadius">
+            <summary>The greatest conservatively representable horizontal body radius at the crossing.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.MaximumBodyHeight">
+            <summary>The greatest body height supported by both directed sides of the crossing.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.VerticalFaceSegmentStart">
+            <summary>The first exact XZ endpoint certifying a compiled vertical face.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.VerticalFaceSegmentEnd">
+            <summary>The second exact XZ endpoint certifying a compiled vertical face.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridNavigationPortal.IsValid">
+            <summary>Whether this value contains a compiled positive-area navigation face.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridNavigationPortal.TryTranslate(FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridNavigationPortal@)">
+            <summary>
+            Attempts to rigidly translate the canonical face point without fixed-point saturation.
+            </summary>
+            <param name="offset">The exact translation applied to the canonical face point.</param>
+            <param name="translated">The translated portal, or <see langword="default"/> on failure.</param>
+            <returns>
+            <see langword="true"/> when this portal is valid and the translated face point is representable;
+            otherwise, <see langword="false"/>.
+            </returns>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridNavigationPortal.TryResolveProfile(FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d@,FixedMathSharp.Vector3d@)">
+            <summary>
+            Attempts to fit a fixed-point body profile and resolve its directed source and target foot anchors.
+            </summary>
+            <param name="horizontalRadius">The required nonnegative horizontal body radius.</param>
+            <param name="bodyHeight">The required positive body height.</param>
+            <param name="sourceFootAnchor">The last canonical foot anchor on the source side.</param>
+            <param name="targetFootAnchor">The first canonical foot anchor on the target side.</param>
+            <returns><see langword="true"/> when the profile fits and both anchors are representable.</returns>
+        </member>
+        <member name="T:GridForge.Grids.Topology.GridPlanarLayer">
+            <summary>Identifies one selected planar layer in an exact grid generation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridPlanarLayer.Generation">
+            <summary>The exact eligible generation and committed revision.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.GridPlanarLayer.LayerIndex">
+            <summary>The nonnegative topology-local layer index.</summary>
+        </member>
+        <member name="M:GridForge.Grids.Topology.GridPlanarLayer.#ctor(GridForge.Grids.Topology.GridCoveredAddressGeneration,System.Int32)">
+            <summary>Creates one explicit layer selection.</summary>
         </member>
         <member name="T:GridForge.Grids.Topology.GridTopologyKind">
             <summary>
@@ -2385,6 +3546,90 @@
             Hexes have pointed horizontal tops in the projected XZ footprint.
             </summary>
         </member>
+        <member name="T:GridForge.Grids.Topology.VoxelContactFaceKind">
+            <summary>
+            Identifies the world-plane orientation of a face contact.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactFaceKind.None">
+            <summary>The manifold is not a face.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactFaceKind.Vertical">
+            <summary>A horizontal footprint segment extruded through a vertical interval.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactFaceKind.Horizontal">
+            <summary>A convex XZ polygon on a shared Y plane.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.VoxelContactKind">
+            <summary>
+            Classifies the exact shared geometry of two closed cell prisms.
+            </summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactKind.Separated">
+            <summary>The prisms do not intersect.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactKind.Point">
+            <summary>The prisms share one point.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactKind.Edge">
+            <summary>The prisms share a positive-length line.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactKind.Face">
+            <summary>The prisms share a positive-area face.</summary>
+        </member>
+        <member name="F:GridForge.Grids.Topology.VoxelContactKind.VolumeOverlap">
+            <summary>The prism interiors overlap in three dimensions.</summary>
+        </member>
+        <member name="T:GridForge.Grids.Topology.VoxelContactManifold">
+            <summary>
+            Describes exact point, edge, face, or volume contact between two cell prisms.
+            </summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.Source">
+            <summary>The source cell identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.Target">
+            <summary>The target cell identity.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.SourceToTarget">
+            <summary>The target-center displacement from the source center.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.Kind">
+            <summary>The exact contact classification.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.FaceKind">
+            <summary>The face orientation when <see cref="P:GridForge.Grids.Topology.VoxelContactManifold.Kind"/> is <see cref="F:GridForge.Grids.Topology.VoxelContactKind.Face"/>.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.VerticalMin">
+            <summary>The lower bound of the shared vertical interval or horizontal face plane.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.VerticalMax">
+            <summary>The upper bound of the shared vertical interval or horizontal face plane.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.HorizontalSegmentStart">
+            <summary>The first endpoint of a vertical face's exact XZ contact segment.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.HorizontalSegmentEnd">
+            <summary>The second endpoint of a vertical face's exact XZ contact segment.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.HorizontalPolygon">
+            <summary>The exact overlap polygon for a horizontal face or volume overlap.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.CheckedArea">
+            <summary>The face area, or horizontal overlap area for a volume overlap.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.IsAreaRepresentable">
+            <summary>Whether <see cref="P:GridForge.Grids.Topology.VoxelContactManifold.CheckedArea"/> is representable without saturation.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.IsPositiveAreaFace">
+            <summary>Whether this manifold can be considered as an automatic portal before agent clearance checks.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.VerticalFaceWidth">
+            <summary>The exact width of a vertical face contact segment.</summary>
+        </member>
+        <member name="P:GridForge.Grids.Topology.VoxelContactManifold.VerticalFaceHeight">
+            <summary>The exact height of a vertical face contact interval.</summary>
+        </member>
         <member name="T:GridForge.Grids.VoxelGrid">
             <summary>
             Represents a 3D grid structure for spatial organization, managing voxels and scan cells.
@@ -2476,7 +3721,8 @@
             Stores topology-local neighbor slots for neighboring grids based on their relative positions.
             </summary>
             <remarks>
-            Unlike voxel adjacency (which is always 1:1), grids can share multiple neighbors in the same direction.
+            Each topology-local slot can contain multiple neighboring grid IDs. Contact
+            queries can also return multiple voxel contacts across different grid cell sizes.
             </remarks>
         </member>
         <member name="P:GridForge.Grids.VoxelGrid.NeighborCount">
@@ -3422,6 +4668,10 @@
         </member>
         <member name="M:GridForge.Spatial.VoxelIndex.CompareTo(GridForge.Spatial.VoxelIndex)">
             <inheritdoc/>
+            <remarks>
+            Ordering is a stable lexicographic comparison of X/Q, then Y/layer,
+            then Z/R. <see cref="P:GridForge.Spatial.VoxelIndex.IsAllocated"/> does not participate in value order.
+            </remarks>
         </member>
         <member name="M:GridForge.Spatial.VoxelIndex.Equals(System.Object)">
             <inheritdoc/>
@@ -3513,7 +4763,7 @@
         </member>
         <member name="T:GridForge.BoundsKey">
             <summary>
-            Exact identity key for a grid's snapped bounds.
+            Exact value key for the supplied bounds.
             </summary>
         </member>
         <member name="P:GridForge.BoundsKey.BoundsMin">
@@ -3548,8 +4798,13 @@
         </member>
         <member name="T:GridForge.GridVoxelSet">
             <summary>
-            Used to group query results on a grid to voxel level
+            Groups the matching voxels for one grid.
             </summary>
+            <remarks>
+            Query iterators lend pooled <see cref="F:GridForge.GridVoxelSet.Voxels"/> lists until their enumeration
+            completes or is disposed. Consume them inside the enumeration, or copy the
+            contents into caller-owned storage before retaining results.
+            </remarks>
         </member>
         <member name="F:GridForge.GridVoxelSet.Grid">
             <summary>
@@ -3664,13 +4919,13 @@
         <member name="P:GridForge.GridForgeLogger.LogHandler">
             <summary>
             Gets or sets the delegate used to write formatted log messages.
-            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
+            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogHandler(Chronicler.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.CustomFormatter">
             <summary>
             Gets or sets the formatter used to transform log arguments into a final log entry.
-            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
+            Assigning <see langword="null"/> restores <see cref="M:GridForge.GridForgeLogger.DefaultLogFormatter(Chronicler.Diagnostics.DiagnosticLevel,System.String,System.String)"/>.
             </summary>
         </member>
         <member name="P:GridForge.GridForgeLogger.LogFilePath">
@@ -3683,14 +4938,14 @@
             Gets or sets the minimum log level required for messages to be logged.
             </summary>
         </member>
-        <member name="M:GridForge.GridForgeLogger.IsEnabled(SwiftCollections.Diagnostics.DiagnosticLevel)">
+        <member name="M:GridForge.GridForgeLogger.IsEnabled(Chronicler.Diagnostics.DiagnosticLevel)">
             <summary>
             Determines whether diagnostics at the specified level are currently enabled.
             </summary>
             <param name="level">The diagnostic level to evaluate.</param>
             <returns><see langword="true"/> when messages at <paramref name="level"/> will be emitted; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
+        <member name="M:GridForge.GridForgeLogger.DefaultLogHandler(Chronicler.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
             The default handler for logging messages, writing them to the console and optionally to a file.
             </summary>
@@ -3698,7 +4953,7 @@
             <param name="message">The log message.</param>
             <param name="source">The source of the log message.</param>
         </member>
-        <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(SwiftCollections.Diagnostics.DiagnosticLevel,System.String,System.String)">
+        <member name="M:GridForge.GridForgeLogger.DefaultLogFormatter(Chronicler.Diagnostics.DiagnosticLevel,System.String,System.String)">
             <summary>
             The default log formatter that formats log messages with timestamp, log level, and source information.
             </summary>
@@ -3716,6 +4971,12 @@
             Grid coverage utilities for resolving scan cells and voxels that intersect
             a given world-space query bounds, including specialized handling for hex-prism topologies.
             </content>
+            <content>Provides bounded swept navigation-body coverage.</content>
+            <content>Owns planar-only footprint geometry and finite lattice-union closure.</content>
+            <content>Derives conservative native planar address ranges from the actual forward lattice.</content>
+            <content>
+            Provides exact ordered segment intervals over physical and missing grid addresses.
+            </content>
             <content>
             Provides line-tracing functionality for identifying voxels intersected
             along a segment between two points across one or more grids.
@@ -3727,15 +4988,17 @@
             The traced points are returned as grid voxels.
             </summary>
             <remarks>
-            Uses a fractional step algorithm inspired by Bresenham’s line algorithm.
+            Uses a fractional step algorithm inspired by Bresenham's line algorithm.
             This implementation leverages fixed-point math to maintain precision across a deterministic grid.
+            Consume each pooled voxel list inside the enumeration or copy its contents
+            to caller-owned storage. Retained results should use <c>TraceLineInto</c>.
             </remarks>
             <param name="world">The world whose grids should be traced.</param>
             <param name="start">Starting position in world space.</param>
             <param name="end">Ending position in world space.</param>
             <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
-            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
+            <returns>Grouped results whose voxel lists are lent until enumeration completes or is disposed.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64},System.Boolean)">
             <summary>
@@ -3774,7 +5037,7 @@
             <param name="padding">Value applied to the start/end positions before snapping.</param>
             <param name="includeEnd">Whether to include the end voxel in the traced line.</param>
             <param name="layerY">The world Y layer to trace. Defaults to zero.</param>
-            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the traced path.</returns>
+            <returns>Grouped results whose voxel lists are lent until enumeration completes or is disposed.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.TraceLineInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64},System.Boolean,FixedMathSharp.Fixed64)">
             <summary>
@@ -3805,6 +5068,10 @@
             <summary>
             Retrieves all grid voxels covered by the given bounding area in the supplied world.
             </summary>
+            <remarks>
+            Each result lends a pooled voxel list until enumeration completes or is
+            disposed. Copy contents before retaining them, or use <c>GetCoveredVoxelsInto</c>.
+            </remarks>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
@@ -3815,7 +5082,7 @@
             <param name="boundsMax">The 2D maximum corner whose X component maps to world X and Y component maps to world Z.</param>
             <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
-            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the covered voxels.</returns>
+            <returns>Grouped results whose voxel lists are lent until enumeration completes or is disposed.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxels(GridForge.Grids.GridWorld,FixedMathSharp.Geometry.FixedBoundArea,FixedMathSharp.Fixed64,System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
@@ -3825,7 +5092,7 @@
             <param name="area">The 2D area whose X component maps to world X and Y component maps to world Z.</param>
             <param name="layerY">The world Y layer to cover. Defaults to zero.</param>
             <param name="padding">Value applied to the min/max bounds before snapping.</param>
-            <returns>A collection of <see cref="T:GridForge.GridVoxelSet"/> objects representing the covered voxels.</returns>
+            <returns>Grouped results whose voxel lists are lent until enumeration completes or is disposed.</returns>
         </member>
         <member name="M:GridForge.Utility.GridTracer.GetCoveredVoxelsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.Voxel},System.Nullable{FixedMathSharp.Fixed64})">
             <summary>
@@ -3973,6 +5240,93 @@
             Appends covered voxels using caller-owned scratch state for allocation-sensitive coverage scans.
             </summary>
         </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceNavigationBodyInto(GridForge.Grids.GridWorld,GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.WorldVoxelIndex,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Grids.GridNavigationBodyTraceCell},GridForge.Grids.GridNavigationBodyTraceScratch,System.Int32,System.Int32,System.Int32,System.Int64)">
+            <summary>Writes the canonical cells required by one direct upright-body sweep.</summary>
+            <remarks>
+            The start and end bodies must have closed-set contact with the declared source and target
+            prisms respectively; exact endpoint tangency is admitted for that identity check.
+            A prism is claimed only when its planar and vertical interiors overlap the swept body at
+            one shared continuous parameter. Boundary-only coincidence and tangency are excluded.
+            Grid, address, output, and combined candidate-work ceilings are independent.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TracePlanarNavigationBodyInto(GridForge.Grids.GridWorld,System.ReadOnlySpan{GridForge.Grids.Topology.GridPlanarLayer},FixedMathSharp.Fixed64,GridForge.Spatial.WorldVoxelIndex,GridForge.Spatial.WorldVoxelIndex,FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Fixed64,SwiftCollections.SwiftList{GridForge.Grids.GridNavigationBodyTraceCell},GridForge.Grids.GridNavigationBodyTraceScratch,System.Int32,System.Int32,System.Int32,System.Int64)">
+            <summary>Writes bounded native planar upright-capsule coverage for one immediate neighbor leg.</summary>
+            <remarks>
+            Eligible generations must be strictly configuration-ordered, with one selected layer per generation.
+            The positive-radius capsule has an upright Forward axis of <paramref name="axisLength"/>;
+            total height is axis length plus twice the radius. World Y selects layers, not gameplay height.
+            Closed endpoint contact admits identity; only strict swept interior overlap claims other cells.
+            Existing scratch/output capacities are hard ceilings. Candidate work counts admitted generation
+            and address inspections, not every geometry operation. Per selected grid, candidate range math
+            uses at most four 31-step forward-lattice bounds. With N retained candidates, union closure
+            visits at most eight planar neighbors per member; sorting and lookup are O(N log N), with
+            duplicate-alternative scans bounded by O(N squared). No world-registry scan or storage growth occurs.
+            The world read lock precedes the committed-change lock for the whole bounded proof.
+            </remarks>
+            <param name="world">The explicit world owning every selected generation.</param>
+            <param name="eligibleLayers">Exact generations and one selected layer each, in strict configuration order.</param>
+            <param name="embeddingY">World Y contained by every selected layer.</param>
+            <param name="source">Pinned source identity in an eligible generation/layer.</param>
+            <param name="target">Pinned target identity on the same footprint or an immediate planar neighbor.</param>
+            <param name="startCenter">Capsule center at the start of the planar sweep.</param>
+            <param name="endCenter">Capsule center at the end of the planar sweep.</param>
+            <param name="axisLength">Nonnegative upright core segment length; zero represents a circle.</param>
+            <param name="radius">Strictly positive capsule radius.</param>
+            <param name="results">Pre-sized caller-owned evidence storage, cleared before writing.</param>
+            <param name="scratch">Pre-sized caller-owned temporary storage, cleared on return.</param>
+            <param name="gridCandidateLimit">Maximum charged generation inspections.</param>
+            <param name="addressCandidateLimit">Maximum charged address inspections.</param>
+            <param name="outputLimit">Maximum complete required and dependency-evidence cells.</param>
+            <param name="candidateWorkLimit">Maximum combined generation and address inspections.</param>
+            <returns>The completion status, exact candidate counts, and coherent evidence stamp.</returns>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TryTraceRectangularSlabsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,GridForge.Grids.Topology.GridCoveredAddressGeneration@,SwiftCollections.SwiftList{GridForge.Grids.GridTraceInterval},GridForge.Grids.GridTraceIntervalScratch,System.Span{System.Int32},System.Func{GridForge.Grids.GridTraceSlab,System.Boolean},System.Int32,System.Int32,System.Int32,System.Int64,GridForge.Grids.GridTraceIntervalReport@)">
+            <summary>Attempts a bounded trace observed after each complete rectangular X slab.</summary>
+            <remarks>
+            Returns false only before chargeable discovery when the original segment or expected single-layer
+            rectangular generation is unsupported. Results are then empty and the observer is not invoked.
+            All qualified terminal outcomes return true, including ceilings. The observer runs under the world
+            read lock and must not reenter world/grid operations or mutate results or scratch. Reading world
+            identity/change-stamp properties for freshness fences is allowed. Scratch is not thread-safe.
+            Returning false from the observer retains emission-order intervals, not a canonical ray prefix;
+            ties and coverage remain unassigned. Continuation sorts canonically and source ordinals follow every
+            move. The ordinal span must fit outputLimit. Failure or exception clears results and used ordinals;
+            exceptions propagate after cleanup. World stamps are captured before qualification, not refreshed by
+            callbacks; concurrent obstacle changes remain possible and consumers own their final freshness fence.
+            </remarks>
+        </member>
+        <member name="M:GridForge.Utility.GridTracer.TraceIntervalsInto(GridForge.Grids.GridWorld,FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,SwiftCollections.SwiftList{GridForge.Grids.GridTraceInterval},GridForge.Grids.GridTraceIntervalScratch,System.Int32,System.Int32,System.Int32,System.Int64)">
+            <summary>
+            Traces an arbitrary world-space segment into exact, canonically ordered grid-cell intervals.
+            </summary>
+            <remarks>
+            Results are cleared on entry and on any ceiling or representability failure. Candidate grids are
+            discovered through the world spatial index. Candidate addresses are bounded around the segment,
+            then exact rectangular or hexagonal prisms reject all broad-phase false positives.
+            The supplied scratch must not already be active in another trace; reentrant use throws before clearing results.
+            </remarks>
+        </member>
+        <member name="T:GridForge.Utility.GridTraversal">
+            <summary>
+            Provides deterministic helpers for duplicate-safe voxel traversal.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.TryGetUniquePartition``1(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{GridForge.Spatial.WorldVoxelIndex},``0@)">
+            <summary>
+            Gets a voxel partition once per exact world-scoped voxel identity.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.IsWorldPositionInPaddedBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
+            <summary>
+            Tests whether a 3D world position lies inside bounds expanded by half of a cell edge.
+            </summary>
+        </member>
+        <member name="M:GridForge.Utility.GridTraversal.IsPlanarPositionInPaddedBounds(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
+            <summary>
+            Tests whether a world position's X/Z projection lies inside bounds expanded by half of a cell edge.
+            </summary>
+        </member>
         <member name="T:GridForge.Utility.GridTraversalPaddingMode">
             <summary>
             Selects which topology edge measurement a grid traversal should use for padding.
@@ -4009,26 +5363,6 @@
             Gets the selected cell-edge measurement for a voxel's grid, caching repeated grid lookups.
             </summary>
             <exception cref="T:System.InvalidOperationException">The voxel does not belong to an active grid generation in this traversal's world.</exception>
-        </member>
-        <member name="T:GridForge.Utility.GridTraversal">
-            <summary>
-            Provides deterministic helpers for duplicate-safe voxel traversal.
-            </summary>
-        </member>
-        <member name="M:GridForge.Utility.GridTraversal.TryGetUniquePartition``1(GridForge.Grids.Voxel,SwiftCollections.SwiftHashSet{GridForge.Spatial.WorldVoxelIndex},``0@)">
-            <summary>
-            Gets a voxel partition once per exact world-scoped voxel identity.
-            </summary>
-        </member>
-        <member name="M:GridForge.Utility.GridTraversal.IsWorldPositionInPaddedBounds(FixedMathSharp.Vector3d,FixedMathSharp.Vector3d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
-            <summary>
-            Tests whether a 3D world position lies inside bounds expanded by half of a cell edge.
-            </summary>
-        </member>
-        <member name="M:GridForge.Utility.GridTraversal.IsPlanarPositionInPaddedBounds(FixedMathSharp.Vector2d,FixedMathSharp.Vector2d,FixedMathSharp.Fixed64,FixedMathSharp.Vector3d)">
-            <summary>
-            Tests whether a world position's X/Z projection lies inside bounds expanded by half of a cell edge.
-            </summary>
         </member>
     </members>
 </doc>

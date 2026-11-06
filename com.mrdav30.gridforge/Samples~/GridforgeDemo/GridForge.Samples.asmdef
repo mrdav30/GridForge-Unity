@@ -18,12 +18,12 @@
     "versionDefines": [
         {
             "name": "com.mrdav30.fixedmathsharp",
-            "expression": "7.0.0",
+            "expression": "8.0.0",
             "define": "GRIDFORGE_HAS_FIXEDMATHSHARP"
         },
         {
             "name": "com.mrdav30.swiftcollections",
-            "expression": "7.0.0",
+            "expression": "8.0.0",
             "define": "GRIDFORGE_HAS_SWIFTCOLLECTIONS"
         }
     ],

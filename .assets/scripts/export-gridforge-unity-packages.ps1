@@ -40,7 +40,7 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "gridforge-unity-batch.ps1")
 
 $additionalArguments = @(
-    "-GridForgeUnityPackageOutputPath",
+    "-gridforgeUnityPackageOutputPath",
     $OutputPath
 )
 
@@ -50,5 +50,5 @@ Invoke-GridForgeUnityBatchMethod `
     -ProjectPath $ProjectPath `
     -LogFile $LogFile `
     -AdditionalArguments $additionalArguments `
-    -PathArgumentNames @("-GridForgeUnityPackageOutputPath") `
+    -PathArgumentNames @("-gridforgeUnityPackageOutputPath") `
     -WhatIf:$WhatIf

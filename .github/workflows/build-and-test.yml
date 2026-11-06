@@ -26,7 +26,7 @@ jobs:
     if: >-
       github.actor != 'dependabot[bot]' &&
       (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -83,13 +83,12 @@ jobs:
         id: tests
         uses: game-ci/unity-test-runner@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: .ci/unity-project
-          unityVersion: 6000.5.0f1
-          customImage: unityci/editor:ubuntu-6000.5.0f1-base-3
+          unityVersion: 6000.3.9f1
+          customImage: unityci/editor:ubuntu-6000.3.9f1-base-3
           testMode: EditMode
           customParameters: -assemblyNames GridForge.Unity.Tests.EditMode -runSynchronously
           artifactsPath: artifacts/${{ matrix.artifact_suffix }}
@@ -115,7 +114,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          image="unityci/editor:ubuntu-6000.5.0f1-base-3"
+          image="unityci/editor:ubuntu-6000.3.9f1-base-3"
           container="$(docker create "$image")"
           trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
 
@@ -142,6 +141,8 @@ jobs:
           test -n "$swiftcollections_package"
           cp "$swiftcollections_package/Plugins/SwiftCollections.dll" \
             .docs/api/obj/references/SwiftCollections.dll
+          cp "$swiftcollections_package/Plugins/Chronicler.Diagnostics.dll" \
+            .docs/api/obj/references/Chronicler.Diagnostics.dll
 
           cp .ci/unity-project/Library/ScriptAssemblies/FixedMathSharp.Runtime.dll \
             .docs/api/obj/references/FixedMathSharp.Runtime.dll
@@ -224,7 +225,7 @@ jobs:
   unity-sample-import-smoke:
     name: Unity Sample Import Smoke (${{ matrix.package_display_name }})
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -272,23 +273,20 @@ jobs:
         run: |
           set -euo pipefail
 
-          container_home="$RUNNER_TEMP/_github_home"
-          mkdir -p "$container_home"
-
-          git config --file "$container_home/.gitconfig" --add safe.directory /github/workspace
-          git config --file "$container_home/.gitconfig" --add safe.directory /github/workspace/.git
+          # GameCI mounts the runner's home at /root, including its global Git config.
+          git config --global --add safe.directory /github/workspace
+          git config --global --add safe.directory /github/workspace/.git
 
       - name: Run Unity sample import smoke
         id: sample-import
         uses: game-ci/unity-test-runner@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: .ci/unity-sample-import-${{ matrix.artifact_suffix }}
-          unityVersion: 6000.5.0f1
-          customImage: unityci/editor:ubuntu-6000.5.0f1-base-3
+          unityVersion: 6000.3.9f1
+          customImage: unityci/editor:ubuntu-6000.3.9f1-base-3
           testMode: EditMode
           customParameters: -assemblyNames GridForge.SampleImportSmokeTests -runSynchronously
           artifactsPath: artifacts/sample-import-${{ matrix.artifact_suffix }}
@@ -315,7 +313,7 @@ jobs:
     name: Deploy API documentation
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: unity-editmode
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write

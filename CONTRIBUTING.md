@@ -69,6 +69,12 @@ and site output are disposable. CI stages the required Unity and package
 reference assemblies in `.docs/api/obj/references`; contributors must not add
 those binary references to source control.
 
+Both variants require Unity 6.3 LTS (6000.3) or newer. The `build-and-test`
+workflow validates Unity 6000.3.9f1 on Ubuntu 24.04. Activation uses the
+`UNITY_EMAIL` and `UNITY_PASSWORD` secrets directly. Sample-import jobs trust
+the exact local Git checkout paths through the runner's global Git config,
+which GameCI mounts into the Unity container's home directory.
+
 Authored user and maintainer guides live under `.docs/api/guides`; this
 repository does not publish a GitHub Wiki. Keep the landing page, guide routes,
 namespace overrides, GridForge theme, repository header link, and core-library

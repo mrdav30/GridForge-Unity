@@ -4,7 +4,7 @@ The Standard Unity adapter package: scene-owned worlds, serialized grid
 authoring, blockers, diagnostics, logging, and the Demo Scene. This variant uses
 the Standard MemoryPack-enabled GridForge dependency family.
 
-Requires Unity 2022.3 or newer.
+Requires Unity 6.3 LTS (6000.3) or newer.
 
 [Documentation](https://mrdav30.github.io/GridForge-Unity/) ·
 [Getting started](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html) ·
@@ -15,7 +15,7 @@ Requires Unity 2022.3 or newer.
 In **Window → Package Manager**, choose **+ → Install package from git URL…**:
 
 ```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v9.0.0
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v10.0.0
 ```
 
 Do not install the Lean variant in the same project. In a custom asmdef,
@@ -47,7 +47,7 @@ interrupted, choose **Tools → GridForge → Repair Dependencies**.
 Manual dependency URLs, when needed:
 
 ```text
-https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp#v7.0.0
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections#v7.0.0
-https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp#v7.0.0
+https://github.com/mrdav30/FixedMathSharp-Unity.git?path=/com.mrdav30.fixedmathsharp#v8.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections#v8.0.0
+https://github.com/mrdav30/SwiftCollections-Unity.git?path=/com.mrdav30.swiftcollections.fixedmathsharp#v8.0.0
 ```

@@ -12,15 +12,20 @@ samples.
 
 This guide takes you from a pinned package install to an active scene-owned
 world. For engine-neutral behavior, use the
-[GridForge core wiki](https://github.com/mrdav30/GridForge/wiki).
+[GridForge core guide and API](https://mrdav30.github.io/GridForge/).
 
 ## Requirements
 
-- Unity 2022.3 or newer
+- Unity 6.3 LTS (6000.3) or newer
 - exactly one GridForge package variant
 - Git available to Unity Package Manager
 
-The repository currently tests both variants with Unity 6000.5.0f1.
+The repository currently tests both variants with Unity 6000.3.9f1.
+
+For an existing project, follow the
+[v9 to v10 migration guide](https://github.com/mrdav30/GridForge-Unity/blob/main/MIGRATION.md).
+Update the matching FixedMathSharp-Unity and SwiftCollections-Unity dependencies
+to v8.0.0 together before opening Unity.
 
 ## Install one variant
 
@@ -29,13 +34,13 @@ In **Window → Package Manager**, choose **+ → Install package from git URL�
 Standard package with the MemoryPack-enabled dependency family:
 
 ```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v9.0.0
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v10.0.0
 ```
 
 Lean package without the MemoryPack runtime dependency chain:
 
 ```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean#v9.0.0
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean#v10.0.0
 ```
 
 Do not install both. They define overlapping GridForge assemblies.

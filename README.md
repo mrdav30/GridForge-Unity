@@ -5,7 +5,7 @@
 # GridForge for Unity
 
 [![Build](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/mrdav30/GridForge-Unity/actions/workflows/build-and-test.yml)
-[![Unity 2022.3+](https://img.shields.io/badge/Unity-2022.3%2B-222c37?logo=unity)](https://unity.com/releases/editor/whats-new/2022.3.0)
+[![Unity 6.3 LTS+](https://img.shields.io/badge/Unity-6.3_LTS%2B-222c37?logo=unity)](https://unity.com/releases/editor/whats-new/6000.3.9f1)
 [![API](https://img.shields.io/badge/docs-Unity_API-00a9d6)](https://mrdav30.github.io/GridForge-Unity/)
 [![Discord](https://img.shields.io/badge/discord-join%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/mhwK2QFNBA)
 
@@ -16,8 +16,8 @@ Keep grid behavior in the engine-agnostic core. Use this package host where
 Unity owns the boundary: serialized configurations, scene-owned worlds,
 topology-aware gizmos, authored blockers, logging, and sample workflows.
 
-Requires Unity **2022.3 or newer**. Repository CI currently validates Unity
-**6000.5.0f1**.
+Requires Unity **6.3 LTS (6000.3) or newer**. Repository CI currently validates Unity
+**6000.3.9f1**.
 
 ## Choose one package
 
@@ -32,11 +32,11 @@ In **Window → Package Manager**, choose **+ → Install package from git URL�
 and use one pinned URL:
 
 ```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v9.0.0
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge#v10.0.0
 ```
 
 ```text
-https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean#v9.0.0
+https://github.com/mrdav30/GridForge-Unity.git?path=/com.mrdav30.gridforge.lean#v10.0.0
 ```
 
 On first import, the package adds the matching FixedMathSharp-Unity and
@@ -80,6 +80,7 @@ debugger, blocker, and trace tool.
 
 ## Learn more
 
+- [Upgrading from v9 to v10](MIGRATION.md)
 - [Getting started](https://mrdav30.github.io/GridForge-Unity/guides/getting-started.html)
 - [Grid authoring](https://mrdav30.github.io/GridForge-Unity/guides/grid-authoring.html)
 - [Scene tools and diagnostics](https://mrdav30.github.io/GridForge-Unity/guides/scene-tools.html)

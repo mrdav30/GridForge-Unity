@@ -6,7 +6,9 @@
   Unity project root.
 - This repo ships two Unity Package Manager variants: `com.mrdav30.gridforge`
   and `com.mrdav30.gridforge.lean`.
-- Both package variants are currently using GridForge `v9.0.0`.
+- Both package variants are currently using GridForge `v10.0.0`, with
+  FixedMathSharp-Unity and SwiftCollections-Unity `v8.0.0`. Both require Unity
+  6.3 LTS (6000.3) or newer.
 - The old `.variants/` workflow is retired and should not be reintroduced.
 
 ## Source Of Truth
@@ -180,7 +182,11 @@
 
 - Automated EditMode tests live under `Tests/EditMode`.
 - Primary CI is `.github/workflows/build-and-test.yml`. It runs EditMode tests
-  for both standard and lean packages on Unity `6000.5.0f1`.
+  for both standard and lean packages on Unity `6000.3.9f1` on Ubuntu 24.04.
+- Unity CI uses the `UNITY_EMAIL` and `UNITY_PASSWORD` secrets for activation.
+  Sample-import Git trust uses the runner global config mounted by GameCI.
+- Shared diagnostic types come from `Chronicler.Diagnostics`; explicit
+  precompiled test references must include `Chronicler.Diagnostics.dll`.
 - A main-only sample import smoke job installs both package variants via local
   Git URL, imports the Demo Scene sample, and scans Unity logs for known sample
   packaging failures.

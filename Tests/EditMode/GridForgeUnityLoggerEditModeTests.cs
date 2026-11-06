@@ -2,7 +2,7 @@ using GridForge;
 using GridForge.Utility;
 using NUnit.Framework;
 using SwiftCollections;
-using SwiftCollections.Diagnostics;
+using Chronicler.Diagnostics;
 using System;
 using UnityEngine;
 using UnityEngine.TestTools;

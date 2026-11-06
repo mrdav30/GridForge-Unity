@@ -41,12 +41,17 @@ GridForge release builds:
 $GridForgeRoot = "C:\path\to\GridForge"
 $GridForgeProject = Join-Path $GridForgeRoot "src\GridForge\GridForge.csproj"
 
-dotnet build $GridForgeProject -c Release
-dotnet build $GridForgeProject -c ReleaseLean
+dotnet build $GridForgeProject -c Release -f netstandard2.1 -p:UseLocalLsfStack=false
+dotnet build $GridForgeProject -c ReleaseLean -f netstandard2.1 -p:UseLocalLsfStack=false
 ```
 
 Keep the Standard DLL in the Standard package and the Lean DLL in the Lean
 package.
+
+For v10.0.0, prefer the published `netstandard2.1-release` and
+`netstandard2.1-releaselean` archives from the GridForge release. Copy only
+`GridForge.dll`, `.pdb`, and `.xml`; the matching v8 Unity dependency packages
+own the other DLLs, including `Chronicler.Diagnostics.dll`.
 
 ## Required validation
 
@@ -70,6 +75,10 @@ Use `-WhatIf` with the sync or export scripts when you only need to inspect the
 planned action. The exporter syncs shared code and regenerates distributable
 `Samples~/` content from the package-local authoring mirrors before creating
 archives.
+
+The `.unitypackage` archives contain the adapter assets. Unity's asset exporter
+omits the hidden `Samples~/` directory, and the tooling excludes the local
+`Samples/` mirror. Install through UPM to import **Demo Scene** from `Samples~`.
 
 ## Unity menus
 

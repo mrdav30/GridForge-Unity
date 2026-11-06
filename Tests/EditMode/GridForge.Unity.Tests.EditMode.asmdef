@@ -17,6 +17,7 @@
         "GridForge.dll",
         "FixedMathSharp.dll",
         "Chronicler.dll",
+        "Chronicler.Diagnostics.dll",
         "SwiftCollections.dll"
     ],
     "autoReferenced": false,

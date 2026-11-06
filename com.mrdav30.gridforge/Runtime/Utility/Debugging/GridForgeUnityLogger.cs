@@ -6,7 +6,7 @@
 //=======================================================================
 
 using GridForge;
-using SwiftCollections.Diagnostics;
+using Chronicler.Diagnostics;
 using System;
 using UnityEngine;
 
